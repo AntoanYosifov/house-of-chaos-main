@@ -1,6 +1,6 @@
-package com.antdevrealm.housechaosmain.user.model.entity;
+package com.antdevrealm.housechaosmain.features.user.model.entity;
 
-import com.antdevrealm.housechaosmain.user.model.enums.UserRole;
+import com.antdevrealm.housechaosmain.features.user.model.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,6 +14,7 @@ import java.util.UUID;
 @Builder
 
 @Entity
+@Table(name = "users")
 public class UserEntity {
 
     @Id
