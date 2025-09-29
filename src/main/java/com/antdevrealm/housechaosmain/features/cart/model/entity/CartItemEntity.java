@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "cart_items")
-public class CartItem {
+public class CartItemEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
