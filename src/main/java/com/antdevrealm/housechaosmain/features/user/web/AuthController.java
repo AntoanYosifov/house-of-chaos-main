@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
@@ -51,6 +48,12 @@ public class AuthController {
 
         TokenResponse tokenResponse = new TokenResponse(token, "Bearer", jwtService.ttlSeconds());
         return ResponseEntity.ok(tokenResponse);
+    }
+
+    // Test authenticated end point
+    @GetMapping("/protected")
+    public ResponseEntity<String> getProtected() {
+        return ResponseEntity.ok("You got here");
     }
 
 }
