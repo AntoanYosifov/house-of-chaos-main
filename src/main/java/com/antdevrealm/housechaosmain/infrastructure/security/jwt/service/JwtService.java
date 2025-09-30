@@ -34,4 +34,8 @@ public class JwtService {
     public String extractSubjectFromToken(String token) {
         return parser.parseSignedClaims(token).getPayload().getSubject();
     }
+
+    public long ttlSeconds() {
+        return this.ttl.toSeconds();
+    }
 }

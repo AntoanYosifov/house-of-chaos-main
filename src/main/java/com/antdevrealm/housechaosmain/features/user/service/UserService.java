@@ -1,7 +1,7 @@
 package com.antdevrealm.housechaosmain.features.user.service;
 
-import com.antdevrealm.housechaosmain.features.user.model.dto.RegistrationDTO;
-import com.antdevrealm.housechaosmain.features.user.model.dto.RegistrationResponseDTO;
+import com.antdevrealm.housechaosmain.features.user.web.dto.RegistrationRequest;
+import com.antdevrealm.housechaosmain.features.user.web.dto.RegistrationResponse;
 import com.antdevrealm.housechaosmain.features.user.model.entity.UserEntity;
 import com.antdevrealm.housechaosmain.features.user.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.features.user.repository.UserRepository;
@@ -24,7 +24,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public RegistrationResponseDTO register(RegistrationDTO dto) {
+    public RegistrationResponse register(RegistrationRequest dto) {
 
         UserEntity newEntity = mapToEntity(dto);
         UserEntity savedEntity = userRepository.save(newEntity);
@@ -32,15 +32,15 @@ public class UserService {
         return mapToResponseDto(savedEntity);
     }
 
-    private static RegistrationResponseDTO mapToResponseDto(UserEntity savedEntity) {
-        return new RegistrationResponseDTO(savedEntity.getId(),
+    private static RegistrationResponse mapToResponseDto(UserEntity savedEntity) {
+        return new RegistrationResponse(savedEntity.getId(),
                 savedEntity.getEmail(),
                 savedEntity.isActive(),
                 savedEntity.getCreatedOn(),
                 savedEntity.getUpdatedAt());
     }
 
-    private UserEntity mapToEntity(RegistrationDTO dto) {
+    private UserEntity mapToEntity(RegistrationRequest dto) {
         return UserEntity.builder()
                 .email(dto.email())
                 .password(this.passwordEncoder.encode(dto.password()))
