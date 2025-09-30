@@ -6,6 +6,7 @@ import com.antdevrealm.housechaosmain.features.user.model.entity.UserEntity;
 import com.antdevrealm.housechaosmain.features.user.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.features.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,11 +14,14 @@ import java.time.LocalDateTime;
 @Service
 public class UserService {
 
+
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public RegistrationResponseDTO register(RegistrationDTO dto) {
@@ -36,10 +40,10 @@ public class UserService {
                 savedEntity.getUpdatedAt());
     }
 
-    private static UserEntity mapToEntity(RegistrationDTO dto) {
+    private UserEntity mapToEntity(RegistrationDTO dto) {
         return UserEntity.builder()
                 .email(dto.email())
-                .password(dto.password())
+                .password(this.passwordEncoder.encode(dto.password()))
                 .role(UserRole.USER)
                 .active(true)
                 .createdOn(LocalDateTime.now())
