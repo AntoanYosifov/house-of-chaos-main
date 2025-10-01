@@ -1,6 +1,8 @@
 package com.antdevrealm.housechaosmain.features.user.web.dto;
 
-public record TokenResponse(String access_token,
-                            String token_type,
-                            long expires_in) {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record TokenResponse(@JsonProperty("access_token") String accessToken,
+                            @JsonProperty("token_type") String tokenType,
+                            @JsonProperty("expires_in") long expiresIn) {
 }
