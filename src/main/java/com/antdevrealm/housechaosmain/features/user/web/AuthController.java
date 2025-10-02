@@ -6,6 +6,7 @@ import com.antdevrealm.housechaosmain.features.user.web.dto.RegistrationResponse
 import com.antdevrealm.housechaosmain.features.user.service.UserService;
 import com.antdevrealm.housechaosmain.features.user.web.dto.TokenResponse;
 import com.antdevrealm.housechaosmain.infrastructure.security.jwt.service.JwtService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +17,7 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/users")
+@CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -30,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegistrationResponse> register(@RequestBody RegistrationRequest req) {
+    public ResponseEntity<RegistrationResponse> register(@RequestBody @Valid RegistrationRequest req) {
         RegistrationResponse registrationResponse = userService.register(req);
 
         URI uriLocation = URI.create("/users/" + registrationResponse.id());
@@ -54,6 +56,12 @@ public class AuthController {
     @GetMapping("/protected")
     public ResponseEntity<String> getProtected() {
         return ResponseEntity.ok("You got here");
+    }
+
+    // Test free endpoint
+    @GetMapping("/free")
+    public ResponseEntity<String> getFree() {
+        return ResponseEntity.ok("Hello Sarah!");
     }
 
 }
