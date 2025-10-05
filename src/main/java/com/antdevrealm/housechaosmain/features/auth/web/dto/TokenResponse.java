@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.features.user.web.dto;
+package com.antdevrealm.housechaosmain.features.auth.web.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

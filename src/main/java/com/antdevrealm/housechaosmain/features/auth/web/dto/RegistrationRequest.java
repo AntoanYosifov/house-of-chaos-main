@@ -1,6 +1,6 @@
-package com.antdevrealm.housechaosmain.features.user.web.dto;
+package com.antdevrealm.housechaosmain.features.auth.web.dto;
 
-import com.antdevrealm.housechaosmain.features.user.web.validation.PasswordMatch;
+import com.antdevrealm.housechaosmain.features.auth.web.validation.PasswordMatch;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

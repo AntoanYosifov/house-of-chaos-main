@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.features.user.web.dto;
+package com.antdevrealm.housechaosmain.features.auth.web.dto;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

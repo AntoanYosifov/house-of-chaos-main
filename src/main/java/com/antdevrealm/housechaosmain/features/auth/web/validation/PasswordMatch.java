@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.features.user.web.validation;
+package com.antdevrealm.housechaosmain.features.auth.web.validation;
 
 
 import jakarta.validation.Constraint;
