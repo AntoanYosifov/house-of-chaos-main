@@ -2,6 +2,7 @@ package com.antdevrealm.housechaosmain.infrastructure.security.jwt.service;
 
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -15,7 +16,7 @@ public class JwtService {
     private final JwtParser parser;
     private final Duration ttl;
 
-    public JwtService(SecretKey secretKey, JwtParser parser, Duration ttl) {
+    public JwtService(SecretKey secretKey, JwtParser parser, @Qualifier("jwtTtl") Duration ttl) {
         this.secretKey = secretKey;
         this.parser = parser;
         this.ttl = ttl;

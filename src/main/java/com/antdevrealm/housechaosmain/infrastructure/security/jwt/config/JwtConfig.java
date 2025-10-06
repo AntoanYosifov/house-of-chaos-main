@@ -30,7 +30,7 @@ public class JwtConfig {
         return Jwts.parser().verifyWith(secretKey).build();
     }
 
-    @Bean
+    @Bean("jwtTtl")
     public Duration jwtTtl() {
         return Duration.ofSeconds(ttlSeconds);
     }

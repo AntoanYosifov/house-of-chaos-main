@@ -1,5 +1,6 @@
-package com.antdevrealm.housechaosmain.features.auth.model;
+package com.antdevrealm.housechaosmain.features.auth.model.entity;
 
+import com.antdevrealm.housechaosmain.features.user.model.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,10 +20,10 @@ public class RefreshTokenEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
-    private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private UserEntity user;
 
-    @Column(nullable = false, length = 128)
+    @Column(nullable = false, length = 128, unique = true)
     private String tokenHash;
 
     @Column(nullable = false)
