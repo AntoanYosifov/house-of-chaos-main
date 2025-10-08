@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(e -> e.authenticationEntryPoint(restEntryPoint))
-                .authorizeHttpRequests(a -> a.requestMatchers("/api/users/register", "/api/users/auth/login", "/api/users/free", "/error").permitAll()
+                .authorizeHttpRequests(a -> a.requestMatchers("/api/users/register", "/api/users/auth/login", "/error").permitAll()
                         .anyRequest().authenticated())
                 .userDetailsService(hocUserDetailsService)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
