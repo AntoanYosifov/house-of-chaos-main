@@ -1,6 +1,7 @@
 package com.antdevrealm.housechaosmain.features.auth.service;
 
 import com.antdevrealm.housechaosmain.features.auth.model.dto.CreatedRefreshToken;
+import com.antdevrealm.housechaosmain.features.auth.model.dto.RotationRefreshTokenResult;
 import com.antdevrealm.housechaosmain.features.auth.web.dto.AccessTokenResponse;
 import com.antdevrealm.housechaosmain.features.auth.web.dto.LoginRequest;
 import com.antdevrealm.housechaosmain.features.auth.web.dto.RegistrationRequest;
@@ -9,15 +10,20 @@ import com.antdevrealm.housechaosmain.features.user.model.entity.UserEntity;
 import com.antdevrealm.housechaosmain.features.user.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.features.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.infrastructure.security.jwt.service.JwtService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -45,6 +51,8 @@ public class AuthService {
         this.refreshTokenService = refreshTokenService;
     }
 
+    // TODO: check if email already exists
+    @Transactional
     public RegistrationResponse register(RegistrationRequest dto) {
 
         UserEntity newEntity = mapToEntity(dto);
@@ -60,23 +68,52 @@ public class AuthService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         CreatedRefreshToken refreshToken = refreshTokenService.create(user);
-        setRefreshTokenCookie(res, refreshToken);
+        setRefreshTokenCookie(res, refreshToken.rawToken(), refreshToken.expiresAt());
 
         String accessToken = jwtService.generateToken(user.getEmail());
 
         return new AccessTokenResponse(accessToken, "Bearer", jwtService.ttlSeconds());
     }
 
+    public AccessTokenResponse refreshToken(HttpServletRequest req, HttpServletResponse res) {
+        String rawToken = readCookie(req);
+        if(rawToken == null || rawToken.isBlank()) {
+            throw unauthorized();
+        }
 
-    private void setRefreshTokenCookie(HttpServletResponse res, CreatedRefreshToken refreshToken) {
-        ResponseCookie refreshTokenCookie = ResponseCookie.from(REFRESH_COOKIE, refreshToken.rawToken())
+        RotationRefreshTokenResult rotationRefreshTokenResult = refreshTokenService.rotateInPlace(rawToken);
+
+        setRefreshTokenCookie(res, rotationRefreshTokenResult.newRaw(), rotationRefreshTokenResult.expiresAt());
+        String accessToken = jwtService.generateToken(rotationRefreshTokenResult.userEmail());
+
+        return new AccessTokenResponse(accessToken, "Bearer", jwtService.ttlSeconds());
+    }
+
+    private String readCookie(HttpServletRequest req) {
+        if(req.getCookies() == null) {
+            return null;
+        }
+
+        for (Cookie cookie : req.getCookies()) {
+            if(AuthService.REFRESH_COOKIE.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+
+    private void setRefreshTokenCookie(HttpServletResponse res, String rawToken, LocalDateTime expiresAt) {
+        Duration cookieMaxAge = Duration.between(LocalDateTime.now(), expiresAt);
+        if(cookieMaxAge.isNegative()) {
+            cookieMaxAge = Duration.ZERO;
+        }
+        ResponseCookie refreshTokenCookie = ResponseCookie.from(REFRESH_COOKIE, rawToken)
                 .httpOnly(true)
                 .secure(refreshCookieSecure)
                 .sameSite("Lax")
-                .path("/api/auth")
-                .maxAge(Duration.between(LocalDateTime.now(), refreshToken.expiresAt()))
+                .path("/api/users/auth")
+                .maxAge(cookieMaxAge)
                 .build();
-
         res.addHeader("Set-Cookie", refreshTokenCookie.toString());
     }
 
@@ -97,5 +134,10 @@ public class AuthService {
                 .createdOn(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
+    }
+
+    //TODO: Create and throw custom exception and handle it in a ControllerAdvice to map to 401
+    private ResponseStatusException unauthorized() {
+        return new ResponseStatusException(HttpStatus.UNAUTHORIZED);
     }
 }

@@ -5,6 +5,7 @@ import com.antdevrealm.housechaosmain.features.auth.web.dto.AccessTokenResponse;
 import com.antdevrealm.housechaosmain.features.auth.web.dto.LoginRequest;
 import com.antdevrealm.housechaosmain.features.auth.web.dto.RegistrationRequest;
 import com.antdevrealm.housechaosmain.features.auth.web.dto.RegistrationResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class AuthController {
 
     private final AuthService authService;
@@ -37,6 +38,17 @@ public class AuthController {
     @PostMapping("/auth/login")
     public ResponseEntity<AccessTokenResponse> login(@RequestBody LoginRequest req, HttpServletResponse res) {
         return ResponseEntity.ok(authService.login(req, res));
+    }
+
+    @PostMapping("/auth/refresh")
+    public ResponseEntity<AccessTokenResponse> refresh(HttpServletRequest req, HttpServletResponse res) {
+        AccessTokenResponse accessTokenResponse = authService.refreshToken(req, res);
+        return ResponseEntity.ok(accessTokenResponse);
+    }
+    // mock protected endpoint for testing purposes
+    @GetMapping("/protected")
+    public String getProtected() {
+        return "You got here";
     }
 
 }
