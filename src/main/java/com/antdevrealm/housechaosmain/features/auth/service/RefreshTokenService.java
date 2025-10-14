@@ -35,6 +35,7 @@ public class RefreshTokenService {
         this.refreshTokenTtl = refreshTokenTtl;
     }
 
+    @Transactional
     public CreatedRefreshToken create(UserEntity user) {
         String raw = generateRawToken();
         String tokenHash = tokenHasher.hash(raw);

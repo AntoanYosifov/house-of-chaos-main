@@ -7,8 +7,8 @@ import jakarta.validation.constraints.Size;
 
 
 @PasswordMatch(first = "password", second = "confirmPassword", message = "Passwords must match")
-public record RegistrationRequest(@NotBlank @Email String email,
-                                  @NotBlank @Size(min = 5, max = 20) String password,
-                                  @NotBlank @Size(min = 5, max = 20) String confirmPassword) {
+public record RegistrationRequestDTO(@NotBlank @Email String email,
+                                     @NotBlank @Size(min = 5, max = 20) String password,
+                                     @NotBlank @Size(min = 5, max = 20) String confirmPassword) {
 
 }

@@ -2,10 +2,7 @@ package com.antdevrealm.housechaosmain.features.auth.service;
 
 import com.antdevrealm.housechaosmain.features.auth.model.dto.CreatedRefreshToken;
 import com.antdevrealm.housechaosmain.features.auth.model.dto.RotationRefreshTokenResult;
-import com.antdevrealm.housechaosmain.features.auth.web.dto.AccessTokenResponse;
-import com.antdevrealm.housechaosmain.features.auth.web.dto.LoginRequest;
-import com.antdevrealm.housechaosmain.features.auth.web.dto.RegistrationRequest;
-import com.antdevrealm.housechaosmain.features.auth.web.dto.RegistrationResponse;
+import com.antdevrealm.housechaosmain.features.auth.web.dto.*;
 import com.antdevrealm.housechaosmain.features.user.model.entity.UserEntity;
 import com.antdevrealm.housechaosmain.features.user.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.features.user.repository.UserRepository;
@@ -53,15 +50,15 @@ public class AuthService {
 
     // TODO: check if email already exists
     @Transactional
-    public RegistrationResponse register(RegistrationRequest dto) {
+    public UserResponseDTO register(RegistrationRequestDTO dto) {
 
         UserEntity newEntity = mapToEntity(dto);
         UserEntity savedEntity = userRepository.save(newEntity);
 
-        return mapToResponseDto(savedEntity);
+        return mapToUserResponseDto(savedEntity);
     }
 
-    public AccessTokenResponse login(LoginRequest req, HttpServletResponse res) {
+    public LoginResponseDTO login(LoginRequestDTO req, HttpServletResponse res) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.email(), req.password()));
 
         UserEntity user = userRepository.findByEmail(req.email())
@@ -72,10 +69,12 @@ public class AuthService {
 
         String accessToken = jwtService.generateToken(user.getEmail());
 
-        return new AccessTokenResponse(accessToken, "Bearer", jwtService.ttlSeconds());
+        AccessTokenResponseDTO tokenResponseDTO = new AccessTokenResponseDTO(accessToken, "Bearer", jwtService.ttlSeconds());
+        return new LoginResponseDTO(tokenResponseDTO, mapToUserResponseDto(user));
+
     }
 
-    public AccessTokenResponse refreshToken(HttpServletRequest req, HttpServletResponse res) {
+    public AccessTokenResponseDTO refreshToken(HttpServletRequest req, HttpServletResponse res) {
         String rawToken = readCookie(req);
         if(rawToken == null || rawToken.isBlank()) {
             throw unauthorized();
@@ -86,7 +85,7 @@ public class AuthService {
         setRefreshTokenCookie(res, rotationRefreshTokenResult.newRaw(), rotationRefreshTokenResult.expiresAt());
         String accessToken = jwtService.generateToken(rotationRefreshTokenResult.userEmail());
 
-        return new AccessTokenResponse(accessToken, "Bearer", jwtService.ttlSeconds());
+        return new AccessTokenResponseDTO(accessToken, "Bearer", jwtService.ttlSeconds());
     }
 
     private String readCookie(HttpServletRequest req) {
@@ -117,15 +116,15 @@ public class AuthService {
         res.addHeader("Set-Cookie", refreshTokenCookie.toString());
     }
 
-    private static RegistrationResponse mapToResponseDto(UserEntity savedEntity) {
-        return new RegistrationResponse(savedEntity.getId(),
+    private static UserResponseDTO mapToUserResponseDto(UserEntity savedEntity) {
+        return new UserResponseDTO(savedEntity.getId(),
                 savedEntity.getEmail(),
                 savedEntity.isActive(),
                 savedEntity.getCreatedOn(),
                 savedEntity.getUpdatedAt());
     }
 
-    private UserEntity mapToEntity(RegistrationRequest dto) {
+    private UserEntity mapToEntity(RegistrationRequestDTO dto) {
         return UserEntity.builder()
                 .email(dto.email())
                 .password(this.passwordEncoder.encode(dto.password()))

@@ -1,10 +1,7 @@
 package com.antdevrealm.housechaosmain.features.auth.web;
 
 import com.antdevrealm.housechaosmain.features.auth.service.AuthService;
-import com.antdevrealm.housechaosmain.features.auth.web.dto.AccessTokenResponse;
-import com.antdevrealm.housechaosmain.features.auth.web.dto.LoginRequest;
-import com.antdevrealm.housechaosmain.features.auth.web.dto.RegistrationRequest;
-import com.antdevrealm.housechaosmain.features.auth.web.dto.RegistrationResponse;
+import com.antdevrealm.housechaosmain.features.auth.web.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -27,23 +24,23 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegistrationResponse> register(@RequestBody @Valid RegistrationRequest req) {
-        RegistrationResponse registrationResponse = authService.register(req);
+    public ResponseEntity<UserResponseDTO> register(@RequestBody @Valid RegistrationRequestDTO req) {
+        UserResponseDTO userResponseDTO = authService.register(req);
 
-        URI uriLocation = URI.create("/users/" + registrationResponse.id());
+        URI uriLocation = URI.create("/users/" + userResponseDTO.id());
 
-        return ResponseEntity.created(uriLocation).body(registrationResponse);
+        return ResponseEntity.created(uriLocation).body(userResponseDTO);
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<AccessTokenResponse> login(@RequestBody LoginRequest req, HttpServletResponse res) {
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO req, HttpServletResponse res) {
         return ResponseEntity.ok(authService.login(req, res));
     }
 
     @PostMapping("/auth/refresh")
-    public ResponseEntity<AccessTokenResponse> refresh(HttpServletRequest req, HttpServletResponse res) {
-        AccessTokenResponse accessTokenResponse = authService.refreshToken(req, res);
-        return ResponseEntity.ok(accessTokenResponse);
+    public ResponseEntity<AccessTokenResponseDTO> refresh(HttpServletRequest req, HttpServletResponse res) {
+        AccessTokenResponseDTO accessTokenResponseDTO = authService.refreshToken(req, res);
+        return ResponseEntity.ok(accessTokenResponseDTO);
     }
     // mock protected endpoint for testing purposes
     @GetMapping("/protected")
