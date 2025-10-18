@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 public class AuthService {
@@ -101,8 +101,8 @@ public class AuthService {
         return null;
     }
 
-    private void setRefreshTokenCookie(HttpServletResponse res, String rawToken, LocalDateTime expiresAt) {
-        Duration cookieMaxAge = Duration.between(LocalDateTime.now(), expiresAt);
+    private void setRefreshTokenCookie(HttpServletResponse res, String rawToken, Instant expiresAt) {
+        Duration cookieMaxAge = Duration.between(Instant.now(), expiresAt);
         if(cookieMaxAge.isNegative()) {
             cookieMaxAge = Duration.ZERO;
         }
@@ -130,8 +130,8 @@ public class AuthService {
                 .password(this.passwordEncoder.encode(dto.password()))
                 .role(UserRole.USER)
                 .active(true)
-                .createdOn(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
     }
 

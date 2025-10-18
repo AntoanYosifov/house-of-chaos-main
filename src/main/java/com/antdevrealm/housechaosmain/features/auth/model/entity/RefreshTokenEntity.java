@@ -4,7 +4,7 @@ import com.antdevrealm.housechaosmain.features.user.model.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -27,12 +27,12 @@ public class RefreshTokenEntity {
     private String tokenHash;
 
     @Column(nullable = false)
-    private LocalDateTime expiresAt;
+    private Instant expiresAt;
 
     @Column(nullable = false)
     private boolean revoked = false;
 
     public boolean isActive() {
-        return !revoked && LocalDateTime.now().isBefore(expiresAt);
+        return !revoked && Instant.now().isBefore(expiresAt);
     }
 }

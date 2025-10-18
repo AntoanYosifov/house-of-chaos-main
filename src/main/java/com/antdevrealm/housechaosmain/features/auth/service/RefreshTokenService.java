@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Base64;
 
 @Service
@@ -40,7 +40,7 @@ public class RefreshTokenService {
         String raw = generateRawToken();
         String tokenHash = tokenHasher.hash(raw);
 
-        LocalDateTime expiresAt = LocalDateTime.now().plus(refreshTokenTtl);
+        Instant expiresAt = Instant.now().plus(refreshTokenTtl);
 
         RefreshTokenEntity tokenEntity = RefreshTokenEntity.builder()
                 .user(user)
@@ -52,7 +52,6 @@ public class RefreshTokenService {
         RefreshTokenEntity saved = tokenRepository.save(tokenEntity);
 
         return new CreatedRefreshToken(raw, saved.getId(), saved.getExpiresAt());
-
     }
 
     @Transactional

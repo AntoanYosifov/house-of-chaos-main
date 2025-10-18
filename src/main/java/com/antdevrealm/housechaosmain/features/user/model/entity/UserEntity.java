@@ -4,7 +4,7 @@ import com.antdevrealm.housechaosmain.features.user.model.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -36,8 +36,8 @@ public class UserEntity {
     private boolean active;
 
     @Column(nullable = false)
-    private LocalDateTime createdOn;
+    private Instant createdOn;
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 }
