@@ -24,8 +24,11 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final List<RequestMatcher> EXCLUDED_PATHS = List.of(
-            new AntPathRequestMatcher("/users/register"),
-            new AntPathRequestMatcher("/users/login")
+            new AntPathRequestMatcher("/api/users/register"),
+            new AntPathRequestMatcher("/api/users/auth/login"),
+            new AntPathRequestMatcher("/api/users/auth/logout"),
+            new AntPathRequestMatcher("/api/users/auth/refresh")
+
     );
 
     private final JwtService jwtService;

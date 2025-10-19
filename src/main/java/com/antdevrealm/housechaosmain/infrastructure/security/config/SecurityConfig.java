@@ -37,8 +37,10 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e.authenticationEntryPoint(restEntryPoint))
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(a ->
-                        a.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                .requestMatchers("/api/users/register", "/api/users/auth/login", "/api/users/auth/refresh", "/error").permitAll()
+                        a.requestMatchers(HttpMethod.OPTIONS, "/**")
+                                .permitAll()
+                                .requestMatchers("/api/users/register", "/api/users/auth/login", "/api/users/auth/logout", "/api/users/auth/refresh", "/error")
+                                .permitAll()
                                 .anyRequest().authenticated())
                 .userDetailsService(hocUserDetailsService)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

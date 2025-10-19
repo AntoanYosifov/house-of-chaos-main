@@ -16,6 +16,7 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.UUID;
 
 @Service
 public class RefreshTokenService {
@@ -37,6 +38,7 @@ public class RefreshTokenService {
 
     @Transactional
     public CreatedRefreshToken create(UserEntity user) {
+        deleteByUserId(user.getId());
         String raw = generateRawToken();
         String tokenHash = tokenHasher.hash(raw);
 
@@ -54,17 +56,23 @@ public class RefreshTokenService {
         return new CreatedRefreshToken(raw, saved.getId(), saved.getExpiresAt());
     }
 
+    public void deleteByUserId(UUID userId) {
+        tokenRepository.deleteByUserId(userId);
+    }
+
+    @Transactional
+    public void deleteByTokenHash(String rawToken) {
+        String hash = tokenHasher.hash(rawToken);
+        tokenRepository.deleteByTokenHash(hash);
+    }
+
     @Transactional
     public RotationRefreshTokenResult rotateInPlace(String rawToken) {
-        if(rawToken == null || rawToken.isBlank()) {
-            throw new RefreshTokenInvalidException();
-        }
-
         String currentHash = tokenHasher.hash(rawToken);
         RefreshTokenEntity refreshTokenEntity = tokenRepository.findByTokenHash(currentHash)
                 .orElseThrow(RefreshTokenInvalidException::new);
 
-        if(!refreshTokenEntity.isActive()) {
+        if (!refreshTokenEntity.isActive()) {
             throw new RefreshTokenInvalidException();
         }
 

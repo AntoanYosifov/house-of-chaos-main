@@ -1,5 +1,6 @@
 package com.antdevrealm.housechaosmain.features.auth.service;
 
+import com.antdevrealm.housechaosmain.features.auth.exception.RefreshTokenInvalidException;
 import com.antdevrealm.housechaosmain.features.auth.model.dto.CreatedRefreshToken;
 import com.antdevrealm.housechaosmain.features.auth.model.dto.RotationRefreshTokenResult;
 import com.antdevrealm.housechaosmain.features.auth.web.dto.*;
@@ -12,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +20,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -74,10 +73,20 @@ public class AuthService {
 
     }
 
-    public AccessTokenResponseDTO refreshToken(HttpServletRequest req, HttpServletResponse res) {
-        String rawToken = readCookie(req);
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        String rawToken = getRawTokenFromCookie(request);
         if(rawToken == null || rawToken.isBlank()) {
-            throw unauthorized();
+            throw new RefreshTokenInvalidException();
+        }
+
+        this.refreshTokenService.deleteByTokenHash(rawToken);
+        clearRefreshCookie(response);
+    }
+
+    public AccessTokenResponseDTO refreshToken(HttpServletRequest req, HttpServletResponse res) {
+        String rawToken = getRawTokenFromCookie(req);
+        if(rawToken == null || rawToken.isBlank()) {
+            throw new RefreshTokenInvalidException();
         }
 
         RotationRefreshTokenResult rotationRefreshTokenResult = refreshTokenService.rotateInPlace(rawToken);
@@ -88,7 +97,7 @@ public class AuthService {
         return new AccessTokenResponseDTO(accessToken, "Bearer", jwtService.ttlSeconds());
     }
 
-    private String readCookie(HttpServletRequest req) {
+    private String getRawTokenFromCookie(HttpServletRequest req) {
         if(req.getCookies() == null) {
             return null;
         }
@@ -116,6 +125,17 @@ public class AuthService {
         res.addHeader("Set-Cookie", refreshTokenCookie.toString());
     }
 
+    private void clearRefreshCookie(HttpServletResponse res) {
+        ResponseCookie cleared = ResponseCookie.from(REFRESH_COOKIE, "")
+                .httpOnly(true)
+                .secure(refreshCookieSecure)
+                .sameSite("Lax")
+                .path("/api/users/auth")
+                .maxAge(Duration.ZERO)
+                .build();
+        res.addHeader("Set-Cookie", cleared.toString());
+    }
+
     private static UserResponseDTO mapToUserResponseDto(UserEntity savedEntity) {
         return new UserResponseDTO(savedEntity.getId(),
                 savedEntity.getEmail(),
@@ -133,10 +153,5 @@ public class AuthService {
                 .createdOn(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
-    }
-
-    //TODO: Create and throw custom exception and handle it in a ControllerAdvice to map to 401
-    private ResponseStatusException unauthorized() {
-        return new ResponseStatusException(HttpStatus.UNAUTHORIZED);
     }
 }

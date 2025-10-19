@@ -36,6 +36,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(req, res));
     }
 
+    @PostMapping("/auth/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest req, HttpServletResponse res) {
+        this.authService.logout(req, res);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/auth/refresh")
     public ResponseEntity<AccessTokenResponseDTO> refresh(HttpServletRequest req, HttpServletResponse res) {
         AccessTokenResponseDTO accessTokenResponseDTO = authService.refreshToken(req, res);
