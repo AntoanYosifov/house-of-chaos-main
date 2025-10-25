@@ -70,10 +70,10 @@ public class RefreshTokenService {
     public RotationRefreshTokenResult rotateInPlace(String rawToken) {
         String currentHash = tokenHasher.hash(rawToken);
         RefreshTokenEntity refreshTokenEntity = tokenRepository.findByTokenHash(currentHash)
-                .orElseThrow(RefreshTokenInvalidException::new);
+                .orElseThrow(() -> new RefreshTokenInvalidException("Refresh token not found"));
 
         if (!refreshTokenEntity.isActive()) {
-            throw new RefreshTokenInvalidException();
+            throw new RefreshTokenInvalidException("Refresh token is revoked or expired");
         }
 
         String newRaw = generateRawToken();

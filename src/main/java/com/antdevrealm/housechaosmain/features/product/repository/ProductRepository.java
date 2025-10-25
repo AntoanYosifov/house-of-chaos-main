@@ -1,6 +1,6 @@
 package com.antdevrealm.housechaosmain.features.product.repository;
 
-import com.antdevrealm.housechaosmain.features.product.model.entity.ProductEntity;
+import com.antdevrealm.housechaosmain.features.product.model.ProductEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

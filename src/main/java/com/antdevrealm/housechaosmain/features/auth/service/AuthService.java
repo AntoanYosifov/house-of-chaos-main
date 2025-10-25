@@ -76,7 +76,7 @@ public class AuthService {
     public void logout(HttpServletRequest request, HttpServletResponse response) {
         String rawToken = getRawTokenFromCookie(request);
         if(rawToken == null || rawToken.isBlank()) {
-            throw new RefreshTokenInvalidException();
+            throw new RefreshTokenInvalidException("Refresh token is invalid");
         }
 
         this.refreshTokenService.deleteByTokenHash(rawToken);
@@ -86,7 +86,7 @@ public class AuthService {
     public AccessTokenResponseDTO refreshToken(HttpServletRequest req, HttpServletResponse res) {
         String rawToken = getRawTokenFromCookie(req);
         if(rawToken == null || rawToken.isBlank()) {
-            throw new RefreshTokenInvalidException();
+            throw new RefreshTokenInvalidException("Refresh token is invalid");
         }
 
         RotationRefreshTokenResult rotationRefreshTokenResult = refreshTokenService.rotateInPlace(rawToken);

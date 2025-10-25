@@ -1,7 +1,7 @@
 package com.antdevrealm.housechaosmain.features.cart.model.entity;
 
 
-import com.antdevrealm.housechaosmain.features.product.model.entity.ProductEntity;
+import com.antdevrealm.housechaosmain.features.product.model.ProductEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

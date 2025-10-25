@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.features.product.model.entity;
+package com.antdevrealm.housechaosmain.features.product.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,14 +19,16 @@ public class ProductEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String description;
 
     @Column(nullable = false)
     private BigDecimal price;
+
+    private int quantity;
 
     @Column(nullable = false)
     private String imageUrl;
