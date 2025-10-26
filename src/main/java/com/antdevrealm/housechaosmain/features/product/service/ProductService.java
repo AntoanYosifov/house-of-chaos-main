@@ -3,6 +3,7 @@ package com.antdevrealm.housechaosmain.features.product.service;
 import com.antdevrealm.housechaosmain.advice.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.features.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.features.product.repository.ProductRepository;
+import com.antdevrealm.housechaosmain.features.product.web.dto.CreateProductDTO;
 import com.antdevrealm.housechaosmain.features.product.web.dto.ProductResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,9 +19,10 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public ProductEntity create(ProductEntity product) {
-        ProductEntity saved = this.productRepository.save(product);
-        return saved;
+    public ProductResponseDTO create(CreateProductDTO productDTO) {
+        ProductEntity productEntity = mapToEntity(productDTO);
+        ProductEntity saved = this.productRepository.save(productEntity);
+        return mapToResponseDto(saved);
     }
 
     public ProductResponseDTO getById(UUID id) {
@@ -30,11 +32,22 @@ public class ProductService {
     }
 
     private ProductResponseDTO mapToResponseDto(ProductEntity productEntity) {
-        return new ProductResponseDTO(productEntity.getId(),
+        return new ProductResponseDTO(
+                productEntity.getId(),
                 productEntity.getName(),
                 productEntity.getDescription(),
                 productEntity.getPrice(),
                 productEntity.getQuantity(),
-                productEntity.getImageUrl());
+                productEntity.getImageUrl()
+        );
+    }
+
+    private ProductEntity mapToEntity(CreateProductDTO createProductDTO) {
+        return ProductEntity.builder()
+                .name(createProductDTO.name())
+                .description(createProductDTO.description())
+                .price(createProductDTO.price())
+                .quantity(createProductDTO.quantity())
+                .imageUrl(createProductDTO.imgUrl()).build();
     }
 }

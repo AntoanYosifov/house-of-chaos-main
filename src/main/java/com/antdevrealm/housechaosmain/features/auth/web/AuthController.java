@@ -26,14 +26,15 @@ public class AuthController {
     public ResponseEntity<UserResponseDTO> register(@RequestBody @Valid RegistrationRequestDTO req) {
         UserResponseDTO userResponseDTO = authService.register(req);
 
-        URI uriLocation = URI.create("/users/" + userResponseDTO.id());
+        URI uriLocation = URI.create("/api/users/" + userResponseDTO.id());
 
         return ResponseEntity.created(uriLocation).body(userResponseDTO);
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO req, HttpServletResponse res) {
-        return ResponseEntity.ok(authService.login(req, res));
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO req, HttpServletResponse res) {
+        LoginResponseDTO loginResponseDTO = authService.login(req, res);
+        return ResponseEntity.ok(loginResponseDTO);
     }
 
     @PostMapping("/auth/logout")

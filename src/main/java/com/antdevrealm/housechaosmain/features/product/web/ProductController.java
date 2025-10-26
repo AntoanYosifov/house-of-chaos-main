@@ -1,14 +1,14 @@
 package com.antdevrealm.housechaosmain.features.product.web;
 
 import com.antdevrealm.housechaosmain.features.product.service.ProductService;
+import com.antdevrealm.housechaosmain.features.product.web.dto.CreateProductDTO;
 import com.antdevrealm.housechaosmain.features.product.web.dto.ProductResponseDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.UUID;
 
 @RestController
@@ -25,5 +25,12 @@ public class ProductController {
     public ResponseEntity<ProductResponseDTO> getById(@PathVariable UUID id) {
         ProductResponseDTO productById = productService.getById(id);
         return ResponseEntity.ok(productById);
+    }
+
+    @PostMapping
+    public ResponseEntity<ProductResponseDTO> create(@RequestBody @Valid CreateProductDTO productDTO) {
+        ProductResponseDTO productResponseDTO = productService.create(productDTO);
+        URI uriLocation = URI.create("/api/products/" + productResponseDTO.id());
+        return ResponseEntity.created(uriLocation).body(productResponseDTO);
     }
 }
