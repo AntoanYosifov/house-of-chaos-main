@@ -1,5 +1,6 @@
 package com.antdevrealm.housechaosmain.features.product.model;
 
+import com.antdevrealm.housechaosmain.features.category.model.CategoryEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +25,9 @@ public class ProductEntity {
 
     @Column(nullable = false, length = 1000)
     private String description;
+
+    @ManyToOne(optional = false)
+    private CategoryEntity category;
 
     @Column(nullable = false)
     private BigDecimal price;
