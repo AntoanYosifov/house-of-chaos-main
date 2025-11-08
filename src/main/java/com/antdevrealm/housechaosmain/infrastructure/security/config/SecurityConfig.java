@@ -40,6 +40,7 @@ public class SecurityConfig {
                         a.requestMatchers(HttpMethod.OPTIONS, "/**")
                                 .permitAll()
                                 .requestMatchers(
+                                        "/images/**",
                                         "/api/products/**", // Allow endpoint for development and testing. Restrict in prod
                                         "/api/users/register",
                                         "/api/users/auth/login",
