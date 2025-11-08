@@ -23,7 +23,7 @@ public class CartEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(optional = false)
+    @OneToOne(optional = false)
     private UserEntity owner;
 
     @OneToMany(mappedBy = "cart")

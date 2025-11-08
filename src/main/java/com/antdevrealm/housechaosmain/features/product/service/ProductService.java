@@ -3,6 +3,7 @@ package com.antdevrealm.housechaosmain.features.product.service;
 import com.antdevrealm.housechaosmain.advice.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.features.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.features.product.repository.ProductRepository;
+import com.antdevrealm.housechaosmain.features.product.util.ImgUrlExpander;
 import com.antdevrealm.housechaosmain.features.product.web.dto.CreateProductDTO;
 import com.antdevrealm.housechaosmain.features.product.web.dto.ProductResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +14,12 @@ import java.util.UUID;
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
+    private final ImgUrlExpander imgUrlExpander;
 
     @Autowired
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, ImgUrlExpander imgUrlExpander) {
         this.productRepository = productRepository;
+        this.imgUrlExpander = imgUrlExpander;
     }
 
     public ProductResponseDTO create(CreateProductDTO productDTO) {
@@ -38,7 +41,7 @@ public class ProductService {
                 productEntity.getDescription(),
                 productEntity.getPrice(),
                 productEntity.getQuantity(),
-                productEntity.getImageUrl()
+                imgUrlExpander.toPublicUrl(productEntity.getImageUrl())
         );
     }
 

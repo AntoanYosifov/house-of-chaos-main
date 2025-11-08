@@ -1,6 +1,5 @@
 package com.antdevrealm.housechaosmain.features.category.model;
 
-import com.antdevrealm.housechaosmain.features.category.enums.CategoryName;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,8 +19,7 @@ public class CategoryEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private CategoryName name;
+    @Column(nullable = false, unique = true)
+    private String name;
 
 }

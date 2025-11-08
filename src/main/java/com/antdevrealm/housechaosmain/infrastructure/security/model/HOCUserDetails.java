@@ -22,6 +22,5 @@ public class HOCUserDetails extends User {
 
         this.id = id;
         this.email = email;
-
     }
 }
