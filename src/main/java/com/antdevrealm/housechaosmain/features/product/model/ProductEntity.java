@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -36,4 +37,7 @@ public class ProductEntity {
 
     @Column(nullable = false)
     private String imageUrl;
+
+    @Column(nullable = false)
+    private Instant createdOn;
 }
