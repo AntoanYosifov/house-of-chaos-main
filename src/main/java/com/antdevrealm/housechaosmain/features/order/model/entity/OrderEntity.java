@@ -2,7 +2,7 @@ package com.antdevrealm.housechaosmain.features.order.model.entity;
 
 
 import com.antdevrealm.housechaosmain.features.order.model.enums.OrderStatus;
-import com.antdevrealm.housechaosmain.features.user.model.entity.UserEntity;
+import com.antdevrealm.housechaosmain.features.user.model.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

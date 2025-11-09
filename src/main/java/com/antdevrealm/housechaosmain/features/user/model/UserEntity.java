@@ -1,10 +1,12 @@
-package com.antdevrealm.housechaosmain.features.user.model.entity;
+package com.antdevrealm.housechaosmain.features.user.model;
 
-import com.antdevrealm.housechaosmain.features.user.model.enums.UserRole;
+import com.antdevrealm.housechaosmain.features.role.model.entity.RoleEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -27,13 +29,12 @@ public class UserEntity {
     @Column(nullable = false)
     private String password;
 
-    private String username;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private UserRole role;
-
-    private boolean active;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<RoleEntity> roles;
 
     @Column(nullable = false)
     private Instant createdOn;

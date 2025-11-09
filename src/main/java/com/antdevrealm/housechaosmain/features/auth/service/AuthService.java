@@ -4,8 +4,9 @@ import com.antdevrealm.housechaosmain.features.auth.exception.RefreshTokenInvali
 import com.antdevrealm.housechaosmain.features.auth.model.dto.CreatedRefreshToken;
 import com.antdevrealm.housechaosmain.features.auth.model.dto.RotationRefreshTokenResult;
 import com.antdevrealm.housechaosmain.features.auth.web.dto.*;
-import com.antdevrealm.housechaosmain.features.user.model.entity.UserEntity;
-import com.antdevrealm.housechaosmain.features.user.model.enums.UserRole;
+import com.antdevrealm.housechaosmain.features.role.service.RoleService;
+import com.antdevrealm.housechaosmain.features.user.model.UserEntity;
+import com.antdevrealm.housechaosmain.features.role.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.features.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.infrastructure.security.jwt.service.JwtService;
 import jakarta.servlet.http.Cookie;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashSet;
 
 @Service
 public class AuthService {
@@ -31,6 +33,7 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
@@ -39,10 +42,11 @@ public class AuthService {
     private boolean refreshCookieSecure;
 
     @Autowired
-    public AuthService (AuthenticationManager authenticationManager, JwtService jwtService, UserRepository userRepository, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService) {
+    public AuthService (AuthenticationManager authenticationManager, JwtService jwtService, UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.roleService = roleService;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenService = refreshTokenService;
     }
@@ -52,6 +56,7 @@ public class AuthService {
     public UserResponseDTO register(RegistrationRequestDTO dto) {
 
         UserEntity newEntity = mapToEntity(dto);
+        newEntity.getRoles().add(this.roleService.getByRole(UserRole.USER));
         UserEntity savedEntity = userRepository.save(newEntity);
 
         return mapToUserResponseDto(savedEntity);
@@ -139,7 +144,6 @@ public class AuthService {
     private static UserResponseDTO mapToUserResponseDto(UserEntity savedEntity) {
         return new UserResponseDTO(savedEntity.getId(),
                 savedEntity.getEmail(),
-                savedEntity.isActive(),
                 savedEntity.getCreatedOn(),
                 savedEntity.getUpdatedAt());
     }
@@ -148,8 +152,7 @@ public class AuthService {
         return UserEntity.builder()
                 .email(dto.email())
                 .password(this.passwordEncoder.encode(dto.password()))
-                .role(UserRole.USER)
-                .active(true)
+                .roles(new HashSet<>())
                 .createdOn(Instant.now())
                 .updatedAt(Instant.now())
                 .build();

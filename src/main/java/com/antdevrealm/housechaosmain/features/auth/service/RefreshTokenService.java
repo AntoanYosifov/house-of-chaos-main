@@ -6,7 +6,7 @@ import com.antdevrealm.housechaosmain.features.auth.model.dto.RotationRefreshTok
 import com.antdevrealm.housechaosmain.features.auth.model.entity.RefreshTokenEntity;
 import com.antdevrealm.housechaosmain.features.auth.repository.RefreshTokenRepository;
 import com.antdevrealm.housechaosmain.features.auth.util.TokenHasher;
-import com.antdevrealm.housechaosmain.features.user.model.entity.UserEntity;
+import com.antdevrealm.housechaosmain.features.user.model.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;

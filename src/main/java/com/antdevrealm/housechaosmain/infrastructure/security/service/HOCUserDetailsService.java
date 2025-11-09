@@ -1,9 +1,10 @@
 package com.antdevrealm.housechaosmain.infrastructure.security.service;
 
-import com.antdevrealm.housechaosmain.features.user.model.entity.UserEntity;
+import com.antdevrealm.housechaosmain.features.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.features.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.infrastructure.security.model.HOCUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,12 +28,16 @@ public class HOCUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User with email: " + username + " not found!"));
 
         return mapToUserDetails(userEntity);
-
     }
 
     private UserDetails mapToUserDetails(UserEntity userEntity) {
-        return new HOCUserDetails(
-                userEntity.getEmail(), userEntity.getPassword(), List.of(), userEntity.getId(), userEntity.getEmail()
-        );
+
+        List<SimpleGrantedAuthority> authorities = userEntity.getRoles().stream()
+                .map(roleEntity -> {
+                    String name = "ROLE_" + roleEntity.getRole().name();
+                    return new SimpleGrantedAuthority(name);
+                }).toList();
+
+        return new HOCUserDetails(userEntity.getId(), userEntity.getEmail(), userEntity.getPassword(), authorities);
     }
 }

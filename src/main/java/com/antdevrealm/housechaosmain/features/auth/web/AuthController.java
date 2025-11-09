@@ -2,11 +2,13 @@ package com.antdevrealm.housechaosmain.features.auth.web;
 
 import com.antdevrealm.housechaosmain.features.auth.service.AuthService;
 import com.antdevrealm.housechaosmain.features.auth.web.dto.*;
+import com.antdevrealm.housechaosmain.infrastructure.security.model.HOCUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -50,7 +52,7 @@ public class AuthController {
     }
     // mock protected endpoint for testing purposes
     @GetMapping("/protected")
-    public String getProtected() {
+    public String getProtected(@AuthenticationPrincipal HOCUserDetails principal) {
         return "You got here";
     }
 

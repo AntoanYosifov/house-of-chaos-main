@@ -5,6 +5,9 @@ import com.antdevrealm.housechaosmain.features.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.features.category.repository.CategoryRepository;
 import com.antdevrealm.housechaosmain.features.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.features.product.repository.ProductRepository;
+import com.antdevrealm.housechaosmain.features.role.model.entity.RoleEntity;
+import com.antdevrealm.housechaosmain.features.role.model.enums.UserRole;
+import com.antdevrealm.housechaosmain.features.role.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -14,21 +17,36 @@ import java.time.Instant;
 import java.util.List;
 
 @Component
-public class productSeeder implements CommandLineRunner {
+public class dataBaseSeeder implements CommandLineRunner {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final RoleRepository roleRepository;
 
     private final List<String> categoryNames = List.of("chair", "table", "couch", "lamp");
 
     @Autowired
-    public productSeeder(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public dataBaseSeeder(ProductRepository productRepository, CategoryRepository categoryRepository, RoleRepository roleRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
+
+        if (this.roleRepository.count() == 0) {
+            List<RoleEntity> roles = List.of(
+                    RoleEntity.builder()
+                            .role(UserRole.USER)
+                            .build(),
+                    RoleEntity.builder()
+                            .role(UserRole.ADMIN)
+                            .build()
+            );
+
+            this.roleRepository.saveAll(roles);
+        }
 
         if (this.categoryRepository.count() == 0) {
             categoryNames.forEach(name -> this.categoryRepository.save(CategoryEntity.builder().name(name).build()));
@@ -138,7 +156,7 @@ public class productSeeder implements CommandLineRunner {
                         .imageUrl("/images/chairs/chair-10.jpg")
                         .createdOn(Instant.now())
                         .build()
-                );
+        );
         this.productRepository.saveAll(chairs);
     }
 
@@ -237,7 +255,7 @@ public class productSeeder implements CommandLineRunner {
                         .imageUrl("/images/tables/table-10.jpg")
                         .createdOn(Instant.now())
                         .build()
-                );
+        );
 
         this.productRepository.saveAll(tables);
     }
@@ -437,7 +455,7 @@ public class productSeeder implements CommandLineRunner {
                         .imageUrl("/images/lamps/lamp-10.jpg")
                         .createdOn(Instant.now())
                         .build()
-                );
+        );
 
         this.productRepository.saveAll(lamps);
     }
