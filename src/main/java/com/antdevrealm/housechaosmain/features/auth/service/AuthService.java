@@ -4,6 +4,7 @@ import com.antdevrealm.housechaosmain.features.auth.exception.RefreshTokenInvali
 import com.antdevrealm.housechaosmain.features.auth.model.dto.CreatedRefreshToken;
 import com.antdevrealm.housechaosmain.features.auth.model.dto.RotationRefreshTokenResult;
 import com.antdevrealm.housechaosmain.features.auth.web.dto.*;
+import com.antdevrealm.housechaosmain.features.role.model.entity.RoleEntity;
 import com.antdevrealm.housechaosmain.features.role.service.RoleService;
 import com.antdevrealm.housechaosmain.features.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.features.role.model.enums.UserRole;
@@ -24,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashSet;
+import java.util.List;
 
 @Service
 public class AuthService {
@@ -142,17 +143,19 @@ public class AuthService {
     }
 
     private static UserResponseDTO mapToUserResponseDto(UserEntity savedEntity) {
+        List<UserRole> roles = savedEntity.getRoles().stream().map(RoleEntity::getRole).toList();
+
         return new UserResponseDTO(savedEntity.getId(),
                 savedEntity.getEmail(),
                 savedEntity.getCreatedOn(),
-                savedEntity.getUpdatedAt());
+                savedEntity.getUpdatedAt(),
+                roles);
     }
 
     private UserEntity mapToEntity(RegistrationRequestDTO dto) {
         return UserEntity.builder()
                 .email(dto.email())
                 .password(this.passwordEncoder.encode(dto.password()))
-                .roles(new HashSet<>())
                 .createdOn(Instant.now())
                 .updatedAt(Instant.now())
                 .build();

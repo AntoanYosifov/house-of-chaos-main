@@ -27,5 +27,6 @@ public class CartEntity {
     private UserEntity owner;
 
     @OneToMany(mappedBy = "cart")
+    @Builder.Default
     private List<CartItemEntity> items = new ArrayList<>();
 }

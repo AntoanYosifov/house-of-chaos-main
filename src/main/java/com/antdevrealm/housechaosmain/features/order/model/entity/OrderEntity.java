@@ -43,5 +43,6 @@ public class OrderEntity {
     private BigDecimal total;
 
     @OneToMany(mappedBy = "order")
+    @Builder.Default
     private List<OrderItemEntity> items = new ArrayList<>();
 }

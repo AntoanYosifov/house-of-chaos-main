@@ -30,6 +30,7 @@ public class RefreshTokenEntity {
     private Instant expiresAt;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean revoked = false;
 
     public boolean isActive() {
