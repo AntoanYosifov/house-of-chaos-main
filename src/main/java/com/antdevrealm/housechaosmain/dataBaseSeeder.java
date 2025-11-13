@@ -1,13 +1,13 @@
 package com.antdevrealm.housechaosmain;
 
-import com.antdevrealm.housechaosmain.advice.ResourceNotFoundException;
-import com.antdevrealm.housechaosmain.features.category.model.CategoryEntity;
-import com.antdevrealm.housechaosmain.features.category.repository.CategoryRepository;
-import com.antdevrealm.housechaosmain.features.product.model.ProductEntity;
-import com.antdevrealm.housechaosmain.features.product.repository.ProductRepository;
-import com.antdevrealm.housechaosmain.features.role.model.entity.RoleEntity;
-import com.antdevrealm.housechaosmain.features.role.model.enums.UserRole;
-import com.antdevrealm.housechaosmain.features.role.repository.RoleRepository;
+import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
+import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
+import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
+import com.antdevrealm.housechaosmain.product.model.ProductEntity;
+import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
+import com.antdevrealm.housechaosmain.role.model.entity.RoleEntity;
+import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
+import com.antdevrealm.housechaosmain.role.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
