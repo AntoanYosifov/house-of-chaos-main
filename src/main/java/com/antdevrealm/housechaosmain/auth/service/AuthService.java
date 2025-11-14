@@ -9,12 +9,12 @@ import com.antdevrealm.housechaosmain.auth.web.dto.AccessTokenResponseDTO;
 import com.antdevrealm.housechaosmain.auth.web.dto.LoginRequestDTO;
 import com.antdevrealm.housechaosmain.auth.web.dto.LoginResponseDTO;
 import com.antdevrealm.housechaosmain.auth.web.dto.RegistrationRequestDTO;
-import com.antdevrealm.housechaosmain.role.model.entity.RoleEntity;
 import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.role.service.RoleService;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.user.web.dto.UserResponseDTO;
+import com.antdevrealm.housechaosmain.util.UserResponseDTOMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 
 @Service
 public class AuthService {
@@ -65,7 +64,7 @@ public class AuthService {
         newEntity.getRoles().add(this.roleService.getByRole(UserRole.USER));
         UserEntity savedEntity = userRepository.save(newEntity);
 
-        return mapToUserResponseDto(savedEntity);
+        return UserResponseDTOMapper.mapToUserResponseDTO(savedEntity);
     }
 
     public LoginResponseDTO login(LoginRequestDTO req, HttpServletResponse res) {
@@ -80,7 +79,7 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user.getEmail());
 
         AccessTokenResponseDTO tokenResponseDTO = new AccessTokenResponseDTO(accessToken, "Bearer", jwtService.ttlSeconds());
-        return new LoginResponseDTO(tokenResponseDTO, mapToUserResponseDto(user));
+        return new LoginResponseDTO(tokenResponseDTO, UserResponseDTOMapper.mapToUserResponseDTO(user));
 
     }
 
@@ -147,15 +146,6 @@ public class AuthService {
         res.addHeader("Set-Cookie", cleared.toString());
     }
 
-    private static UserResponseDTO mapToUserResponseDto(UserEntity savedEntity) {
-        List<UserRole> roles = savedEntity.getRoles().stream().map(RoleEntity::getRole).toList();
-
-        return new UserResponseDTO(savedEntity.getId(),
-                savedEntity.getEmail(),
-                savedEntity.getCreatedOn(),
-                savedEntity.getUpdatedAt(),
-                roles);
-    }
 
     private UserEntity mapToEntity(RegistrationRequestDTO dto) {
         return UserEntity.builder()
