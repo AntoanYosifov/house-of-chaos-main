@@ -1,6 +1,7 @@
 package com.antdevrealm.housechaosmain.order.model.entity;
 
 
+import com.antdevrealm.housechaosmain.address.model.AddressEntity;
 import com.antdevrealm.housechaosmain.order.model.enums.OrderStatus;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import jakarta.persistence.*;
@@ -45,4 +46,7 @@ public class OrderEntity {
     @OneToMany(mappedBy = "order")
     @Builder.Default
     private List<OrderItemEntity> items = new ArrayList<>();
+
+    @ManyToOne(optional = false)
+    private AddressEntity shippingAddress;
 }

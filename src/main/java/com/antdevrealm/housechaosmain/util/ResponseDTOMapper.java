@@ -25,6 +25,9 @@ public class ResponseDTOMapper {
     }
 
     public static AddressResponseDTO mapToAddressResponseDTO(AddressEntity addressEntity) {
+        if(addressEntity == null) {
+            return null;
+        }
         return new AddressResponseDTO(addressEntity.getId(),
                 addressEntity.getCountry(),
                 addressEntity.getCity(),
