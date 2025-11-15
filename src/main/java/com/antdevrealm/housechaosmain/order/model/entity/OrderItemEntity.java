@@ -1,6 +1,7 @@
 package com.antdevrealm.housechaosmain.order.model.entity;
 
 
+import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,11 +24,8 @@ public class OrderItemEntity {
     @ManyToOne(optional = false)
     private OrderEntity order;
 
-    @Column(nullable = false)
-    private UUID productId;
-
-    @Column(nullable = false)
-    private String productName;
+    @ManyToOne(optional = false)
+    private ProductEntity product;
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal unitPrice;
