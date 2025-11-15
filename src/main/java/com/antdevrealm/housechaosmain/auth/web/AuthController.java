@@ -1,9 +1,12 @@
 package com.antdevrealm.housechaosmain.auth.web;
 
+import com.antdevrealm.housechaosmain.auth.dto.accesstoken.AccessTokenResponseDTO;
+import com.antdevrealm.housechaosmain.auth.dto.login.LoginRequestDTO;
+import com.antdevrealm.housechaosmain.auth.dto.login.LoginResponseDTO;
+import com.antdevrealm.housechaosmain.auth.dto.registration.RegistrationRequestDTO;
 import com.antdevrealm.housechaosmain.auth.model.HOCUserDetails;
 import com.antdevrealm.housechaosmain.auth.service.AuthService;
-import com.antdevrealm.housechaosmain.auth.web.dto.*;
-import com.antdevrealm.housechaosmain.user.web.dto.UserResponseDTO;
+import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;

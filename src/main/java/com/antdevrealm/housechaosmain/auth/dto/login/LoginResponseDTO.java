@@ -1,6 +1,7 @@
-package com.antdevrealm.housechaosmain.auth.web.dto;
+package com.antdevrealm.housechaosmain.auth.dto.login;
 
-import com.antdevrealm.housechaosmain.user.web.dto.UserResponseDTO;
+import com.antdevrealm.housechaosmain.auth.dto.accesstoken.AccessTokenResponseDTO;
+import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record LoginResponseDTO(

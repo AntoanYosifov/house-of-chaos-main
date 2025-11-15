@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.cart.model.entity;
+package com.antdevrealm.housechaosmain.cart.model;
 
 
 import com.antdevrealm.housechaosmain.user.model.UserEntity;

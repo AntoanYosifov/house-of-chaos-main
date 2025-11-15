@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.product.web.dto;
+package com.antdevrealm.housechaosmain.product.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;

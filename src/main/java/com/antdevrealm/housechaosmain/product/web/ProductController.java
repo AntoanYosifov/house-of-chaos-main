@@ -1,8 +1,8 @@
 package com.antdevrealm.housechaosmain.product.web;
 
 import com.antdevrealm.housechaosmain.product.service.ProductService;
-import com.antdevrealm.housechaosmain.product.web.dto.CreateProductRequestDTO;
-import com.antdevrealm.housechaosmain.product.web.dto.ProductResponseDTO;
+import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
+import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -3,8 +3,8 @@ package com.antdevrealm.housechaosmain.user.service;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
-import com.antdevrealm.housechaosmain.user.web.dto.UserResponseDTO;
-import com.antdevrealm.housechaosmain.util.UserResponseDTOMapper;
+import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
+import com.antdevrealm.housechaosmain.util.ResponseDTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +24,6 @@ public class UserService {
         UserEntity userEntity = this.userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("User with ID: %s not found!", userId)));
 
-        return UserResponseDTOMapper.mapToUserResponseDTO(userEntity);
+        return ResponseDTOMapper.mapToUserResponseDTO(userEntity);
     }
 }

@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.auth.web.dto;
+package com.antdevrealm.housechaosmain.auth.dto.login;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

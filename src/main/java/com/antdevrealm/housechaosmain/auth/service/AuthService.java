@@ -2,19 +2,19 @@ package com.antdevrealm.housechaosmain.auth.service;
 
 import com.antdevrealm.housechaosmain.auth.jwt.service.JwtService;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.exception.RefreshTokenInvalidException;
-import com.antdevrealm.housechaosmain.auth.refreshtoken.model.dto.CreatedRefreshTokenDTO;
-import com.antdevrealm.housechaosmain.auth.refreshtoken.model.dto.RotationRefreshTokenResultDTO;
+import com.antdevrealm.housechaosmain.auth.dto.refreshtoken.CreatedRefreshTokenDTO;
+import com.antdevrealm.housechaosmain.auth.dto.refreshtoken.RotationRefreshTokenResultDTO;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.service.RefreshTokenService;
-import com.antdevrealm.housechaosmain.auth.web.dto.AccessTokenResponseDTO;
-import com.antdevrealm.housechaosmain.auth.web.dto.LoginRequestDTO;
-import com.antdevrealm.housechaosmain.auth.web.dto.LoginResponseDTO;
-import com.antdevrealm.housechaosmain.auth.web.dto.RegistrationRequestDTO;
+import com.antdevrealm.housechaosmain.auth.dto.accesstoken.AccessTokenResponseDTO;
+import com.antdevrealm.housechaosmain.auth.dto.login.LoginRequestDTO;
+import com.antdevrealm.housechaosmain.auth.dto.login.LoginResponseDTO;
+import com.antdevrealm.housechaosmain.auth.dto.registration.RegistrationRequestDTO;
 import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.role.service.RoleService;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
-import com.antdevrealm.housechaosmain.user.web.dto.UserResponseDTO;
-import com.antdevrealm.housechaosmain.util.UserResponseDTOMapper;
+import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
+import com.antdevrealm.housechaosmain.util.ResponseDTOMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -64,7 +64,7 @@ public class AuthService {
         newEntity.getRoles().add(this.roleService.getByRole(UserRole.USER));
         UserEntity savedEntity = userRepository.save(newEntity);
 
-        return UserResponseDTOMapper.mapToUserResponseDTO(savedEntity);
+        return ResponseDTOMapper.mapToUserResponseDTO(savedEntity);
     }
 
     public LoginResponseDTO login(LoginRequestDTO req, HttpServletResponse res) {
@@ -79,7 +79,7 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user.getEmail());
 
         AccessTokenResponseDTO tokenResponseDTO = new AccessTokenResponseDTO(accessToken, "Bearer", jwtService.ttlSeconds());
-        return new LoginResponseDTO(tokenResponseDTO, UserResponseDTOMapper.mapToUserResponseDTO(user));
+        return new LoginResponseDTO(tokenResponseDTO, ResponseDTOMapper.mapToUserResponseDTO(user));
 
     }
 

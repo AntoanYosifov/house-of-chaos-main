@@ -1,10 +1,10 @@
 package com.antdevrealm.housechaosmain.auth.refreshtoken.service;
 
-import com.antdevrealm.housechaosmain.auth.refreshtoken.model.dto.CreatedRefreshTokenDTO;
-import com.antdevrealm.housechaosmain.auth.refreshtoken.model.entity.RefreshTokenEntity;
+import com.antdevrealm.housechaosmain.auth.dto.refreshtoken.CreatedRefreshTokenDTO;
+import com.antdevrealm.housechaosmain.auth.refreshtoken.model.RefreshTokenEntity;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.repository.RefreshTokenRepository;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.exception.RefreshTokenInvalidException;
-import com.antdevrealm.housechaosmain.auth.refreshtoken.model.dto.RotationRefreshTokenResultDTO;
+import com.antdevrealm.housechaosmain.auth.dto.refreshtoken.RotationRefreshTokenResultDTO;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.util.TokenHasher;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.product.web.dto;
+package com.antdevrealm.housechaosmain.product.dto;
 
 import java.math.BigDecimal;
 import java.util.UUID;

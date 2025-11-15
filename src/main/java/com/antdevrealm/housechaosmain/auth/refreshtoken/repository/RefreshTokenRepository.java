@@ -1,6 +1,6 @@
 package com.antdevrealm.housechaosmain.auth.refreshtoken.repository;
 
-import com.antdevrealm.housechaosmain.auth.refreshtoken.model.entity.RefreshTokenEntity;
+import com.antdevrealm.housechaosmain.auth.refreshtoken.model.RefreshTokenEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

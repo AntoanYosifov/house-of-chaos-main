@@ -2,7 +2,7 @@ package com.antdevrealm.housechaosmain.user.web;
 
 import com.antdevrealm.housechaosmain.auth.model.HOCUserDetails;
 import com.antdevrealm.housechaosmain.user.service.UserService;
-import com.antdevrealm.housechaosmain.user.web.dto.UserResponseDTO;
+import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

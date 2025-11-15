@@ -4,8 +4,8 @@ import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import com.antdevrealm.housechaosmain.product.util.ImgUrlExpander;
-import com.antdevrealm.housechaosmain.product.web.dto.CreateProductRequestDTO;
-import com.antdevrealm.housechaosmain.product.web.dto.ProductResponseDTO;
+import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
+import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

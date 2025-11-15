@@ -1,5 +1,6 @@
 package com.antdevrealm.housechaosmain.user.model;
 
+import com.antdevrealm.housechaosmain.address.model.AddressEntity;
 import com.antdevrealm.housechaosmain.role.model.entity.RoleEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,6 +27,12 @@ public class UserEntity {
 
     @Column(nullable = false)
     private String password;
+
+    private String firstName;
+    private String lastName;
+
+    @OneToOne
+    private AddressEntity address;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

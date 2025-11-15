@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.auth.refreshtoken.model.entity;
+package com.antdevrealm.housechaosmain.auth.refreshtoken.model;
 
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import jakarta.persistence.*;
