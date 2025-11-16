@@ -43,9 +43,9 @@ public class SecurityConfig {
                                         "/images/**",
                                         "/api/products/**", // Allow endpoint for development and testing. Restrict in prod
                                         "/api/users/register",
-                                        "/api/users/auth/login",
-                                        "/api/users/auth/logout",
-                                        "/api/users/auth/refresh",
+                                        "/api/auth/login",
+                                        "/api/auth/logout",
+                                        "/api/auth/refresh",
                                         "/error")
                                 .permitAll()
                                 .anyRequest().authenticated())
