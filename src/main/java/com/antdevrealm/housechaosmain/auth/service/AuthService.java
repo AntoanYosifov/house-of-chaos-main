@@ -1,19 +1,15 @@
 package com.antdevrealm.housechaosmain.auth.service;
 
-import com.antdevrealm.housechaosmain.auth.jwt.service.JwtService;
-import com.antdevrealm.housechaosmain.auth.refreshtoken.exception.RefreshTokenInvalidException;
-import com.antdevrealm.housechaosmain.auth.dto.refreshtoken.CreatedRefreshTokenDTO;
-import com.antdevrealm.housechaosmain.auth.dto.refreshtoken.RotationRefreshTokenResultDTO;
-import com.antdevrealm.housechaosmain.auth.refreshtoken.service.RefreshTokenService;
 import com.antdevrealm.housechaosmain.auth.dto.accesstoken.AccessTokenResponseDTO;
 import com.antdevrealm.housechaosmain.auth.dto.login.LoginRequestDTO;
 import com.antdevrealm.housechaosmain.auth.dto.login.LoginResponseDTO;
-import com.antdevrealm.housechaosmain.auth.dto.registration.RegistrationRequestDTO;
-import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
-import com.antdevrealm.housechaosmain.role.service.RoleService;
+import com.antdevrealm.housechaosmain.auth.dto.refreshtoken.CreatedRefreshTokenDTO;
+import com.antdevrealm.housechaosmain.auth.dto.refreshtoken.RotationRefreshTokenResultDTO;
+import com.antdevrealm.housechaosmain.auth.jwt.service.JwtService;
+import com.antdevrealm.housechaosmain.auth.refreshtoken.exception.RefreshTokenInvalidException;
+import com.antdevrealm.housechaosmain.auth.refreshtoken.service.RefreshTokenService;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
-import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import com.antdevrealm.housechaosmain.util.ResponseDTOMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,9 +20,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -38,8 +32,7 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
-    private final RoleService roleService;
-    private final PasswordEncoder passwordEncoder;
+
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
 
@@ -47,24 +40,14 @@ public class AuthService {
     private boolean refreshCookieSecure;
 
     @Autowired
-    public AuthService (AuthenticationManager authenticationManager, JwtService jwtService, UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService) {
+    public AuthService (AuthenticationManager authenticationManager,
+                        JwtService jwtService,
+                        UserRepository userRepository,
+                        RefreshTokenService refreshTokenService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
-        this.roleService = roleService;
-        this.passwordEncoder = passwordEncoder;
         this.refreshTokenService = refreshTokenService;
-    }
-
-    // TODO: check if email already exists
-    @Transactional
-    public UserResponseDTO register(RegistrationRequestDTO dto) {
-
-        UserEntity newEntity = mapToEntity(dto);
-        newEntity.getRoles().add(this.roleService.getByRole(UserRole.USER));
-        UserEntity savedEntity = userRepository.save(newEntity);
-
-        return ResponseDTOMapper.mapToUserResponseDTO(savedEntity);
     }
 
     public LoginResponseDTO login(LoginRequestDTO req, HttpServletResponse res) {
@@ -146,13 +129,4 @@ public class AuthService {
         res.addHeader("Set-Cookie", cleared.toString());
     }
 
-
-    private UserEntity mapToEntity(RegistrationRequestDTO dto) {
-        return UserEntity.builder()
-                .email(dto.email())
-                .password(this.passwordEncoder.encode(dto.password()))
-                .createdOn(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
-    }
 }
