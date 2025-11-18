@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.auth.dto.registration;
+package com.antdevrealm.housechaosmain.user.dto;
 
 import com.antdevrealm.housechaosmain.auth.web.validation.PasswordMatch;
 import jakarta.validation.constraints.Email;

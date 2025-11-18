@@ -9,7 +9,7 @@ import com.antdevrealm.housechaosmain.user.model.UserEntity;
 
 import java.util.List;
 
-public class ResponseDTOMapper {
+public final class ResponseDTOMapper {
 
     public static UserResponseDTO mapToUserResponseDTO(UserEntity userEntity) {
         List<UserRole> roles = userEntity.getRoles().stream().map(RoleEntity::getRole).toList();

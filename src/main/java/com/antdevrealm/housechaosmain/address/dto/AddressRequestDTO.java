@@ -1,6 +1,6 @@
 package com.antdevrealm.housechaosmain.address.dto;
 
-public record CreateAddressRequestDTO(
+public record AddressRequestDTO(
         String country,
         String city,
         int zip,

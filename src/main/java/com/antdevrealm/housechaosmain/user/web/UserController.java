@@ -1,7 +1,8 @@
 package com.antdevrealm.housechaosmain.user.web;
 
-import com.antdevrealm.housechaosmain.auth.dto.registration.RegistrationRequestDTO;
+import com.antdevrealm.housechaosmain.user.dto.RegistrationRequestDTO;
 import com.antdevrealm.housechaosmain.auth.model.HOCUserDetails;
+import com.antdevrealm.housechaosmain.user.dto.UpdateProfileRequestDTO;
 import com.antdevrealm.housechaosmain.user.service.UserService;
 import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import jakarta.validation.Valid;
@@ -34,6 +35,15 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<UserResponseDTO> profile(@AuthenticationPrincipal HOCUserDetails principal) {
         UserResponseDTO userResponseDTO = this.userService.getById(principal.getUserId());
+
+        return ResponseEntity.ok(userResponseDTO);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<UserResponseDTO> profile(@AuthenticationPrincipal HOCUserDetails principal,
+                                                   @RequestBody UpdateProfileRequestDTO req
+    ) {
+        UserResponseDTO userResponseDTO = this.userService.update(principal.getUserId(), req);
 
         return ResponseEntity.ok(userResponseDTO);
     }
