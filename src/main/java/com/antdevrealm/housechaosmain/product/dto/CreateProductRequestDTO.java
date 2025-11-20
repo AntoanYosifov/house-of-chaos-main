@@ -1,16 +1,28 @@
 package com.antdevrealm.housechaosmain.product.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.URL;
 
 import java.math.BigDecimal;
 
-public record CreateProductRequestDTO(@NotBlank String name,
-                                      @NotBlank @Size(min = 10, max = 1000) String description,
-                                      @Positive @Max(Integer.MAX_VALUE) BigDecimal price,
-                                      @Positive int quantity,
-                                      @URL String imgUrl) {
+public record CreateProductRequestDTO(
+        @NotBlank(message = "Name is required")
+        String name,
+
+        @NotBlank(message = "Description is required")
+        @Size(min = 10, max = 1000, message = "Description must be between {min} and {max} characters")
+        String description,
+
+        @NotNull(message = "Price is required")
+        @DecimalMin(value = "0.01",
+                message = "Price must be at least {value}")
+        BigDecimal price,
+
+        @NotNull(message = "Quantity is required")
+        @Min(value = 1, message = "Quantity must be at least {value}")
+        Integer quantity,
+
+        @NotBlank(message = "Image URL is required")
+        @URL(message = "Image URL must be a valid URL")
+        String imgUrl) {
 }
