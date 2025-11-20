@@ -13,6 +13,5 @@ public record AddressRequestDTO(
         @Min(value = 1, message = "Zip must be positive")
         Integer zip,
         @NotBlank(message = "Street is required")
-        String street
-) {
+        String street) {
 }
