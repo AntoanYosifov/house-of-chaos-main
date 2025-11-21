@@ -2,6 +2,8 @@ package com.antdevrealm.housechaosmain.config;
 
 import com.antdevrealm.housechaosmain.auth.jwt.handler.RestAuthenticationEntryPoint;
 import com.antdevrealm.housechaosmain.auth.service.HOCUserDetailsService;
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +17,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -65,6 +69,16 @@ public class SecurityConfig {
         SecretKeySpec originalKey = new SecretKeySpec(bytes, "HmacSHA256");
 
         return NimbusJwtDecoder.withSecretKey(originalKey).build();
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder() {
+        byte[] bytes = Base64.getDecoder().decode(secretKeyBase64);
+        SecretKeySpec originalKey = new SecretKeySpec(bytes, "HmacSHA256");
+
+        ImmutableSecret<SecurityContext> secret = new ImmutableSecret<>(originalKey);
+
+        return new NimbusJwtEncoder(secret);
     }
 
     @Bean
