@@ -30,7 +30,7 @@ public class HOCUserDetailsService implements UserDetailsService {
         return mapToUserDetails(userEntity);
     }
 
-    private UserDetails mapToUserDetails(UserEntity userEntity) {
+    private HOCUserDetails mapToUserDetails(UserEntity userEntity) {
 
         List<SimpleGrantedAuthority> authorities = userEntity.getRoles().stream()
                 .map(roleEntity -> {

@@ -6,6 +6,7 @@ import com.antdevrealm.housechaosmain.auth.dto.login.LoginResponseDTO;
 import com.antdevrealm.housechaosmain.auth.dto.refreshtoken.CreatedRefreshTokenDTO;
 import com.antdevrealm.housechaosmain.auth.dto.refreshtoken.RotationRefreshTokenResultDTO;
 import com.antdevrealm.housechaosmain.auth.jwt.service.JwtService;
+import com.antdevrealm.housechaosmain.auth.model.HOCUserDetails;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.exception.RefreshTokenInvalidException;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.service.RefreshTokenService;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
@@ -19,6 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +35,7 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final HOCUserDetailsService hocUserDetailsService;
 
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
@@ -42,16 +46,19 @@ public class AuthService {
     @Autowired
     public AuthService (AuthenticationManager authenticationManager,
                         JwtService jwtService,
-                        UserRepository userRepository,
+                        UserRepository userRepository, HOCUserDetailsService hocUserDetailsService,
                         RefreshTokenService refreshTokenService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.hocUserDetailsService = hocUserDetailsService;
         this.refreshTokenService = refreshTokenService;
     }
 
     public LoginResponseDTO login(LoginRequestDTO req, HttpServletResponse res) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.email(), req.password()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.email(), req.password()));
+
+        HOCUserDetails hocUserDetails = (HOCUserDetails) authentication.getPrincipal();
 
         UserEntity user = userRepository.findByEmail(req.email())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
@@ -59,7 +66,7 @@ public class AuthService {
         CreatedRefreshTokenDTO refreshToken = refreshTokenService.create(user);
         setRefreshTokenCookie(res, refreshToken.rawToken(), refreshToken.expiresAt());
 
-        String accessToken = jwtService.generateToken(user.getEmail());
+        String accessToken = jwtService.generateToken(hocUserDetails);
 
         AccessTokenResponseDTO tokenResponseDTO = new AccessTokenResponseDTO(accessToken, "Bearer", jwtService.ttlSeconds());
         return new LoginResponseDTO(tokenResponseDTO, ResponseDTOMapper.mapToUserResponseDTO(user));
@@ -84,8 +91,10 @@ public class AuthService {
 
         RotationRefreshTokenResultDTO rotationRefreshTokenResultDTO = refreshTokenService.rotateInPlace(rawToken);
 
+        HOCUserDetails userDetails = (HOCUserDetails) hocUserDetailsService.loadUserByUsername(rotationRefreshTokenResultDTO.userEmail());
+
         setRefreshTokenCookie(res, rotationRefreshTokenResultDTO.newRaw(), rotationRefreshTokenResultDTO.expiresAt());
-        String accessToken = jwtService.generateToken(rotationRefreshTokenResultDTO.userEmail());
+        String accessToken = jwtService.generateToken(userDetails);
 
         return new AccessTokenResponseDTO(accessToken, "Bearer", jwtService.ttlSeconds());
     }
