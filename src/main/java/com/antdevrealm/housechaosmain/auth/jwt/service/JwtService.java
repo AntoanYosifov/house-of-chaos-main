@@ -1,42 +1,51 @@
 package com.antdevrealm.housechaosmain.auth.jwt.service;
 
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.antdevrealm.housechaosmain.auth.model.HOCUserDetails;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
-import java.time.Duration;
 import java.time.Instant;
-import java.util.Date;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Service
 public class JwtService {
-    private final SecretKey secretKey;
-    private final JwtParser parser;
-    private final Duration ttl;
+    private final JwtEncoder jwtEncoder;
+    private final long ttlSeconds;
 
-    public JwtService(SecretKey secretKey, JwtParser parser, @Qualifier("jwtTtl") Duration ttl) {
-        this.secretKey = secretKey;
-        this.parser = parser;
-        this.ttl = ttl;
-    }
-
-    public String generateToken(String subject) {
-        var now = Instant.now();
-        return Jwts.builder()
-                .subject(subject)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plus(ttl)))
-                .signWith(secretKey, Jwts.SIG.HS256)
-                .compact();
-    }
-
-    public String extractSubjectFromToken(String token) {
-        return parser.parseSignedClaims(token).getPayload().getSubject();
+    @Autowired
+    public JwtService(JwtEncoder jwtEncoder,
+                     @Value("${security.jwt.ttl-seconds}") long ttlSeconds) {
+        this.jwtEncoder = jwtEncoder;
+        this.ttlSeconds = ttlSeconds;
     }
 
     public long ttlSeconds() {
-        return this.ttl.toSeconds();
+        return this.ttlSeconds;
+    }
+
+    public String generateToken(HOCUserDetails hocUserDetails) {
+        Instant now = Instant.now();
+
+        List<String> authorities = hocUserDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("self")
+                .issuedAt(now)
+                .expiresAt(now.plus(this.ttlSeconds, ChronoUnit.SECONDS))
+                .subject(hocUserDetails.getUsername())
+                .claim("authorities", authorities)
+                .claim("uid", hocUserDetails.getUserId().toString())
+                .build();
+
+        return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+
     }
 }
