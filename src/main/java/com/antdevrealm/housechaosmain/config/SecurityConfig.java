@@ -3,8 +3,8 @@ package com.antdevrealm.housechaosmain.config;
 import com.antdevrealm.housechaosmain.auth.jwt.handler.RestAuthenticationEntryPoint;
 import com.antdevrealm.housechaosmain.auth.service.HOCUserDetailsService;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
-import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -27,6 +28,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 import java.util.List;
@@ -40,8 +42,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSec,
                                            RestAuthenticationEntryPoint restEntryPoint,
-                                           HOCUserDetailsService hocUserDetailsService
-                                           ) throws Exception {
+                                           HOCUserDetailsService hocUserDetailsService,
+                                           OAuth2ResourceServerProperties oAuth2ResourceServerProperties) throws Exception {
         return httpSec.csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -61,26 +63,29 @@ public class SecurityConfig {
                                         "/error")
                                 .permitAll()
                                 .anyRequest().authenticated())
+                .oauth2ResourceServer(oauth2 ->
+                        oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .userDetailsService(hocUserDetailsService)
                 .build();
     }
 
     @Bean
-    public JwtDecoder jwtDecoder() {
+    public SecretKey jwtSecretKey() {
         byte[] bytes = Base64.getDecoder().decode(secretKeyBase64);
-        SecretKeySpec originalKey = new SecretKeySpec(bytes, "HmacSHA256");
-
-        return NimbusJwtDecoder.withSecretKey(originalKey).build();
+        return new SecretKeySpec(bytes, "HmacSHA256");
     }
 
     @Bean
-    public JwtEncoder jwtEncoder() {
-        byte[] bytes = Base64.getDecoder().decode(secretKeyBase64);
-        SecretKeySpec originalKey = new SecretKeySpec(bytes, "HmacSHA256");
+    public JwtDecoder jwtDecoder(SecretKey jwtSecretKey) {
+        return NimbusJwtDecoder
+                .withSecretKey(jwtSecretKey)
+                .macAlgorithm(MacAlgorithm.HS256)
+                .build();
+    }
 
-        ImmutableSecret<SecurityContext> secret = new ImmutableSecret<>(originalKey);
-
-        return new NimbusJwtEncoder(secret);
+    @Bean
+    public JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
+        return new NimbusJwtEncoder(new ImmutableSecret<>(jwtSecretKey));
     }
 
     @Bean

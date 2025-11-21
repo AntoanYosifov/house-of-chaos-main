@@ -1,17 +1,18 @@
 package com.antdevrealm.housechaosmain.user.web;
 
 import com.antdevrealm.housechaosmain.user.dto.RegistrationRequestDTO;
-import com.antdevrealm.housechaosmain.auth.model.HOCUserDetails;
 import com.antdevrealm.housechaosmain.user.dto.UpdateProfileRequestDTO;
-import com.antdevrealm.housechaosmain.user.service.UserService;
 import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
+import com.antdevrealm.housechaosmain.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -33,17 +34,21 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<UserResponseDTO> profile(@AuthenticationPrincipal HOCUserDetails principal) {
-        UserResponseDTO userResponseDTO = this.userService.getById(principal.getUserId());
+    public ResponseEntity<UserResponseDTO> profile(@AuthenticationPrincipal Jwt principal) {
+        String uid = principal.getClaimAsString("uid");
+        UUID userId = UUID.fromString(uid);
+
+        UserResponseDTO userResponseDTO = this.userService.getById(userId);
 
         return ResponseEntity.ok(userResponseDTO);
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<UserResponseDTO> profile(@AuthenticationPrincipal HOCUserDetails principal,
-                                                   @RequestBody UpdateProfileRequestDTO req
-    ) {
-        UserResponseDTO userResponseDTO = this.userService.update(principal.getUserId(), req);
+    public ResponseEntity<UserResponseDTO> profile(@AuthenticationPrincipal Jwt principal,
+                                                   @RequestBody UpdateProfileRequestDTO req) {
+        String uid = principal.getClaimAsString("uid");
+        UUID userId = UUID.fromString(uid);
+        UserResponseDTO userResponseDTO = this.userService.update(userId, req);
 
         return ResponseEntity.ok(userResponseDTO);
     }
