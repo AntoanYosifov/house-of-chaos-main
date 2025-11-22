@@ -55,11 +55,11 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers(
                                         "/images/**",
-                                        "/api/products/**", // Allow endpoint for development and testing. Restrict in prod
-                                        "/api/users/register",
-                                        "/api/auth/login",
-                                        "/api/auth/logout",
-                                        "/api/auth/refresh",
+                                        "/api/v1/products/**", // Allow endpoint for development and testing. Restrict in prod
+                                        "/api/v1/users/register",
+                                        "/api/v1/auth/login",
+                                        "/api/v1/auth/logout",
+                                        "/api/v1/auth/refresh",
                                         "/error")
                                 .permitAll()
                                 .anyRequest().authenticated())

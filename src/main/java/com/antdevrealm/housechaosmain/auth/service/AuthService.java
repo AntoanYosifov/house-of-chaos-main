@@ -120,7 +120,7 @@ public class AuthService {
                 .httpOnly(true)
                 .secure(refreshCookieSecure)
                 .sameSite("Lax")
-                .path("/api/auth")
+                .path("/api/v1/auth")
                 .maxAge(cookieMaxAge)
                 .build();
         res.addHeader("Set-Cookie", refreshTokenCookie.toString());
@@ -131,7 +131,7 @@ public class AuthService {
                 .httpOnly(true)
                 .secure(refreshCookieSecure)
                 .sameSite("Lax")
-                .path("/api/auth")
+                .path("/api/v1/auth")
                 .maxAge(Duration.ZERO)
                 .build();
         res.addHeader("Set-Cookie", cleared.toString());

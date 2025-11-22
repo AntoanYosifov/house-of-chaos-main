@@ -12,7 +12,7 @@ import java.net.URI;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/v1/products")
 public class ProductController {
     private final ProductService productService;
 
@@ -30,7 +30,7 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ProductResponseDTO> create(@RequestBody @Valid CreateProductRequestDTO productDTO) {
         ProductResponseDTO productResponseDTO = productService.create(productDTO);
-        URI uriLocation = URI.create("/api/products/" + productResponseDTO.id());
+        URI uriLocation = URI.create("/api/v1/products/" + productResponseDTO.id());
         return ResponseEntity.created(uriLocation).body(productResponseDTO);
     }
 }
