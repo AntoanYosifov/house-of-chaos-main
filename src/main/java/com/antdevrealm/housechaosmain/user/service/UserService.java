@@ -9,6 +9,7 @@ import com.antdevrealm.housechaosmain.role.service.RoleService;
 import com.antdevrealm.housechaosmain.user.dto.RegistrationRequestDTO;
 import com.antdevrealm.housechaosmain.user.dto.UpdateProfileRequestDTO;
 import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
+import com.antdevrealm.housechaosmain.user.exception.EmailAlreadyUsedException;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.util.ResponseDTOMapper;
@@ -38,9 +39,14 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // TODO: check if email already exists
     @Transactional
     public UserResponseDTO register(RegistrationRequestDTO dto) {
+
+        String normalizedEmail = dto.email().trim().toLowerCase();
+
+        if(userRepository.existsByEmail(normalizedEmail)) {
+            throw new EmailAlreadyUsedException("Email is already registered");
+        }
 
         UserEntity newEntity = mapToEntity(dto);
         newEntity.getRoles().add(this.roleService.getByRole(UserRole.USER));
