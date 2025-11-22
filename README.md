@@ -14,18 +14,18 @@ A REST-based backend for an e-commerce platform focused on antiques.
 
 The system consists of three main parts:
 
-- **Main Backend API** (this repo)
+- **Main Backend API** (this repo)  [`house-of-chaos-main`](https://github.com/AntoanYosifov/house-of-chaos-main)
     - Authentication & authorization
     - Products, categories, carts, orders, users
     - Scheduling & caching
     - Feign client for the review microservice
 
-- **Review Microservice** (`house-chaos-review-service`)
+- **Review Microservice** [`review-microservice`](https://github.com/AntoanYosifov/review-microservice)
     - Standalone Spring Boot app
     - Own database
     - Manages product reviews
 
-- **Angular Client** (`house-chaos-angular-client`)
+- **Angular Client** [`house-of-chaos-web`](https://github.com/AntoanYosifov/house-of-chaos-web)
     - SPA frontend for browsing products, managing cart, placing orders, managing profile & reviews
 
 ---
