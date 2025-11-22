@@ -2,9 +2,9 @@ package com.antdevrealm.housechaosmain.product.dto;
 
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.URL;
-import org.hibernate.validator.constraints.UUID;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public record CreateProductRequestDTO(
         @NotBlank(message = "Name is required")

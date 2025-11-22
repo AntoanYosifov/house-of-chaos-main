@@ -20,11 +20,10 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    public CategoryResponseDTO getById(UUID categoryId) {
-        CategoryEntity categoryEntity = this.categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Category with ID: %s not found!", categoryId)));
+    public CategoryEntity getById(UUID categoryId) {
 
-        return new CategoryResponseDTO(categoryEntity.getId(), categoryEntity.getName());
+        return this.categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Category with ID: %s not found!", categoryId)));
     }
 
     public List<CategoryResponseDTO> getAll() {

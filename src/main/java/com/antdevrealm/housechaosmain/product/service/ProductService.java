@@ -1,5 +1,8 @@
 package com.antdevrealm.housechaosmain.product.service;
 
+import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
+import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
+import com.antdevrealm.housechaosmain.category.service.CategoryService;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
@@ -8,22 +11,31 @@ import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
+    private final CategoryService categoryService;
     private final ImgUrlExpander imgUrlExpander;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, ImgUrlExpander imgUrlExpander) {
+    public ProductService(ProductRepository productRepository, CategoryService categoryService, ImgUrlExpander imgUrlExpander) {
         this.productRepository = productRepository;
+        this.categoryService = categoryService;
         this.imgUrlExpander = imgUrlExpander;
     }
 
+    @Transactional
     public ProductResponseDTO create(CreateProductRequestDTO productDTO) {
+
+        CategoryEntity category = this.categoryService.getById(productDTO.categoryId());
         ProductEntity productEntity = mapToEntity(productDTO);
+        productEntity.setCategory(category);
+
         ProductEntity saved = this.productRepository.save(productEntity);
         return mapToResponseDto(saved);
     }
@@ -50,6 +62,9 @@ public class ProductService {
                 .name(createProductRequestDTO.name())
                 .description(createProductRequestDTO.description())
                 .price(createProductRequestDTO.price())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .newArrival(true)
                 .quantity(createProductRequestDTO.quantity())
                 .imageUrl(createProductRequestDTO.imgUrl()).build();
     }
