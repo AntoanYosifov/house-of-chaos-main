@@ -14,10 +14,11 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Component
-public class dataBaseSeeder implements CommandLineRunner {
+public class DataBaseSeeder implements CommandLineRunner {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
@@ -26,7 +27,7 @@ public class dataBaseSeeder implements CommandLineRunner {
     private final List<String> categoryNames = List.of("chair", "table", "couch", "lamp");
 
     @Autowired
-    public dataBaseSeeder(ProductRepository productRepository, CategoryRepository categoryRepository, RoleRepository roleRepository) {
+    public DataBaseSeeder(ProductRepository productRepository, CategoryRepository categoryRepository, RoleRepository roleRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.roleRepository = roleRepository;
@@ -62,8 +63,11 @@ public class dataBaseSeeder implements CommandLineRunner {
     }
 
     private void seedChairs() {
-        CategoryEntity chairCategory = categoryRepository.findByName("chair").
-                orElseThrow(() -> new ResourceNotFoundException("Category entity with name: \"chair\" not found!"));
+        CategoryEntity chairCategory = categoryRepository.findByName("chair")
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Category entity with name: \"chair\" not found!"));
+
+        Instant now = Instant.now();
 
         List<ProductEntity> chairs = List.of(
                 ProductEntity.builder()
@@ -73,7 +77,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(6)
                         .category(chairCategory)
                         .imageUrl("/images/chairs/chair-1.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(30, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(30, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Ebonwood Modern Dining Chair")
@@ -82,7 +88,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(8)
                         .category(chairCategory)
                         .imageUrl("/images/chairs/chair-2.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(20, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(20, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Walnut Crest Lounge Chair")
@@ -91,7 +99,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(4)
                         .category(chairCategory)
                         .imageUrl("/images/chairs/chair-3.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(10, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(10, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Vintage Cognac Office Chair")
@@ -100,7 +110,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(5)
                         .category(chairCategory)
                         .imageUrl("/images/chairs/chair-4.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Ivory Regency Accent Chair")
@@ -109,7 +121,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(3)
                         .category(chairCategory)
                         .imageUrl("/images/chairs/chair-5.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Pearl Modernist Side Chair")
@@ -118,7 +132,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(9)
                         .category(chairCategory)
                         .imageUrl("/images/chairs/chair-6.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Golden Oak Heritage Chair")
@@ -127,7 +143,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(5)
                         .category(chairCategory)
                         .imageUrl("/images/chairs/chair-7.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Arctic Shell Lounge Chair")
@@ -136,7 +154,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(7)
                         .category(chairCategory)
                         .imageUrl("/images/chairs/chair-8.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Graywood Contour Dining Chair")
@@ -145,7 +165,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(6)
                         .category(chairCategory)
                         .imageUrl("/images/chairs/chair-9.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Onyx Nordic Side Chair")
@@ -154,15 +176,22 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(10)
                         .category(chairCategory)
                         .imageUrl("/images/chairs/chair-10.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build()
         );
+
         this.productRepository.saveAll(chairs);
     }
 
+
     private void seedTables() {
-        CategoryEntity tableCategory = categoryRepository.findByName("table").
-                orElseThrow(() -> new ResourceNotFoundException("Category entity with name: \"table\" not found!"));
+        CategoryEntity tableCategory = categoryRepository.findByName("table")
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Category entity with name: \"table\" not found!"));
+
+        Instant now = Instant.now();
 
         List<ProductEntity> tables = List.of(
                 ProductEntity.builder()
@@ -172,7 +201,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(5)
                         .category(tableCategory)
                         .imageUrl("/images/tables/table-1.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(30, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(30, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Walnut Grove Round Table")
@@ -181,7 +212,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(7)
                         .category(tableCategory)
                         .imageUrl("/images/tables/table-2.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(20, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(20, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Nordic Dawn Bedside Table")
@@ -190,7 +223,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(10)
                         .category(tableCategory)
                         .imageUrl("/images/tables/table-3.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(10, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(10, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Elmwood Harmony Side Table")
@@ -199,7 +234,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(8)
                         .category(tableCategory)
                         .imageUrl("/images/tables/table-4.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Oakline Industrial Dining Table")
@@ -208,7 +245,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(6)
                         .category(tableCategory)
                         .imageUrl("/images/tables/table-5.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Parisian Bistro Mosaic Table")
@@ -217,7 +256,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(4)
                         .category(tableCategory)
                         .imageUrl("/images/tables/table-6.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Rustic Foldaway Patio Table")
@@ -226,7 +267,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(9)
                         .category(tableCategory)
                         .imageUrl("/images/tables/table-7.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Midnight River Epoxy Table")
@@ -235,7 +278,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(5)
                         .category(tableCategory)
                         .imageUrl("/images/tables/table-8.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Industrial Loft Dining Table")
@@ -244,7 +289,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(6)
                         .category(tableCategory)
                         .imageUrl("/images/tables/table-9.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Modern Glass-Top Coffee Table")
@@ -253,16 +300,22 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(8)
                         .category(tableCategory)
                         .imageUrl("/images/tables/table-10.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build()
         );
 
         this.productRepository.saveAll(tables);
     }
 
+
     private void seedCouches() {
-        CategoryEntity couchCategory = categoryRepository.findByName("couch").
-                orElseThrow(() -> new ResourceNotFoundException("Category entity with name: \"couch\" not found!"));
+        CategoryEntity couchCategory = categoryRepository.findByName("couch")
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Category entity with name: \"couch\" not found!"));
+
+        Instant now = Instant.now();
 
         List<ProductEntity> couches = List.of(
                 ProductEntity.builder()
@@ -272,7 +325,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(3)
                         .category(couchCategory)
                         .imageUrl("/images/couches/couch-1.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(30, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(30, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Emerald Velvet Retro Sofa")
@@ -281,7 +336,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(4)
                         .category(couchCategory)
                         .imageUrl("/images/couches/couch-2.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(20, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(20, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Modern Gray Comfort Sofa")
@@ -290,7 +347,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(6)
                         .category(couchCategory)
                         .imageUrl("/images/couches/couch-3.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(10, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(10, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Cream Leather Retro Sofa")
@@ -299,7 +358,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(5)
                         .category(couchCategory)
                         .imageUrl("/images/couches/couch-4.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Vintage Chesterfield Leather Sofa")
@@ -308,7 +369,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(3)
                         .category(couchCategory)
                         .imageUrl("/images/couches/couch-5.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Modern Amber Leather Loveseat")
@@ -317,7 +380,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(5)
                         .category(couchCategory)
                         .imageUrl("/images/couches/couch-6.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Nordic Gray Fabric Sofa")
@@ -326,7 +391,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(7)
                         .category(couchCategory)
                         .imageUrl("/images/couches/couch-7.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Amber Velvet Loveseat")
@@ -335,7 +402,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(4)
                         .category(couchCategory)
                         .imageUrl("/images/couches/couch-8.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Gray Mid-Century Sofa")
@@ -344,7 +413,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(6)
                         .category(couchCategory)
                         .imageUrl("/images/couches/couch-9.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Yellow Cozy Sofa")
@@ -353,7 +424,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(7)
                         .category(couchCategory)
                         .imageUrl("/images/couches/couch-10.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build()
         );
 
@@ -361,8 +434,11 @@ public class dataBaseSeeder implements CommandLineRunner {
     }
 
     private void seedLamps() {
-        CategoryEntity lampCategory = categoryRepository.findByName("lamp").
-                orElseThrow(() -> new ResourceNotFoundException("Category entity with name: \"lamp\" not found!"));
+        CategoryEntity lampCategory = categoryRepository.findByName("lamp")
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Category entity with name: \"lamp\" not found!"));
+
+        Instant now = Instant.now();
 
         List<ProductEntity> lamps = List.of(
                 ProductEntity.builder()
@@ -372,7 +448,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(10)
                         .category(lampCategory)
                         .imageUrl("/images/lamps/lamp-1.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(30, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(30, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Vintage Oil Lantern")
@@ -381,7 +459,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(10)
                         .category(lampCategory)
                         .imageUrl("/images/lamps/lamp-2.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(20, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(20, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Matte Black Floor Lamp")
@@ -390,7 +470,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(10)
                         .category(lampCategory)
                         .imageUrl("/images/lamps/lamp-3.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now.minus(10, ChronoUnit.DAYS))
+                        .updatedAt(now.minus(10, ChronoUnit.DAYS))
+                        .newArrival(false)
                         .build(),
                 ProductEntity.builder()
                         .name("Retro Orange Table Lamp")
@@ -399,7 +481,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(8)
                         .category(lampCategory)
                         .imageUrl("/images/lamps/lamp-4.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Matte Dome Pendant Lamp")
@@ -408,7 +492,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(12)
                         .category(lampCategory)
                         .imageUrl("/images/lamps/lamp-5.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Nordic Wooden Tripod Table Lamp")
@@ -417,7 +503,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(20)
                         .category(lampCategory)
                         .imageUrl("/images/lamps/lamp-6.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Industrial Black Pendant Lamp")
@@ -426,7 +514,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(15)
                         .category(lampCategory)
                         .imageUrl("/images/lamps/lamp-7.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Modern Sculptural Table Lamp")
@@ -435,7 +525,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(10)
                         .category(lampCategory)
                         .imageUrl("/images/lamps/lamp-8.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Vintage Brass Wall Lamp")
@@ -444,7 +536,9 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(10)
                         .category(lampCategory)
                         .imageUrl("/images/lamps/lamp-9.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Modern Glass Floor Lamp")
@@ -453,10 +547,13 @@ public class dataBaseSeeder implements CommandLineRunner {
                         .quantity(10)
                         .category(lampCategory)
                         .imageUrl("/images/lamps/lamp-10.jpg")
-                        .createdOn(Instant.now())
+                        .createdOn(now)
+                        .updatedAt(now)
+                        .newArrival(true)
                         .build()
         );
 
         this.productRepository.saveAll(lamps);
     }
+
 }

@@ -35,9 +35,14 @@ public class ProductEntity {
 
     private int quantity;
 
+    private boolean newArrival;
+
     @Column(nullable = false)
     private String imageUrl;
 
     @Column(nullable = false)
     private Instant createdOn;
+
+    @Column(nullable = false)
+    private Instant updatedAt;
 }
