@@ -4,7 +4,6 @@ import com.antdevrealm.housechaosmain.auth.jwt.handler.RestAuthenticationEntryPo
 import com.antdevrealm.housechaosmain.auth.service.HOCUserDetailsService;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -42,8 +41,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSec,
                                            RestAuthenticationEntryPoint restEntryPoint,
-                                           HOCUserDetailsService hocUserDetailsService,
-                                           OAuth2ResourceServerProperties oAuth2ResourceServerProperties) throws Exception {
+                                           HOCUserDetailsService hocUserDetailsService) throws Exception {
         return httpSec.csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -51,7 +49,8 @@ public class SecurityConfig {
                 .exceptionHandling(e -> e.authenticationEntryPoint(restEntryPoint))
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(a ->
-                        a.requestMatchers(HttpMethod.OPTIONS, "/**")
+                        a.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.OPTIONS, "/**")
                                 .permitAll()
                                 .requestMatchers(
                                         "/images/**",
