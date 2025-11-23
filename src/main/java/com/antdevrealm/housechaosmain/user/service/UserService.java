@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -84,6 +85,11 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("User with ID: %s not found!", userId)));
 
         return ResponseDTOMapper.mapToUserResponseDTO(userEntity);
+    }
+
+    public List<UserResponseDTO> getAll() {
+        return this.userRepository.findAll().stream()
+                .map(ResponseDTOMapper::mapToUserResponseDTO).toList();
     }
 
 
