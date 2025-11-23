@@ -25,7 +25,7 @@ public class DataBaseSeeder implements CommandLineRunner {
     private final RoleRepository roleRepository;
 
     private final List<String> categoryNames = List.of("chair", "table", "couch", "lamp");
-
+    // TODO: Register default admin user
     @Autowired
     public DataBaseSeeder(ProductRepository productRepository, CategoryRepository categoryRepository, RoleRepository roleRepository) {
         this.productRepository = productRepository;

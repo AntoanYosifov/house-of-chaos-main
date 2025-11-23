@@ -40,6 +40,7 @@ public class UserService {
     }
 
     @Transactional
+    // TODO: create create cart for the user on registration
     public UserResponseDTO register(RegistrationRequestDTO dto) {
 
         String normalizedEmail = dto.email().trim().toLowerCase();
