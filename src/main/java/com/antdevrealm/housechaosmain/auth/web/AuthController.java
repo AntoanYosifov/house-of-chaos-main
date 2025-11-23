@@ -41,10 +41,5 @@ public class AuthController {
         AccessTokenResponseDTO accessTokenResponseDTO = authService.refreshToken(req, res);
         return ResponseEntity.ok(accessTokenResponseDTO);
     }
-    // mock protected endpoint for testing purposes
-    @GetMapping("/protected")
-    public String getProtected(@AuthenticationPrincipal HOCUserDetails principal) {
-        return "You got here";
-    }
 
 }

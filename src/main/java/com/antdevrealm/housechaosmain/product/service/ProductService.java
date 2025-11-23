@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -28,6 +29,21 @@ public class ProductService {
         this.imgUrlExpander = imgUrlExpander;
     }
 
+    public ProductResponseDTO getById(UUID id) {
+        ProductEntity productEntity = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with id: %s not found!", id)));
+        return mapToResponseDto(productEntity);
+    }
+
+    @Transactional
+    public List<ProductResponseDTO> getAllByCategoryId(UUID categoryId) {
+        CategoryEntity category = this.categoryService.getById(categoryId);
+
+        List<ProductEntity> allByCategory = this.productRepository.findAllByCategory(category);
+
+        return allByCategory.stream().map(this::mapToResponseDto).toList();
+    }
+
     @Transactional
     public ProductResponseDTO create(CreateProductRequestDTO productDTO) {
 
@@ -37,12 +53,6 @@ public class ProductService {
 
         ProductEntity saved = this.productRepository.save(productEntity);
         return mapToResponseDto(saved);
-    }
-
-    public ProductResponseDTO getById(UUID id) {
-        ProductEntity productEntity = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with id: %s not found!", id)));
-        return mapToResponseDto(productEntity);
     }
 
     private ProductResponseDTO mapToResponseDto(ProductEntity productEntity) {
@@ -67,4 +77,6 @@ public class ProductService {
                 .quantity(createProductRequestDTO.quantity())
                 .imageUrl(createProductRequestDTO.imgUrl()).build();
     }
+
+
 }
