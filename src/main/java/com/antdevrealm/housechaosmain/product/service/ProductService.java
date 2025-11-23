@@ -5,6 +5,7 @@ import com.antdevrealm.housechaosmain.category.service.CategoryService;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
+import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import com.antdevrealm.housechaosmain.product.util.ImgUrlExpander;
@@ -53,6 +54,19 @@ public class ProductService {
 
         ProductEntity saved = this.productRepository.save(productEntity);
         return mapToResponseDto(saved);
+    }
+
+    @Transactional
+    public ProductResponseDTO update(UpdateProductRequestDTO dto, UUID productId) {
+        ProductEntity productEntity = this.productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with ID: %s not found!", productId)));
+
+        productEntity.setDescription(dto.description());
+        productEntity.setPrice(dto.price());
+
+        ProductEntity updated = this.productRepository.save(productEntity);
+
+        return mapToResponseDto(updated);
     }
 
     private ProductResponseDTO mapToResponseDto(ProductEntity productEntity) {
