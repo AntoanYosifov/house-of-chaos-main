@@ -1,15 +1,20 @@
 package com.antdevrealm.housechaosmain;
 
-import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
+import com.antdevrealm.housechaosmain.cart.model.CartEntity;
+import com.antdevrealm.housechaosmain.cart.repository.CartRepository;
 import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
+import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import com.antdevrealm.housechaosmain.role.model.entity.RoleEntity;
 import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.role.repository.RoleRepository;
+import com.antdevrealm.housechaosmain.user.model.UserEntity;
+import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -18,19 +23,25 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Component
-public class DataBaseSeeder implements CommandLineRunner {
+public class DatabaseSeeder implements CommandLineRunner {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
+    private final CartRepository cartRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private final List<String> categoryNames = List.of("chair", "table", "couch", "lamp");
     // TODO: Register default admin user
     @Autowired
-    public DataBaseSeeder(ProductRepository productRepository, CategoryRepository categoryRepository, RoleRepository roleRepository) {
+    public DatabaseSeeder(ProductRepository productRepository, CategoryRepository categoryRepository, RoleRepository roleRepository, UserRepository userRepository, CartRepository cartRepository, PasswordEncoder passwordEncoder) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.roleRepository = roleRepository;
+        this.userRepository = userRepository;
+        this.cartRepository = cartRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -47,6 +58,34 @@ public class DataBaseSeeder implements CommandLineRunner {
             );
 
             this.roleRepository.saveAll(roles);
+        }
+
+
+        if(this.userRepository.count() == 0) {
+            UserEntity defaultAdminEntity = UserEntity.builder()
+                    .email("admin@email.com")
+                    .password(this.passwordEncoder.encode("adminpassword"))
+                    .createdOn(Instant.now())
+                    .updatedAt(Instant.now())
+                    .build();
+
+            RoleEntity userRole = this.roleRepository.findByRole(UserRole.USER)
+                    .orElseThrow(() -> new ResourceNotFoundException("User role not found"));
+
+            RoleEntity adminRole = this.roleRepository.findByRole(UserRole.ADMIN)
+                    .orElseThrow(() -> new ResourceNotFoundException("Admin role not found"));
+
+            defaultAdminEntity.getRoles().add(userRole);
+            defaultAdminEntity.getRoles().add(adminRole);
+
+            UserEntity savedEntity = this.userRepository.save(defaultAdminEntity);
+
+            CartEntity adminCart = CartEntity.builder()
+                    .owner(savedEntity)
+                    .build();
+
+            this.cartRepository.save(adminCart);
+
         }
 
         if (this.categoryRepository.count() == 0) {
