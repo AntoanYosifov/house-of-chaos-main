@@ -38,4 +38,8 @@ public class AdminService {
     public UserResponseDTO promoteToAdmin(UUID userId) {
         return this.userService.addAdminRole(userId);
     }
+
+    public UserResponseDTO demoteFromAdmin(UUID id) {
+        return this.userService.removeAdminRole(id);
+    }
 }

@@ -12,6 +12,7 @@ import com.antdevrealm.housechaosmain.user.dto.UpdateProfileRequestDTO;
 import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import com.antdevrealm.housechaosmain.user.exception.EmailAlreadyUsedException;
 import com.antdevrealm.housechaosmain.user.exception.UserAlreadyHasRoleException;
+import com.antdevrealm.housechaosmain.user.exception.UserHasNoRoleException;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.util.ResponseDTOMapper;
@@ -104,7 +105,25 @@ public class UserService {
         if(userRoles.contains(adminRole)) {
             throw new UserAlreadyHasRoleException("User already has role: " + adminRole.getRole().toString());
         }
+
         userRoles.add(adminRole);
+        UserEntity saved = this.userRepository.save(userEntity);
+        return ResponseDTOMapper.mapToUserResponseDTO(saved);
+    }
+
+    @Transactional
+    public UserResponseDTO removeAdminRole(UUID userId) {
+        UserEntity userEntity = this.userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("User with ID: %s not found!", userId)));
+
+        RoleEntity adminRole = this.roleService.getByRole(UserRole.ADMIN);
+        List<RoleEntity> userRoles = userEntity.getRoles();
+        if(!userRoles.contains(adminRole)) {
+            throw new UserHasNoRoleException("User doesn't have a role: " + adminRole.getRole().toString());
+        }
+
+        userRoles.remove(adminRole);
+
         UserEntity saved = this.userRepository.save(userEntity);
         return ResponseDTOMapper.mapToUserResponseDTO(saved);
     }
@@ -118,6 +137,5 @@ public class UserService {
                 .updatedAt(Instant.now())
                 .build();
     }
-
 
 }

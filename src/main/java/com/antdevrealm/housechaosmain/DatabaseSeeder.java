@@ -33,7 +33,6 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
 
     private final List<String> categoryNames = List.of("chair", "table", "couch", "lamp");
-    // TODO: Register default admin user
     @Autowired
     public DatabaseSeeder(ProductRepository productRepository, CategoryRepository categoryRepository, RoleRepository roleRepository, UserRepository userRepository, CartRepository cartRepository, PasswordEncoder passwordEncoder) {
         this.productRepository = productRepository;
@@ -45,7 +44,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args)  {
 
         if (this.roleRepository.count() == 0) {
             List<RoleEntity> roles = List.of(

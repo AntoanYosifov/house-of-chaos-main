@@ -58,4 +58,11 @@ public class AdminController {
 
         return ResponseEntity.ok(userResponseDTO);
     }
+
+    @PatchMapping("/users/demote/{id}")
+    public ResponseEntity<UserResponseDTO> demoteFromAdmin(@PathVariable UUID id) {
+        UserResponseDTO userResponseDTO = this.adminService.demoteFromAdmin(id);
+
+        return ResponseEntity.ok(userResponseDTO);
+    }
 }
