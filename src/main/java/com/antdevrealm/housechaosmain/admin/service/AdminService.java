@@ -1,5 +1,8 @@
 package com.antdevrealm.housechaosmain.admin.service;
 
+import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
+import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
+import com.antdevrealm.housechaosmain.category.service.CategoryService;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
@@ -14,13 +17,15 @@ import java.util.UUID;
 
 @Service
 public class AdminService {
-    private final ProductService productService;
     private final UserService userService;
+    private final ProductService productService;
+    private final CategoryService categoryService;
 
     @Autowired
-    public AdminService(ProductService productService, UserService userService) {
+    public AdminService(ProductService productService, UserService userService, CategoryService categoryService) {
         this.productService = productService;
         this.userService = userService;
+        this.categoryService = categoryService;
     }
 
     public ProductResponseDTO addProduct(CreateProductRequestDTO dto) {
@@ -35,6 +40,10 @@ public class AdminService {
         this.productService.softDelete(id);
     }
 
+    public CategoryResponseDTO addCategory(CreateCategoryRequestDTO dto) {
+        return this.categoryService.create(dto);
+    }
+
     public List<UserResponseDTO> getAllUsers(UUID userId) {
         return this.userService.getAll().stream().filter(u -> !u.id().equals(userId)).toList();
     }
@@ -46,6 +55,5 @@ public class AdminService {
     public UserResponseDTO demoteFromAdmin(UUID id) {
         return this.userService.removeAdminRole(id);
     }
-
 
 }

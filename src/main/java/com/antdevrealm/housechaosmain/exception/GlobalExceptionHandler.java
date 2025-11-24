@@ -1,6 +1,7 @@
 package com.antdevrealm.housechaosmain.exception;
 
 import com.antdevrealm.housechaosmain.auth.refreshtoken.exception.RefreshTokenInvalidException;
+import com.antdevrealm.housechaosmain.category.exception.CategoryUniqueNameException;
 import com.antdevrealm.housechaosmain.user.exception.EmailAlreadyUsedException;
 import com.antdevrealm.housechaosmain.user.exception.UserAlreadyHasRoleException;
 import com.antdevrealm.housechaosmain.user.exception.UserHasNoRoleException;
@@ -68,6 +69,17 @@ public class GlobalExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
 
         problemDetail.setTitle("Email Already In Use");
+        problemDetail.setDetail(ex.getMessage());
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(CategoryUniqueNameException.class)
+    public ProblemDetail handleCategoryUniqueName(CategoryUniqueNameException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+
+        problemDetail.setTitle("Category already exist");
         problemDetail.setDetail(ex.getMessage());
         problemDetail.setProperty("timestamp", Instant.now());
 

@@ -2,6 +2,8 @@ package com.antdevrealm.housechaosmain.admin.web;
 
 
 import com.antdevrealm.housechaosmain.admin.service.AdminService;
+import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
+import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
@@ -47,6 +49,12 @@ public class AdminController {
         this.adminService.deleteProduct(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/categories")
+    public ResponseEntity<CategoryResponseDTO> addCategory(@RequestBody @Valid CreateCategoryRequestDTO dto) {
+        CategoryResponseDTO categoryResponseDTO = this.adminService.addCategory(dto);
+        return ResponseEntity.ok(categoryResponseDTO);
     }
 
     @GetMapping("/users")
