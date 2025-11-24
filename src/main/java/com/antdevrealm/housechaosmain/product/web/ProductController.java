@@ -35,4 +35,18 @@ public class ProductController {
         return ResponseEntity.ok(productsByCategory);
     }
 
+    @GetMapping("/new-arrivals")
+    public ResponseEntity<List<ProductResponseDTO>> getNewArrivals() {
+        List<ProductResponseDTO> newArrivals = this.productService.getNewArrivals();
+
+        return ResponseEntity.ok(newArrivals);
+    }
+
+    @GetMapping("/top-deals")
+    public ResponseEntity<List<ProductResponseDTO>> getTopDeals() {
+        List<ProductResponseDTO> cheapest = this.productService.getCheapest();
+
+        return ResponseEntity.ok(cheapest);
+    }
+
 }

@@ -47,6 +47,14 @@ public class ProductService {
         return allByCategory.stream().map(this::mapToResponseDto).toList();
     }
 
+    public List<ProductResponseDTO> getNewArrivals() {
+        return this.productRepository.findTop10NewArrivals().stream().map(this::mapToResponseDto).toList();
+    }
+
+    public List<ProductResponseDTO> getCheapest() {
+        return this.productRepository.findTop10Cheapest().stream().map(this::mapToResponseDto).toList();
+    }
+
     @Transactional
     public ProductResponseDTO create(CreateProductRequestDTO productDTO) {
 
