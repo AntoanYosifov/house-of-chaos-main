@@ -2,7 +2,9 @@ package com.antdevrealm.housechaosmain.admin.service;
 
 import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
 import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
+import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.service.CategoryService;
+import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
@@ -42,6 +44,17 @@ public class AdminService {
 
     public CategoryResponseDTO addCategory(CreateCategoryRequestDTO dto) {
         return this.categoryService.create(dto);
+    }
+
+    public void deleteCategory(UUID id) {
+        CategoryEntity categoryEntity = this.categoryService.getById(id);
+
+        boolean productExistsByCategory = this.productService.existsByCategory(categoryEntity);
+
+        if(productExistsByCategory) {
+            throw new BusinessRuleException(String.format("Can not delete category with ID: %s because it has products", id));
+        }
+        this.categoryService.delete(categoryEntity);
     }
 
     public List<UserResponseDTO> getAllUsers(UUID userId) {

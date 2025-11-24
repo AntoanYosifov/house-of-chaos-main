@@ -64,16 +64,7 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
-    @ExceptionHandler(EmailAlreadyUsedException.class)
-    public ProblemDetail handleEmailAlreadyUsed(EmailAlreadyUsedException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
 
-        problemDetail.setTitle("Email Already In Use");
-        problemDetail.setDetail(ex.getMessage());
-        problemDetail.setProperty("timestamp", Instant.now());
-
-        return problemDetail;
-    }
 
     @ExceptionHandler(CategoryUniqueNameException.class)
     public ProblemDetail handleCategoryUniqueName(CategoryUniqueNameException ex) {
@@ -86,8 +77,31 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+    @ExceptionHandler(BusinessRuleException.class)
+    public ProblemDetail handleBusinessRule(BusinessRuleException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+
+        problemDetail.setTitle("Business rule violation");
+        problemDetail.setDetail(ex.getMessage());
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
+
+
+    @ExceptionHandler(EmailAlreadyUsedException.class)
+    public ProblemDetail handleEmailAlreadyUsed(EmailAlreadyUsedException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+
+        problemDetail.setTitle("Email Already In Use");
+        problemDetail.setDetail(ex.getMessage());
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
+
     @ExceptionHandler(UserAlreadyHasRoleException.class)
-    public ProblemDetail handleEmailAlreadyUsed(UserAlreadyHasRoleException ex) {
+    public ProblemDetail handleUserAlreadyHasRole(UserAlreadyHasRoleException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
 
         problemDetail.setTitle("User already has role");
@@ -97,8 +111,9 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
+
     @ExceptionHandler(UserHasNoRoleException.class)
-    public ProblemDetail handleEmailAlreadyUsed(UserHasNoRoleException ex) {
+    public ProblemDetail handleUserHasNoRole(UserHasNoRoleException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
 
         problemDetail.setTitle("User doesn't have a role");

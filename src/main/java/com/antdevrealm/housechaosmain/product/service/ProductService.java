@@ -24,7 +24,9 @@ public class ProductService {
     private final ImgUrlExpander imgUrlExpander;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, CategoryService categoryService, ImgUrlExpander imgUrlExpander) {
+    public ProductService(ProductRepository productRepository,
+                          CategoryService categoryService,
+                          ImgUrlExpander imgUrlExpander) {
         this.productRepository = productRepository;
         this.categoryService = categoryService;
         this.imgUrlExpander = imgUrlExpander;
@@ -76,6 +78,10 @@ public class ProductService {
 
         productEntity.setActive(false);
         this.productRepository.save(productEntity);
+    }
+
+    public boolean existsByCategory(CategoryEntity category) {
+        return this.productRepository.existsByCategory(category);
     }
 
     private ProductResponseDTO mapToResponseDto(ProductEntity productEntity) {

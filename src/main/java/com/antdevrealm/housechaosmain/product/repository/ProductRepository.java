@@ -13,4 +13,6 @@ import java.util.UUID;
 public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
     List<ProductEntity> findAllByCategoryAndIsActiveIsTrue(CategoryEntity category);
     Optional<ProductEntity> findByIdAndIsActiveIsTrue(UUID id);
+
+    boolean existsByCategory(CategoryEntity category);
 }

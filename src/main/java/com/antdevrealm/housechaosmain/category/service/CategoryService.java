@@ -6,7 +6,6 @@ import com.antdevrealm.housechaosmain.category.exception.CategoryUniqueNameExcep
 import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
-import com.antdevrealm.housechaosmain.user.exception.EmailAlreadyUsedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +31,7 @@ public class CategoryService {
     public List<CategoryResponseDTO> getAll() {
         List<CategoryEntity> allCategories = this.categoryRepository.findAll();
 
-        if(allCategories.isEmpty()) {
+        if (allCategories.isEmpty()) {
             return new ArrayList<>();
         }
 
@@ -42,8 +41,7 @@ public class CategoryService {
     public CategoryResponseDTO create(CreateCategoryRequestDTO dto) {
 
         String normalizedName = dto.name().trim().toLowerCase();
-
-        if(categoryRepository.existsByName(normalizedName)) {
+        if (categoryRepository.existsByName(normalizedName)) {
             throw new CategoryUniqueNameException(String.format("Category with name: %s already exist", dto.name()));
         }
 
@@ -54,6 +52,10 @@ public class CategoryService {
         CategoryEntity saved = this.categoryRepository.save(categoryEntity);
 
         return new CategoryResponseDTO(saved.getId(), saved.getName());
+    }
+
+    public void delete(CategoryEntity categoryEntity) {
+        this.categoryRepository.delete(categoryEntity);
     }
 
 }

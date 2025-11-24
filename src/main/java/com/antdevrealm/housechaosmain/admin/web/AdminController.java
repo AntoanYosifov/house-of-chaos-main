@@ -52,9 +52,15 @@ public class AdminController {
     }
 
     @PostMapping("/categories")
-    public ResponseEntity<CategoryResponseDTO> addCategory(@RequestBody @Valid CreateCategoryRequestDTO dto) {
+    public ResponseEntity<CategoryResponseDTO> deleteCategory(@RequestBody @Valid CreateCategoryRequestDTO dto) {
         CategoryResponseDTO categoryResponseDTO = this.adminService.addCategory(dto);
         return ResponseEntity.ok(categoryResponseDTO);
+    }
+
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
+        this.adminService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/users")
