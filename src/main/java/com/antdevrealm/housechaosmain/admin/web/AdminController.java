@@ -51,4 +51,11 @@ public class AdminController {
 
         return ResponseEntity.ok(allUsers);
     }
+
+    @PatchMapping("/users/promote/{id}")
+    public ResponseEntity<UserResponseDTO> promoteToAdmin(@PathVariable UUID id) {
+        UserResponseDTO userResponseDTO = this.adminService.promoteToAdmin(id);
+
+        return ResponseEntity.ok(userResponseDTO);
+    }
 }

@@ -4,12 +4,14 @@ import com.antdevrealm.housechaosmain.address.dto.AddressRequestDTO;
 import com.antdevrealm.housechaosmain.address.model.AddressEntity;
 import com.antdevrealm.housechaosmain.address.service.AddressService;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
+import com.antdevrealm.housechaosmain.role.model.entity.RoleEntity;
 import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.role.service.RoleService;
 import com.antdevrealm.housechaosmain.user.dto.RegistrationRequestDTO;
 import com.antdevrealm.housechaosmain.user.dto.UpdateProfileRequestDTO;
 import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import com.antdevrealm.housechaosmain.user.exception.EmailAlreadyUsedException;
+import com.antdevrealm.housechaosmain.user.exception.UserAlreadyHasRoleException;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.util.ResponseDTOMapper;
@@ -92,6 +94,21 @@ public class UserService {
                 .map(ResponseDTOMapper::mapToUserResponseDTO).toList();
     }
 
+    @Transactional
+    public UserResponseDTO addAdminRole(UUID userId) {
+        UserEntity userEntity = this.userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("User with ID: %s not found!", userId)));
+
+        RoleEntity adminRole = this.roleService.getByRole(UserRole.ADMIN);
+        List<RoleEntity> userRoles = userEntity.getRoles();
+        if(userRoles.contains(adminRole)) {
+            throw new UserAlreadyHasRoleException("User already has role: " + adminRole.getRole().toString());
+        }
+        userRoles.add(adminRole);
+        UserEntity saved = this.userRepository.save(userEntity);
+        return ResponseDTOMapper.mapToUserResponseDTO(saved);
+    }
+
 
     private UserEntity mapToEntity(RegistrationRequestDTO dto) {
         return UserEntity.builder()
@@ -101,4 +118,6 @@ public class UserService {
                 .updatedAt(Instant.now())
                 .build();
     }
+
+
 }

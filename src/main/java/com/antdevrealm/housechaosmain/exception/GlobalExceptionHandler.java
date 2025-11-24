@@ -2,6 +2,7 @@ package com.antdevrealm.housechaosmain.exception;
 
 import com.antdevrealm.housechaosmain.auth.refreshtoken.exception.RefreshTokenInvalidException;
 import com.antdevrealm.housechaosmain.user.exception.EmailAlreadyUsedException;
+import com.antdevrealm.housechaosmain.user.exception.UserAlreadyHasRoleException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -66,6 +67,17 @@ public class GlobalExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
 
         problemDetail.setTitle("Email Already In Use");
+        problemDetail.setDetail(ex.getMessage());
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(UserAlreadyHasRoleException.class)
+    public ProblemDetail handleEmailAlreadyUsed(UserAlreadyHasRoleException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+
+        problemDetail.setTitle("User already has role");
         problemDetail.setDetail(ex.getMessage());
         problemDetail.setProperty("timestamp", Instant.now());
 

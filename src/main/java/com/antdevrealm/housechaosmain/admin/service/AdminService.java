@@ -34,4 +34,8 @@ public class AdminService {
     public List<UserResponseDTO> getAllUsers(UUID userId) {
         return this.userService.getAll().stream().filter(u -> !u.id().equals(userId)).toList();
     }
+
+    public UserResponseDTO promoteToAdmin(UUID userId) {
+        return this.userService.addAdminRole(userId);
+    }
 }
