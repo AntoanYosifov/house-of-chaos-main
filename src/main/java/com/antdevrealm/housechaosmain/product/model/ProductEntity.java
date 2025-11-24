@@ -37,6 +37,8 @@ public class ProductEntity {
 
     private boolean newArrival;
 
+    private boolean isActive;
+
     @Column(nullable = false)
     private String imageUrl;
 

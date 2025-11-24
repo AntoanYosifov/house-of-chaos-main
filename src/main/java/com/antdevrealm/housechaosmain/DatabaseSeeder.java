@@ -118,6 +118,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(30, ChronoUnit.DAYS))
                         .updatedAt(now.minus(30, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Ebonwood Modern Dining Chair")
@@ -129,6 +130,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(20, ChronoUnit.DAYS))
                         .updatedAt(now.minus(20, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Walnut Crest Lounge Chair")
@@ -140,6 +142,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(10, ChronoUnit.DAYS))
                         .updatedAt(now.minus(10, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Vintage Cognac Office Chair")
@@ -151,6 +154,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Ivory Regency Accent Chair")
@@ -162,6 +166,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Pearl Modernist Side Chair")
@@ -173,6 +178,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Golden Oak Heritage Chair")
@@ -184,6 +190,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Arctic Shell Lounge Chair")
@@ -195,6 +202,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Graywood Contour Dining Chair")
@@ -206,6 +214,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Onyx Nordic Side Chair")
@@ -217,6 +226,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build()
         );
 
@@ -242,6 +252,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(30, ChronoUnit.DAYS))
                         .updatedAt(now.minus(30, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Walnut Grove Round Table")
@@ -253,6 +264,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(20, ChronoUnit.DAYS))
                         .updatedAt(now.minus(20, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Nordic Dawn Bedside Table")
@@ -264,6 +276,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(10, ChronoUnit.DAYS))
                         .updatedAt(now.minus(10, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Elmwood Harmony Side Table")
@@ -275,6 +288,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Oakline Industrial Dining Table")
@@ -286,6 +300,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Parisian Bistro Mosaic Table")
@@ -297,6 +312,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Rustic Foldaway Patio Table")
@@ -308,6 +324,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Midnight River Epoxy Table")
@@ -319,6 +336,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Industrial Loft Dining Table")
@@ -330,6 +348,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Modern Glass-Top Coffee Table")
@@ -341,8 +360,10 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build()
         );
+
 
         this.productRepository.saveAll(tables);
     }
@@ -366,6 +387,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(30, ChronoUnit.DAYS))
                         .updatedAt(now.minus(30, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Emerald Velvet Retro Sofa")
@@ -377,6 +399,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(20, ChronoUnit.DAYS))
                         .updatedAt(now.minus(20, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Modern Gray Comfort Sofa")
@@ -388,6 +411,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(10, ChronoUnit.DAYS))
                         .updatedAt(now.minus(10, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Cream Leather Retro Sofa")
@@ -399,6 +423,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Vintage Chesterfield Leather Sofa")
@@ -410,6 +435,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Modern Amber Leather Loveseat")
@@ -421,6 +447,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Nordic Gray Fabric Sofa")
@@ -432,6 +459,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Amber Velvet Loveseat")
@@ -443,6 +471,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Gray Mid-Century Sofa")
@@ -454,6 +483,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Yellow Cozy Sofa")
@@ -465,8 +495,10 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build()
         );
+
 
         this.productRepository.saveAll(couches);
     }
@@ -489,6 +521,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(30, ChronoUnit.DAYS))
                         .updatedAt(now.minus(30, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Vintage Oil Lantern")
@@ -500,6 +533,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(20, ChronoUnit.DAYS))
                         .updatedAt(now.minus(20, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Matte Black Floor Lamp")
@@ -511,6 +545,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now.minus(10, ChronoUnit.DAYS))
                         .updatedAt(now.minus(10, ChronoUnit.DAYS))
                         .newArrival(false)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Retro Orange Table Lamp")
@@ -522,6 +557,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Matte Dome Pendant Lamp")
@@ -533,6 +569,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Nordic Wooden Tripod Table Lamp")
@@ -544,6 +581,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Industrial Black Pendant Lamp")
@@ -555,6 +593,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Modern Sculptural Table Lamp")
@@ -566,6 +605,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Vintage Brass Wall Lamp")
@@ -577,6 +617,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build(),
                 ProductEntity.builder()
                         .name("Modern Glass Floor Lamp")
@@ -588,8 +629,10 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
+                        .isActive(true)
                         .build()
         );
+
 
         this.productRepository.saveAll(lamps);
     }

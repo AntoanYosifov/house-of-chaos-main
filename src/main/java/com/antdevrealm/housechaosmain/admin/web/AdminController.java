@@ -42,6 +42,13 @@ public class AdminController {
         return ResponseEntity.ok(productResponseDTO);
     }
 
+    @DeleteMapping("/products/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
+        this.adminService.deleteProduct(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/users")
     public ResponseEntity<List<UserResponseDTO>> getAllUsers(@AuthenticationPrincipal Jwt principal) {
         String uid = principal.getClaimAsString("uid");

@@ -31,7 +31,7 @@ public class ProductService {
     }
 
     public ProductResponseDTO getById(UUID id) {
-        ProductEntity productEntity = productRepository.findById(id)
+        ProductEntity productEntity = productRepository.findByIdAndIsActiveIsTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with id: %s not found!", id)));
         return mapToResponseDto(productEntity);
     }
@@ -40,7 +40,7 @@ public class ProductService {
     public List<ProductResponseDTO> getAllByCategoryId(UUID categoryId) {
         CategoryEntity category = this.categoryService.getById(categoryId);
 
-        List<ProductEntity> allByCategory = this.productRepository.findAllByCategory(category);
+        List<ProductEntity> allByCategory = this.productRepository.findAllByCategoryAndIsActiveIsTrue(category);
 
         return allByCategory.stream().map(this::mapToResponseDto).toList();
     }
@@ -58,7 +58,7 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDTO update(UpdateProductRequestDTO dto, UUID productId) {
-        ProductEntity productEntity = this.productRepository.findById(productId)
+        ProductEntity productEntity = this.productRepository.findByIdAndIsActiveIsTrue(productId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with ID: %s not found!", productId)));
 
         productEntity.setDescription(dto.description());
@@ -67,6 +67,15 @@ public class ProductService {
         ProductEntity updated = this.productRepository.save(productEntity);
 
         return mapToResponseDto(updated);
+    }
+
+    @Transactional
+    public void softDelete(UUID productId) {
+        ProductEntity productEntity = this.productRepository.findByIdAndIsActiveIsTrue(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with ID: %s not found!", productId)));
+
+        productEntity.setActive(false);
+        this.productRepository.save(productEntity);
     }
 
     private ProductResponseDTO mapToResponseDto(ProductEntity productEntity) {
@@ -88,9 +97,9 @@ public class ProductService {
                 .createdOn(Instant.now())
                 .updatedAt(Instant.now())
                 .newArrival(true)
+                .isActive(true)
                 .quantity(createProductRequestDTO.quantity())
                 .imageUrl(createProductRequestDTO.imgUrl()).build();
     }
-
 
 }

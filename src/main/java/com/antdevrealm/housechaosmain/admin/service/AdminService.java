@@ -31,6 +31,10 @@ public class AdminService {
         return this.productService.update(dto, id);
     }
 
+    public void deleteProduct(UUID id) {
+        this.productService.softDelete(id);
+    }
+
     public List<UserResponseDTO> getAllUsers(UUID userId) {
         return this.userService.getAll().stream().filter(u -> !u.id().equals(userId)).toList();
     }
@@ -42,4 +46,6 @@ public class AdminService {
     public UserResponseDTO demoteFromAdmin(UUID id) {
         return this.userService.removeAdminRole(id);
     }
+
+
 }
