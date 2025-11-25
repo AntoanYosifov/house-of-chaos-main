@@ -8,7 +8,7 @@ import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
-import com.antdevrealm.housechaosmain.product.util.ImgUrlExpander;
+import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

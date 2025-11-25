@@ -9,6 +9,7 @@ import com.antdevrealm.housechaosmain.cart.repository.CartRepository;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
+import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +22,14 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final ImgUrlExpander imgUrlExpander;
 
     @Autowired
-    public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository, ProductRepository productRepository) {
+    public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository, ProductRepository productRepository, ImgUrlExpander imgUrlExpander) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
+        this.imgUrlExpander = imgUrlExpander;
     }
 
     public CartResponseDTO getCartByOwnerId(UUID ownerId) {
@@ -81,6 +84,8 @@ public class CartService {
     private CartItemResponseDTO mapToItemResponseDTO(CartItemEntity cartItemEntity) {
         return new CartItemResponseDTO(cartItemEntity.getId(),
                 cartItemEntity.getProduct().getId(),
+                cartItemEntity.getProduct().getName(),
+                imgUrlExpander.toPublicUrl(cartItemEntity.getProduct().getImageUrl()),
                 cartItemEntity.getQuantity());
     }
 }

@@ -5,9 +5,7 @@ import com.antdevrealm.housechaosmain.cart.service.CartService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -27,5 +25,14 @@ public class CartController {
         CartResponseDTO cartById = this.cartService.getCartByOwnerId(ownerId);
 
         return ResponseEntity.ok(cartById);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CartResponseDTO> upsert(@AuthenticationPrincipal Jwt principal, @PathVariable UUID id) {
+        String uid = principal.getClaimAsString("uid");
+        UUID ownerId = UUID.fromString(uid);
+        CartResponseDTO cartResponseDTO = this.cartService.addOneToCart(ownerId, id);
+
+        return ResponseEntity.ok(cartResponseDTO);
     }
 }
