@@ -1,7 +1,11 @@
 package com.antdevrealm.housechaosmain;
 
+import com.antdevrealm.housechaosmain.cart.dto.CartResponseDTO;
 import com.antdevrealm.housechaosmain.cart.model.CartEntity;
+import com.antdevrealm.housechaosmain.cart.model.CartItemEntity;
+import com.antdevrealm.housechaosmain.cart.repository.CartItemRepository;
 import com.antdevrealm.housechaosmain.cart.repository.CartRepository;
+import com.antdevrealm.housechaosmain.cart.service.CartService;
 import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
@@ -21,6 +25,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
@@ -30,17 +36,24 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CartService cartService;
 
     private final List<String> categoryNames = List.of("chair", "table", "couch", "lamp");
     @Autowired
-    public DatabaseSeeder(ProductRepository productRepository, CategoryRepository categoryRepository, RoleRepository roleRepository, UserRepository userRepository, CartRepository cartRepository, PasswordEncoder passwordEncoder) {
+    public DatabaseSeeder(ProductRepository productRepository,
+                          CategoryRepository categoryRepository, RoleRepository roleRepository,
+                          UserRepository userRepository, CartRepository cartRepository, CartItemRepository cartItemRepository,
+                          PasswordEncoder passwordEncoder, CartService cartService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.cartRepository = cartRepository;
+        this.cartItemRepository = cartItemRepository;
         this.passwordEncoder = passwordEncoder;
+        this.cartService = cartService;
     }
 
     @Override
