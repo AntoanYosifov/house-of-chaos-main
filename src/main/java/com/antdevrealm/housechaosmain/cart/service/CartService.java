@@ -7,10 +7,11 @@ import com.antdevrealm.housechaosmain.cart.model.CartItemEntity;
 import com.antdevrealm.housechaosmain.cart.repository.CartItemRepository;
 import com.antdevrealm.housechaosmain.cart.repository.CartRepository;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
+import com.antdevrealm.housechaosmain.product.model.ProductEntity;
+import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,29 +20,62 @@ public class CartService {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
+    private final ProductRepository productRepository;
 
     @Autowired
-    public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository) {
+    public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository, ProductRepository productRepository) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
+        this.productRepository = productRepository;
     }
 
-    public CartResponseDTO getCartByOwnerId(UUID id) {
-        CartEntity cartEntity = this.cartRepository.findByOwnerId(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Cart with owner ID: %s not found!", id)));
+    public CartResponseDTO getCartByOwnerId(UUID ownerId) {
+        CartEntity cart = cartRepository.findByOwnerId(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Cart for owner %s not found".formatted(ownerId)
+                ));
 
-        return mapToCartResponseDTO(cartEntity);
+        List<CartItemEntity> items = cartItemRepository.findAllByCartId(cart.getId());
+
+        return mapToCartResponseDTO(cart, items);
     }
 
-    private CartResponseDTO mapToCartResponseDTO(CartEntity cartEntity) {
-        List<CartItemResponseDTO> itemDTOList;
+    public CartResponseDTO addOneToCart(UUID ownerId, UUID productId) {
+        CartEntity cartEntity = cartRepository.findByOwnerId(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Cart for owner ID: %s not found", ownerId)));
 
-        if(cartEntity.getItems().isEmpty()) {
-            itemDTOList = new ArrayList<>();
+        ProductEntity productEntity = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with ID: %s not found", productId)));
+
+        CartItemEntity item = cartItemRepository
+                .findByCartIdAndProductId(cartEntity.getId(), productId)
+                .orElse(null);
+
+        if(item == null) {
+            item = CartItemEntity.builder()
+                    .cart(cartEntity)
+                    .product(productEntity)
+                    .quantity(1)
+                    .build();
         } else {
-            itemDTOList = cartEntity.getItems().stream().map(this::mapToItemResponseDTO).toList();
+            item.setQuantity(item.getQuantity() + 1);
         }
-        return new CartResponseDTO(cartEntity.getId(), cartEntity.getOwner().getId(), itemDTOList);
+
+        cartItemRepository.save(item);
+
+        List<CartItemEntity> items = cartItemRepository.findAllByCartId(cartEntity.getId());
+        return mapToCartResponseDTO(cartEntity, items);
+    }
+
+
+    private CartResponseDTO mapToCartResponseDTO(CartEntity cartEntity,  List<CartItemEntity> items) {
+
+
+        List<CartItemResponseDTO> itemDTOs = items.stream()
+                .map(this::mapToItemResponseDTO)
+                .toList();
+
+        return new CartResponseDTO(cartEntity.getId(), cartEntity.getOwner().getId(), itemDTOs);
     }
 
     private CartItemResponseDTO mapToItemResponseDTO(CartItemEntity cartItemEntity) {

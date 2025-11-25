@@ -25,8 +25,4 @@ public class CartEntity {
 
     @OneToOne(optional = false)
     private UserEntity owner;
-
-    @OneToMany(mappedBy = "cart", fetch = FetchType.EAGER)
-    @Builder.Default
-    private List<CartItemEntity> items = new ArrayList<>();
 }
