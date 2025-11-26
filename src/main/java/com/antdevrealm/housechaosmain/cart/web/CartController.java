@@ -2,6 +2,7 @@ package com.antdevrealm.housechaosmain.cart.web;
 
 import com.antdevrealm.housechaosmain.cart.dto.CartResponseDTO;
 import com.antdevrealm.housechaosmain.cart.service.CartService;
+import com.antdevrealm.housechaosmain.util.PrincipalUUIDExtractor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -20,18 +21,32 @@ public class CartController {
 
     @GetMapping
     public ResponseEntity<CartResponseDTO> getByOwnerId(@AuthenticationPrincipal Jwt principal) {
-        String uid = principal.getClaimAsString("uid");
-        UUID ownerId = UUID.fromString(uid);
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
         CartResponseDTO cartById = this.cartService.getCartByOwnerId(ownerId);
 
         return ResponseEntity.ok(cartById);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/items/{id}")
     public ResponseEntity<CartResponseDTO> upsert(@AuthenticationPrincipal Jwt principal, @PathVariable UUID id) {
-        String uid = principal.getClaimAsString("uid");
-        UUID ownerId = UUID.fromString(uid);
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
         CartResponseDTO cartResponseDTO = this.cartService.addOneToCart(ownerId, id);
+
+        return ResponseEntity.ok(cartResponseDTO);
+    }
+
+    @PostMapping("/items/{id}/decrease")
+    public ResponseEntity<CartResponseDTO> decrease(@AuthenticationPrincipal Jwt principal, @PathVariable UUID id) {
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
+        CartResponseDTO cartResponseDTO = this.cartService.decreaseItemQuantity(ownerId, id);
+
+        return ResponseEntity.ok(cartResponseDTO);
+    }
+
+    @DeleteMapping("/items/{id}")
+    public ResponseEntity<CartResponseDTO> delete(@AuthenticationPrincipal Jwt principal, @PathVariable UUID id) {
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
+        CartResponseDTO cartResponseDTO = this.cartService.deleteItem(ownerId, id);
 
         return ResponseEntity.ok(cartResponseDTO);
     }

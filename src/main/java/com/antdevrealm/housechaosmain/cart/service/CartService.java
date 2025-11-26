@@ -70,10 +70,46 @@ public class CartService {
         return mapToCartResponseDTO(cartEntity, items);
     }
 
+    public CartResponseDTO decreaseItemQuantity(UUID ownerId, UUID cartItemId) {
+        CartItemEntity cartItemEntity = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Cart item with ID: %s not found", cartItemId)));
+
+        CartEntity cartEntity = cartItemEntity.getCart();
+
+        if(!cartEntity.getOwner().getId().equals(ownerId)) {
+            throw new ResourceNotFoundException(String.format("Cart for owner with ID: %s not found", ownerId));
+        }
+
+        int newQuantity = cartItemEntity.getQuantity() - 1;
+        if(newQuantity <= 0) {
+            cartItemRepository.delete(cartItemEntity);
+        } else {
+            cartItemEntity.setQuantity(newQuantity);
+            cartItemRepository.save(cartItemEntity);
+        }
+
+        List<CartItemEntity> items = cartItemRepository.findAllByCartId(cartEntity.getId());
+        return mapToCartResponseDTO(cartEntity, items);
+    }
+
+    public CartResponseDTO deleteItem(UUID ownerId, UUID cartItemId) {
+        CartItemEntity cartItemEntity = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Cart item with ID: %s not found", cartItemId)));
+
+        CartEntity cartEntity = cartItemEntity.getCart();
+
+        if(!cartEntity.getOwner().getId().equals(ownerId)) {
+            throw new ResourceNotFoundException(String.format("Cart for owner with ID: %s not found", ownerId));
+        }
+
+        cartItemRepository.delete(cartItemEntity);
+
+        List<CartItemEntity> items = cartItemRepository.findAllByCartId(cartEntity.getId());
+        return mapToCartResponseDTO(cartEntity, items);
+    }
+
 
     private CartResponseDTO mapToCartResponseDTO(CartEntity cartEntity,  List<CartItemEntity> items) {
-
-
         List<CartItemResponseDTO> itemDTOs = items.stream()
                 .map(this::mapToItemResponseDTO)
                 .toList();

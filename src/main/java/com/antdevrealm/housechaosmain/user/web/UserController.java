@@ -4,6 +4,7 @@ import com.antdevrealm.housechaosmain.user.dto.RegistrationRequestDTO;
 import com.antdevrealm.housechaosmain.user.dto.UpdateProfileRequestDTO;
 import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import com.antdevrealm.housechaosmain.user.service.UserService;
+import com.antdevrealm.housechaosmain.util.PrincipalUUIDExtractor;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +36,7 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<UserResponseDTO> profile(@AuthenticationPrincipal Jwt principal) {
-        String uid = principal.getClaimAsString("uid");
-        UUID userId = UUID.fromString(uid);
+        UUID userId = PrincipalUUIDExtractor.extract(principal);
 
         UserResponseDTO userResponseDTO = this.userService.getById(userId);
 
@@ -46,8 +46,8 @@ public class UserController {
     @PutMapping("/profile")
     public ResponseEntity<UserResponseDTO> profile(@AuthenticationPrincipal Jwt principal,
                                                    @RequestBody UpdateProfileRequestDTO req) {
-        String uid = principal.getClaimAsString("uid");
-        UUID userId = UUID.fromString(uid);
+
+        UUID userId = PrincipalUUIDExtractor.extract(principal);
         UserResponseDTO userResponseDTO = this.userService.update(userId, req);
 
         return ResponseEntity.ok(userResponseDTO);
