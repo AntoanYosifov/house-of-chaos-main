@@ -1,6 +1,5 @@
 package com.antdevrealm.housechaosmain.order.model.entity;
 
-
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,6 +28,8 @@ public class OrderItemEntity {
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal unitPrice;
+
+    private int quantity;
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal lineTotal;

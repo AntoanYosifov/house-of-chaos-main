@@ -8,9 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -27,26 +25,22 @@ public class OrderEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private UserEntity owner;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private Instant createdOn;
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal total;
 
-    @OneToMany(mappedBy = "order")
-    @Builder.Default
-    private List<OrderItemEntity> items = new ArrayList<>();
-
-    @ManyToOne(optional = false)
+    @ManyToOne
     private AddressEntity shippingAddress;
 }

@@ -30,7 +30,7 @@ public class ProductEntity {
     @ManyToOne(optional = false)
     private CategoryEntity category;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
 
     private int quantity;

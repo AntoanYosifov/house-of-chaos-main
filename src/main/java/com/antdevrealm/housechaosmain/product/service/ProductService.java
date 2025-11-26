@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -104,10 +106,13 @@ public class ProductService {
     }
 
     private ProductEntity mapToEntity(CreateProductRequestDTO createProductRequestDTO) {
+        BigDecimal normalizedPrice = createProductRequestDTO.price()
+                .setScale(2, RoundingMode.HALF_UP);
+
         return ProductEntity.builder()
                 .name(createProductRequestDTO.name())
                 .description(createProductRequestDTO.description())
-                .price(createProductRequestDTO.price())
+                .price(normalizedPrice)
                 .createdOn(Instant.now())
                 .updatedAt(Instant.now())
                 .newArrival(true)

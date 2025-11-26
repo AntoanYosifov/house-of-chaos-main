@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.auth.dto.refreshtoken;
+package com.antdevrealm.housechaosmain.auth.refreshtoken.dto;
 
 import java.time.Instant;
 import java.util.UUID;

@@ -1,5 +1,5 @@
 package com.antdevrealm.housechaosmain.order.model.enums;
 
 public enum OrderStatus {
-    NEW, PAID, CANCELLED
+    NEW, CONFIRMED, CANCELLED
 }

@@ -3,6 +3,7 @@ package com.antdevrealm.housechaosmain.user.service;
 import com.antdevrealm.housechaosmain.address.dto.AddressRequestDTO;
 import com.antdevrealm.housechaosmain.address.model.AddressEntity;
 import com.antdevrealm.housechaosmain.address.service.AddressService;
+import com.antdevrealm.housechaosmain.cart.service.CartService;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.role.model.entity.RoleEntity;
 import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
@@ -30,21 +31,23 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleService roleService;
+    private final CartService cartService;
     private final AddressService addressService;
     private final PasswordEncoder passwordEncoder;
+
     @Autowired
     public UserService(UserRepository userRepository,
-                       RoleService roleService,
+                       RoleService roleService, CartService cartService,
                        AddressService addressService,
                        PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleService = roleService;
+        this.cartService = cartService;
         this.addressService = addressService;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
-    // TODO: create create cart for the user on registration
     public UserResponseDTO register(RegistrationRequestDTO dto) {
 
         String normalizedEmail = dto.email().trim().toLowerCase();
@@ -56,6 +59,8 @@ public class UserService {
         UserEntity newEntity = mapToEntity(dto);
         newEntity.getRoles().add(this.roleService.getByRole(UserRole.USER));
         UserEntity savedEntity = userRepository.save(newEntity);
+
+        this.cartService.createCart(savedEntity);
 
         return ResponseDTOMapper.mapToUserResponseDTO(savedEntity);
     }

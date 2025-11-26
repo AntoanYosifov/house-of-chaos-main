@@ -6,9 +6,11 @@ import com.antdevrealm.housechaosmain.cart.model.CartEntity;
 import com.antdevrealm.housechaosmain.cart.model.CartItemEntity;
 import com.antdevrealm.housechaosmain.cart.repository.CartItemRepository;
 import com.antdevrealm.housechaosmain.cart.repository.CartRepository;
+import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
+import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,14 @@ public class CartService {
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
         this.imgUrlExpander = imgUrlExpander;
+    }
+
+    public void createCart(UserEntity owner) {
+        CartEntity cartEntity = CartEntity.builder()
+                .owner(owner)
+                .build();
+
+        this.cartRepository.save(cartEntity);
     }
 
     public CartResponseDTO getCartByOwnerId(UUID ownerId) {
@@ -62,6 +72,10 @@ public class CartService {
                     .build();
         } else {
             item.setQuantity(item.getQuantity() + 1);
+        }
+
+        if(item.getQuantity() > productEntity.getQuantity()) {
+            throw new BusinessRuleException(String.format("Cart item quantity: %d can not exceed product available quantity in stock: %d", item.getQuantity(), productEntity.getQuantity()));
         }
 
         cartItemRepository.save(item);
