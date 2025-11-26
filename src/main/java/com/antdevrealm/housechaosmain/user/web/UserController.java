@@ -29,7 +29,7 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> register(@RequestBody @Valid RegistrationRequestDTO req) {
         UserResponseDTO userResponseDTO = userService.register(req);
 
-        URI uriLocation = URI.create("/api/users/" + userResponseDTO.id());
+        URI uriLocation = URI.create("/api/v1/users/" + userResponseDTO.id());
 
         return ResponseEntity.created(uriLocation).body(userResponseDTO);
     }

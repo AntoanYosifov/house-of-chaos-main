@@ -42,7 +42,7 @@ public class OrderService {
         this.productRepository = productRepository;
     }
 
-    public void create(UUID ownerId, CreateOrderRequestDTO orderRequestDTO) {
+    public OrderResponseDTO create(UUID ownerId, CreateOrderRequestDTO orderRequestDTO) {
         UserEntity userEntity = this.userRepository.findById(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("User with ID: %s not found!", ownerId)));
 
@@ -64,6 +64,7 @@ public class OrderService {
 
         List<OrderItemEntity> savedItems = this.orderItemRepository.saveAll(orderItemEntities);
 
+        return mapToOrderResponseDto(savedOrder, savedItems);
 
     }
 
