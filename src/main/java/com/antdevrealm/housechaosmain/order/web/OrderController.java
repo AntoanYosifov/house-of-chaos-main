@@ -9,10 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.UUID;
@@ -35,5 +32,13 @@ public class OrderController {
         URI uriLocation = URI.create("/api/v1/orders/" + orderResponseDTO.id());
 
         return ResponseEntity.created(uriLocation).body(orderResponseDTO);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderResponseDTO> getById(@AuthenticationPrincipal Jwt principal, @PathVariable UUID id) {
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
+        OrderResponseDTO responseDTO = this.orderService.getById(ownerId, id);
+
+        return ResponseEntity.ok(responseDTO);
     }
 }

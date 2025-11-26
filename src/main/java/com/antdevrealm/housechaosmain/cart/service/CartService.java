@@ -42,13 +42,22 @@ public class CartService {
         this.cartRepository.save(cartEntity);
     }
 
+    public void clearCartItems(UserEntity user) {
+        CartEntity cart = cartRepository.findByOwnerId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Cart for owner %s not found".formatted(user.getId())
+                ));
+
+        this.cartItemRepository.deleteAllByCart(cart);
+
+    }
+
     public CartResponseDTO getCartByOwnerId(UUID ownerId) {
         CartEntity cart = cartRepository.findByOwnerId(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Cart for owner %s not found".formatted(ownerId)
-                ));
+                       String.format( "Cart for owner with ID: %s not found", ownerId)));
 
-        List<CartItemEntity> items = cartItemRepository.findAllByCartId(cart.getId());
+        List<CartItemEntity> items = cartItemRepository.findAllByCart(cart);
 
         return mapToCartResponseDTO(cart, items);
     }
@@ -80,7 +89,7 @@ public class CartService {
 
         cartItemRepository.save(item);
 
-        List<CartItemEntity> items = cartItemRepository.findAllByCartId(cartEntity.getId());
+        List<CartItemEntity> items = cartItemRepository.findAllByCart(cartEntity);
         return mapToCartResponseDTO(cartEntity, items);
     }
 
@@ -102,7 +111,7 @@ public class CartService {
             cartItemRepository.save(cartItemEntity);
         }
 
-        List<CartItemEntity> items = cartItemRepository.findAllByCartId(cartEntity.getId());
+        List<CartItemEntity> items = cartItemRepository.findAllByCart(cartEntity);
         return mapToCartResponseDTO(cartEntity, items);
     }
 
@@ -118,7 +127,7 @@ public class CartService {
 
         cartItemRepository.delete(cartItemEntity);
 
-        List<CartItemEntity> items = cartItemRepository.findAllByCartId(cartEntity.getId());
+        List<CartItemEntity> items = cartItemRepository.findAllByCart(cartEntity);
         return mapToCartResponseDTO(cartEntity, items);
     }
 

@@ -1,5 +1,6 @@
 package com.antdevrealm.housechaosmain.order.service;
 
+import com.antdevrealm.housechaosmain.cart.service.CartService;
 import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.order.dto.CreateOrderItemRequestDTO;
@@ -15,9 +16,11 @@ import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
+import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import com.antdevrealm.housechaosmain.util.ResponseDTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -32,16 +35,23 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
+    private final CartService cartService;
+
+    private final ImgUrlExpander imgUrlExpander;
+
 
     @Autowired
     public OrderService(OrderRepository orderRepository,
-                        OrderItemRepository orderItemRepository, UserRepository userRepository, ProductRepository productRepository) {
+                        OrderItemRepository orderItemRepository, UserRepository userRepository, ProductRepository productRepository, CartService cartService, ImgUrlExpander imgUrlExpander) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
+        this.cartService = cartService;
+        this.imgUrlExpander = imgUrlExpander;
     }
 
+    @Transactional
     public OrderResponseDTO create(UUID ownerId, CreateOrderRequestDTO orderRequestDTO) {
         UserEntity userEntity = this.userRepository.findById(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("User with ID: %s not found!", ownerId)));
@@ -64,7 +74,25 @@ public class OrderService {
 
         List<OrderItemEntity> savedItems = this.orderItemRepository.saveAll(orderItemEntities);
 
+        this.cartService.clearCartItems(userEntity);
+
         return mapToOrderResponseDto(savedOrder, savedItems);
+    }
+
+    public OrderResponseDTO getById(UUID ownerId, UUID id) {
+        UserEntity userEntity = this.userRepository.findById(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("User with ID: %s not found!", ownerId)));
+
+        OrderEntity orderEntity = this.orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with ID: %s not found!", id)));
+
+        if(!orderEntity.getOwner().getId().equals(userEntity.getId())) {
+            throw new BusinessRuleException(String.format("Order with ID: %s does not belong to user with ID: %s ", id, ownerId));
+        }
+
+        List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(orderEntity);
+
+        return mapToOrderResponseDto(orderEntity, items);
 
     }
 
@@ -87,7 +115,7 @@ public class OrderService {
                 orderItemEntity.getProduct().getId(),
                 orderItemEntity.getProduct().getName(),
                 orderItemEntity.getUnitPrice(),
-                orderItemEntity.getProduct().getImageUrl(),
+                this.imgUrlExpander.toPublicUrl(orderItemEntity.getProduct().getImageUrl()),
                 orderItemEntity.getQuantity(),
                 orderItemEntity.getLineTotal());
     }
@@ -122,4 +150,6 @@ public class OrderService {
                     .filter(Objects::nonNull)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+
+
 }
