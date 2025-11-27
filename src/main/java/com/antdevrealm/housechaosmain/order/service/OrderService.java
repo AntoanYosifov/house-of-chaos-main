@@ -149,6 +149,14 @@ public class OrderService {
         return mapToOrderResponseDto(updatedEntity, items);
     }
 
+    @Transactional
+    public void delete(UUID ownerId, UUID id) {
+        OrderEntity orderEntity = this.orderRepository.findByIdAndOwnerId(id, ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with ID: %s for owner with ID: %s not found!", id, ownerId)));
+        this.orderItemRepository.deleteAllByOrder(orderEntity);
+        this.orderRepository.delete(orderEntity);
+    }
+
     private List<OrderResponseDTO> getOrderResponseDTOS(List<OrderEntity> entities) {
         if(entities.isEmpty()) {
             return new ArrayList<>();

@@ -89,4 +89,13 @@ public class OrderController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@AuthenticationPrincipal Jwt principal,
+                                       @PathVariable UUID id) {
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
+        this.orderService.delete(ownerId, id);
+
+        return ResponseEntity.noContent().build();
+    }
+
 }
