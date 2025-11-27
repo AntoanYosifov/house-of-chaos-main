@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrderCleanupScheduler {
 
+    private static final int RETENTION_DAYS = 30;
     private final OrderService orderService;
 
     @Autowired
@@ -19,11 +20,11 @@ public class OrderCleanupScheduler {
 
     @Scheduled(cron = "0 0 3 * * *")
     public void cleanCancelledOrders() {
-        int retentionDays = 30;
-        int deleted = this.orderService.cleanOldCancelledOrders(30);
+
+        int deleted = this.orderService.cleanOldCancelledOrders(RETENTION_DAYS);
 
         if(deleted > 0) {
-            log.info("OrderCleanupScheduler removed {} cancelled orders older than {} days.", deleted, retentionDays);
+            log.info("OrderCleanupScheduler removed {} cancelled orders older than {} days.", deleted, RETENTION_DAYS);
         }
     }
 }
