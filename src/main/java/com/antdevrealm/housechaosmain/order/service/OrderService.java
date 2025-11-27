@@ -1,12 +1,12 @@
 package com.antdevrealm.housechaosmain.order.service;
 
+import com.antdevrealm.housechaosmain.address.dto.AddressRequestDTO;
+import com.antdevrealm.housechaosmain.address.model.AddressEntity;
+import com.antdevrealm.housechaosmain.address.service.AddressService;
 import com.antdevrealm.housechaosmain.cart.service.CartService;
 import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
-import com.antdevrealm.housechaosmain.order.dto.CreateOrderItemRequestDTO;
-import com.antdevrealm.housechaosmain.order.dto.CreateOrderRequestDTO;
-import com.antdevrealm.housechaosmain.order.dto.OrderItemResponseDTO;
-import com.antdevrealm.housechaosmain.order.dto.OrderResponseDTO;
+import com.antdevrealm.housechaosmain.order.dto.*;
 import com.antdevrealm.housechaosmain.order.model.entity.OrderEntity;
 import com.antdevrealm.housechaosmain.order.model.entity.OrderItemEntity;
 import com.antdevrealm.housechaosmain.order.model.enums.OrderStatus;
@@ -36,19 +36,30 @@ public class OrderService {
     private final ProductRepository productRepository;
 
     private final CartService cartService;
+    private final AddressService addressService;
 
     private final ImgUrlExpander imgUrlExpander;
 
 
     @Autowired
     public OrderService(OrderRepository orderRepository,
-                        OrderItemRepository orderItemRepository, UserRepository userRepository, ProductRepository productRepository, CartService cartService, ImgUrlExpander imgUrlExpander) {
+                        OrderItemRepository orderItemRepository, UserRepository userRepository, ProductRepository productRepository, CartService cartService, AddressService addressService, ImgUrlExpander imgUrlExpander) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.cartService = cartService;
+        this.addressService = addressService;
         this.imgUrlExpander = imgUrlExpander;
+    }
+
+    public OrderResponseDTO getById(UUID ownerId, UUID id) {
+        OrderEntity orderEntity = this.orderRepository.findByIdAndOwnerId(id, ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with ID: %s for owner with ID: %s not found!", id, ownerId)));
+
+        List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(orderEntity);
+
+        return mapToOrderResponseDto(orderEntity, items);
     }
 
     @Transactional
@@ -79,22 +90,25 @@ public class OrderService {
         return mapToOrderResponseDto(savedOrder, savedItems);
     }
 
-    public OrderResponseDTO getById(UUID ownerId, UUID id) {
-        UserEntity userEntity = this.userRepository.findById(ownerId)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("User with ID: %s not found!", ownerId)));
+    @Transactional
+    public ConfirmedOrderResponseDTO confirm(UUID ownerId, UUID id, AddressRequestDTO shippingAddressDTO) {
+        OrderEntity orderEntity = this.orderRepository.findByIdAndOwnerId(id, ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with ID: %s for owner with ID: %s not found!", id, ownerId)));
 
-        OrderEntity orderEntity = this.orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with ID: %s not found!", id)));
+        AddressEntity addressEntity = this.addressService.create(shippingAddressDTO);
 
-        if(!orderEntity.getOwner().getId().equals(userEntity.getId())) {
-            throw new BusinessRuleException(String.format("Order with ID: %s does not belong to user with ID: %s ", id, ownerId));
-        }
+        orderEntity.setShippingAddress(addressEntity);
+        orderEntity.setStatus(OrderStatus.CONFIRMED);
+        orderEntity.setUpdatedAt(Instant.now());
 
-        List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(orderEntity);
+        OrderEntity updatedEntity = this.orderRepository.save(orderEntity);
 
-        return mapToOrderResponseDto(orderEntity, items);
+        List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(updatedEntity);
+        OrderResponseDTO orderResponseDTO = mapToOrderResponseDto(orderEntity, items);
 
+        return new ConfirmedOrderResponseDTO(orderResponseDTO, ResponseDTOMapper.mapToAddressResponseDTO(updatedEntity.getShippingAddress()));
     }
+
 
     private OrderResponseDTO mapToOrderResponseDto(OrderEntity orderEntity, List<OrderItemEntity> items) {
         List<OrderItemResponseDTO> itemDTOs = items.stream()

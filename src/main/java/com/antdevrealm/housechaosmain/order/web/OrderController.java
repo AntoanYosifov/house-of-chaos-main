@@ -1,6 +1,8 @@
 package com.antdevrealm.housechaosmain.order.web;
 
 
+import com.antdevrealm.housechaosmain.address.dto.AddressRequestDTO;
+import com.antdevrealm.housechaosmain.order.dto.ConfirmedOrderResponseDTO;
 import com.antdevrealm.housechaosmain.order.dto.CreateOrderRequestDTO;
 import com.antdevrealm.housechaosmain.order.dto.OrderResponseDTO;
 import com.antdevrealm.housechaosmain.order.service.OrderService;
@@ -41,4 +43,15 @@ public class OrderController {
 
         return ResponseEntity.ok(responseDTO);
     }
+
+    @PatchMapping("/confirm/{id}")
+    public ResponseEntity<ConfirmedOrderResponseDTO> confirm(@AuthenticationPrincipal Jwt principal,
+                                                             @PathVariable UUID id,
+                                                             @RequestBody @Valid AddressRequestDTO shippingAddress) {
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
+        ConfirmedOrderResponseDTO responseDTO = this.orderService.confirm(ownerId, id, shippingAddress);
+
+        return ResponseEntity.ok(responseDTO);
+    }
+
 }
