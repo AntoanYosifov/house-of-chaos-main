@@ -5,6 +5,7 @@ import com.antdevrealm.housechaosmain.category.exception.CategoryUniqueNameExcep
 import com.antdevrealm.housechaosmain.user.exception.EmailAlreadyUsedException;
 import com.antdevrealm.housechaosmain.user.exception.UserAlreadyHasRoleException;
 import com.antdevrealm.housechaosmain.user.exception.UserHasNoRoleException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,8 +17,20 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleUnexpectedException(Exception ex) {
+        log.error("Unexpected error occurred", ex);
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+
+        problemDetail.setTitle("Internal Server Error");
+        problemDetail.setDetail("An unexpected error occurred. Please try again later.");
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ProblemDetail handleBadCredentials(BadCredentialsException ex) {
@@ -27,7 +40,6 @@ public class GlobalExceptionHandler {
         problemDetail.setDetail("Invalid email or password");
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
-
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -64,8 +76,6 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
-
-
     @ExceptionHandler(CategoryUniqueNameException.class)
     public ProblemDetail handleCategoryUniqueName(CategoryUniqueNameException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
@@ -88,7 +98,6 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
-
     @ExceptionHandler(EmailAlreadyUsedException.class)
     public ProblemDetail handleEmailAlreadyUsed(EmailAlreadyUsedException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
@@ -110,7 +119,6 @@ public class GlobalExceptionHandler {
 
         return problemDetail;
     }
-
 
     @ExceptionHandler(UserHasNoRoleException.class)
     public ProblemDetail handleUserHasNoRole(UserHasNoRoleException ex) {
