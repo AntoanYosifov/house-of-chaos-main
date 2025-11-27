@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -25,6 +26,23 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderResponseDTO> getById(@AuthenticationPrincipal Jwt principal, @PathVariable UUID id) {
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
+        OrderResponseDTO responseDTO = this.orderService.getById(ownerId, id);
+
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    @GetMapping("/new")
+    public ResponseEntity<List<OrderResponseDTO>> getNew(@AuthenticationPrincipal Jwt principal) {
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
+        List<OrderResponseDTO> responseDTOS = this.orderService.getNew(ownerId);
+
+        return ResponseEntity.ok(responseDTOS);
+    }
+
+
     @PostMapping
     public ResponseEntity<OrderResponseDTO> create(@AuthenticationPrincipal Jwt principal,
                                                    @Valid @RequestBody CreateOrderRequestDTO dto) {
@@ -34,14 +52,6 @@ public class OrderController {
         URI uriLocation = URI.create("/api/v1/orders/" + orderResponseDTO.id());
 
         return ResponseEntity.created(uriLocation).body(orderResponseDTO);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<OrderResponseDTO> getById(@AuthenticationPrincipal Jwt principal, @PathVariable UUID id) {
-        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
-        OrderResponseDTO responseDTO = this.orderService.getById(ownerId, id);
-
-        return ResponseEntity.ok(responseDTO);
     }
 
     @PatchMapping("/confirm/{id}")

@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -60,6 +61,22 @@ public class OrderService {
         List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(orderEntity);
 
         return mapToOrderResponseDto(orderEntity, items);
+    }
+
+    public List<OrderResponseDTO> getNew(UUID ownerId) {
+        List<OrderEntity> entities = this.orderRepository.findAllByOwnerIdAndStatus(ownerId, OrderStatus.NEW);
+        if(entities.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<OrderResponseDTO> responseDTOs = new ArrayList<>();
+
+        for (OrderEntity entity : entities) {
+            List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(entity);
+            OrderResponseDTO orderResponseDTO = mapToOrderResponseDto(entity, items);
+            responseDTOs.add(orderResponseDTO);
+        }
+
+        return responseDTOs;
     }
 
     @Transactional
@@ -197,5 +214,6 @@ public class OrderService {
         productEntity.setQuantity(productEntity.getQuantity() - item.getQuantity());
         this.productRepository.save(productEntity);
     }
+
 
 }

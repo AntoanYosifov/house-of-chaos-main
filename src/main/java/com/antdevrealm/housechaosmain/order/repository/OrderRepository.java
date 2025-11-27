@@ -1,14 +1,16 @@
 package com.antdevrealm.housechaosmain.order.repository;
 
 import com.antdevrealm.housechaosmain.order.model.entity.OrderEntity;
+import com.antdevrealm.housechaosmain.order.model.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
-
-    Optional<OrderEntity> findByIdAndOwnerId(UUID id, UUID ownerId) ;
+    Optional<OrderEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
+    List<OrderEntity> findAllByOwnerIdAndStatus(UUID ownerId, OrderStatus status);
 }
