@@ -17,6 +17,7 @@ import com.antdevrealm.housechaosmain.user.exception.UserHasNoRoleException;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.util.ResponseDTOMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
+@Slf4j
 @Service
 public class UserService {
 
@@ -62,6 +63,7 @@ public class UserService {
 
         this.cartService.createCart(savedEntity);
 
+        log.info("User registered: id={}, email={}", savedEntity.getId(), normalizedEmail);
         return ResponseDTOMapper.mapToUserResponseDTO(savedEntity);
     }
 
@@ -85,7 +87,12 @@ public class UserService {
         userEntity.setAddress(addressEntity);
         userEntity.setUpdatedAt(Instant.now());
 
-        return ResponseDTOMapper.mapToUserResponseDTO(this.userRepository.save(userEntity));
+        UserEntity saved = this.userRepository.save(userEntity);
+
+        log.info("User profile updated: id={}, firstName={}, lastName={}",
+                saved.getId(), saved.getFirstName(), saved.getLastName());
+
+        return ResponseDTOMapper.mapToUserResponseDTO(saved);
     }
 
     public UserResponseDTO getById(UUID userId) {
@@ -113,6 +120,7 @@ public class UserService {
 
         userRoles.add(adminRole);
         UserEntity saved = this.userRepository.save(userEntity);
+        log.info("Admin role granted: userId={}, role={}", saved.getId(), adminRole.getRole());
         return ResponseDTOMapper.mapToUserResponseDTO(saved);
     }
 
@@ -130,6 +138,8 @@ public class UserService {
         userRoles.remove(adminRole);
 
         UserEntity saved = this.userRepository.save(userEntity);
+
+        log.info("Admin role removed: userId={}, role={}", saved.getId(), adminRole.getRole());
         return ResponseDTOMapper.mapToUserResponseDTO(saved);
     }
 
