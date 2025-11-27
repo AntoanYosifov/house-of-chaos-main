@@ -42,6 +42,14 @@ public class OrderController {
         return ResponseEntity.ok(responseDTOS);
     }
 
+    @GetMapping("/confirmed")
+    public ResponseEntity<List<OrderResponseDTO>> getConfirmed(@AuthenticationPrincipal Jwt principal) {
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
+        List<OrderResponseDTO> responseDTOS = this.orderService.getConfirmed(ownerId);
+
+        return ResponseEntity.ok(responseDTOS);
+    }
+
 
     @PostMapping
     public ResponseEntity<OrderResponseDTO> create(@AuthenticationPrincipal Jwt principal,

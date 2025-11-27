@@ -65,18 +65,12 @@ public class OrderService {
 
     public List<OrderResponseDTO> getNew(UUID ownerId) {
         List<OrderEntity> entities = this.orderRepository.findAllByOwnerIdAndStatus(ownerId, OrderStatus.NEW);
-        if(entities.isEmpty()) {
-            return new ArrayList<>();
-        }
-        List<OrderResponseDTO> responseDTOs = new ArrayList<>();
+        return getOrderResponseDTOS(entities);
+    }
 
-        for (OrderEntity entity : entities) {
-            List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(entity);
-            OrderResponseDTO orderResponseDTO = mapToOrderResponseDto(entity, items);
-            responseDTOs.add(orderResponseDTO);
-        }
-
-        return responseDTOs;
+    public List<OrderResponseDTO> getConfirmed(UUID ownerId) {
+        List<OrderEntity> entities = this.orderRepository.findAllByOwnerIdAndStatus(ownerId, OrderStatus.CONFIRMED);
+        return getOrderResponseDTOS(entities);
     }
 
     @Transactional
@@ -150,6 +144,21 @@ public class OrderService {
         return mapToOrderResponseDto(updatedEntity, items);
     }
 
+    private List<OrderResponseDTO> getOrderResponseDTOS(List<OrderEntity> entities) {
+        if(entities.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<OrderResponseDTO> responseDTOs = new ArrayList<>();
+
+        for (OrderEntity entity : entities) {
+            List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(entity);
+            OrderResponseDTO orderResponseDTO = mapToOrderResponseDto(entity, items);
+            responseDTOs.add(orderResponseDTO);
+        }
+
+        return responseDTOs;
+    }
+
     private OrderResponseDTO mapToOrderResponseDto(OrderEntity orderEntity, List<OrderItemEntity> items) {
         List<OrderItemResponseDTO> itemDTOs = items.stream()
                 .map(this::mapToItemResponseDto).toList();
@@ -214,6 +223,7 @@ public class OrderService {
         productEntity.setQuantity(productEntity.getQuantity() - item.getQuantity());
         this.productRepository.save(productEntity);
     }
+
 
 
 }
