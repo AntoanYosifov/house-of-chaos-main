@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -92,6 +93,12 @@ public class ProductService {
 
     public boolean existsByCategory(CategoryEntity category) {
         return this.productRepository.existsByCategory(category);
+    }
+
+    @Transactional
+    public int markOldNewArrivalsAsNotNew(int daysAsNew) {
+        Instant threshold = Instant.now().minus(Duration.ofDays(daysAsNew));
+        return productRepository.markOldNewArrivalsAsNotNew(threshold);
     }
 
     private ProductResponseDTO mapToResponseDto(ProductEntity productEntity) {

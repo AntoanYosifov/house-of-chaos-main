@@ -3,9 +3,11 @@ package com.antdevrealm.housechaosmain.product.repository;
 import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,6 +39,18 @@ public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
             nativeQuery = true
     )
     List<ProductEntity> findTop10Cheapest();
+
+    @Modifying
+    @Query(
+            """
+            UPDATE ProductEntity p
+            SET p.newArrival = false
+            WHERE p.newArrival = true
+            AND p.isActive = true
+            AND p.createdOn < :threshold
+            """
+    )
+    int markOldNewArrivalsAsNotNew(Instant threshold);
 
     boolean existsByCategory(CategoryEntity category);
 }
