@@ -50,6 +50,14 @@ public class OrderController {
         return ResponseEntity.ok(responseDTOS);
     }
 
+    @GetMapping("/cancelled")
+    public ResponseEntity<List<OrderResponseDTO>> getCancelled(@AuthenticationPrincipal Jwt principal) {
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
+        List<OrderResponseDTO> responseDTOS = this.orderService.getCancelled(ownerId);
+
+        return ResponseEntity.ok(responseDTOS);
+    }
+
 
     @PostMapping
     public ResponseEntity<OrderResponseDTO> create(@AuthenticationPrincipal Jwt principal,

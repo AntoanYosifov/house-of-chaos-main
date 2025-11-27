@@ -73,6 +73,11 @@ public class OrderService {
         return getOrderResponseDTOS(entities);
     }
 
+    public List<OrderResponseDTO> getCancelled(UUID ownerId) {
+        List<OrderEntity> entities = this.orderRepository.findAllByOwnerIdAndStatus(ownerId, OrderStatus.CANCELLED);
+        return getOrderResponseDTOS(entities);
+    }
+
     @Transactional
     public OrderResponseDTO create(UUID ownerId, CreateOrderRequestDTO orderRequestDTO) {
         UserEntity userEntity = this.userRepository.findById(ownerId)
