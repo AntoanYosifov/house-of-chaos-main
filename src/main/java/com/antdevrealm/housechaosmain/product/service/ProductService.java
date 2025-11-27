@@ -9,6 +9,7 @@ import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
@@ -66,6 +68,9 @@ public class ProductService {
         productEntity.setCategory(category);
 
         ProductEntity saved = this.productRepository.save(productEntity);
+
+        log.info("Product created: id={}, name={}, categoryId={}",
+                saved.getId(), saved.getName(), category.getId());
         return mapToResponseDto(saved);
     }
 
@@ -78,6 +83,8 @@ public class ProductService {
         productEntity.setPrice(dto.price());
 
         ProductEntity updated = this.productRepository.save(productEntity);
+        log.info("Product updated: id={}, newPrice={}, newDescriptionLength={}",
+                updated.getId(), updated.getPrice(), updated.getDescription().length());
 
         return mapToResponseDto(updated);
     }
@@ -89,6 +96,7 @@ public class ProductService {
 
         productEntity.setActive(false);
         this.productRepository.save(productEntity);
+        log.info("Product soft-deleted: id={}, name={}", productEntity.getId(), productEntity.getName());
     }
 
     public boolean existsByCategory(CategoryEntity category) {
