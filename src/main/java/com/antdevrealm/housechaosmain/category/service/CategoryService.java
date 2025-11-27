@@ -7,6 +7,8 @@ import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Category with ID: %s not found!", categoryId)));
     }
 
+    @Cacheable("categories")
     public List<CategoryResponseDTO> getAll() {
         List<CategoryEntity> allCategories = this.categoryRepository.findAll();
 
@@ -38,6 +41,7 @@ public class CategoryService {
         return allCategories.stream().map(c -> new CategoryResponseDTO(c.getId(), c.getName())).toList();
     }
 
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponseDTO create(CreateCategoryRequestDTO dto) {
 
         String normalizedName = dto.name().trim().toLowerCase();
@@ -53,7 +57,7 @@ public class CategoryService {
 
         return new CategoryResponseDTO(saved.getId(), saved.getName());
     }
-
+    @CacheEvict(value = "categories", allEntries = true)
     public void delete(CategoryEntity categoryEntity) {
         this.categoryRepository.delete(categoryEntity);
     }

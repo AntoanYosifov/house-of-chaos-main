@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-// TODO: Add logger
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
