@@ -84,7 +84,7 @@ public class CartService {
         }
 
         if(item.getQuantity() > productEntity.getQuantity()) {
-            throw new BusinessRuleException(String.format("Cart item quantity: %d can not exceed product available quantity in stock: %d", item.getQuantity(), productEntity.getQuantity()));
+            throw new BusinessRuleException(String.format("Cart item quantity: %d for product with ID: %s can not exceed product available quantity in stock: %d", item.getQuantity(), productEntity.getId() , productEntity.getQuantity()));
         }
 
         cartItemRepository.save(item);

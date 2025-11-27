@@ -106,9 +106,9 @@ public class OrderService {
         List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(updatedEntity);
         OrderResponseDTO orderResponseDTO = mapToOrderResponseDto(orderEntity, items);
 
+        items.forEach(this::reduceProductInventoryQuantity);
         return new ConfirmedOrderResponseDTO(orderResponseDTO, ResponseDTOMapper.mapToAddressResponseDTO(updatedEntity.getShippingAddress()));
     }
-
 
     private OrderResponseDTO mapToOrderResponseDto(OrderEntity orderEntity, List<OrderItemEntity> items) {
         List<OrderItemResponseDTO> itemDTOs = items.stream()
@@ -165,5 +165,14 @@ public class OrderService {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    private void reduceProductInventoryQuantity(OrderItemEntity item) {
+        ProductEntity productEntity = item.getProduct();
+        if(item.getQuantity() > productEntity.getQuantity()) {
+            throw new BusinessRuleException(String.format("Order item quantity: %d for product with ID: %s can not exceed product available quantity in stock: %d", item.getQuantity(), productEntity.getId(), productEntity.getQuantity()));
+        }
+
+        productEntity.setQuantity(productEntity.getQuantity() - item.getQuantity());
+        this.productRepository.save(productEntity);
+    }
 
 }
