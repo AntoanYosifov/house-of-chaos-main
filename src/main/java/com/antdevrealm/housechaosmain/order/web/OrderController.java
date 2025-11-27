@@ -54,4 +54,13 @@ public class OrderController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PostMapping("/cancel/{id}")
+    public ResponseEntity<OrderResponseDTO> cancel(@AuthenticationPrincipal Jwt principal,
+                                                   @PathVariable UUID id) {
+        UUID ownerId = PrincipalUUIDExtractor.extract(principal);
+
+        OrderResponseDTO responseDTO = this.orderService.cancel(ownerId, id);
+        return ResponseEntity.ok(responseDTO);
+    }
+
 }

@@ -95,6 +95,10 @@ public class OrderService {
         OrderEntity orderEntity = this.orderRepository.findByIdAndOwnerId(id, ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with ID: %s for owner with ID: %s not found!", id, ownerId)));
 
+        if(orderEntity.getStatus().equals(OrderStatus.CONFIRMED)) {
+            throw new BusinessRuleException(String.format("Order with ID: %s already confirmed", orderEntity.getId()));
+        }
+
         AddressEntity addressEntity = this.addressService.create(shippingAddressDTO);
 
         orderEntity.setShippingAddress(addressEntity);
@@ -108,6 +112,25 @@ public class OrderService {
 
         items.forEach(this::reduceProductInventoryQuantity);
         return new ConfirmedOrderResponseDTO(orderResponseDTO, ResponseDTOMapper.mapToAddressResponseDTO(updatedEntity.getShippingAddress()));
+    }
+
+    public OrderResponseDTO cancel(UUID ownerId, UUID id) {
+        OrderEntity orderEntity = this.orderRepository.findByIdAndOwnerId(id, ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with ID: %s for owner with ID: %s not found!", id, ownerId)));
+
+        if(orderEntity.getStatus().equals(OrderStatus.CANCELLED)) {
+            throw new BusinessRuleException(String.format("Order with ID: %s already cancelled", orderEntity.getId()));
+        }
+
+        if(orderEntity.getStatus().equals(OrderStatus.CONFIRMED)) {
+            throw new BusinessRuleException(String.format("Can not cancel a confirmed order. Order ID: %s", orderEntity.getId()));
+        }
+
+        orderEntity.setStatus(OrderStatus.CANCELLED);
+        OrderEntity updatedEntity = this.orderRepository.save(orderEntity);
+
+        List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(updatedEntity);
+        return mapToOrderResponseDto(updatedEntity, items);
     }
 
     private OrderResponseDTO mapToOrderResponseDto(OrderEntity orderEntity, List<OrderItemEntity> items) {
