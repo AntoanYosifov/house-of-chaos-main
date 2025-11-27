@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -153,6 +154,27 @@ public class OrderService {
     public void delete(UUID ownerId, UUID id) {
         OrderEntity orderEntity = this.orderRepository.findByIdAndOwnerId(id, ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with ID: %s for owner with ID: %s not found!", id, ownerId)));
+
+
+        deleteOrderWithItems(orderEntity);
+    }
+
+    @Transactional
+    public int cleanOldCancelledOrders(int retentionDays) {
+        Instant before = Instant.now().minus(Duration.ofDays(retentionDays));
+
+        List<OrderEntity> ordersToDelete = this.orderRepository.findAllByStatusAndUpdatedAtBefore(OrderStatus.CANCELLED, before);
+
+        if(ordersToDelete.isEmpty()) {
+            return 0;
+        }
+        ordersToDelete.forEach(this::deleteOrderWithItems);
+
+        return ordersToDelete.size();
+    }
+
+    @Transactional
+    void deleteOrderWithItems(OrderEntity orderEntity) {
         this.orderItemRepository.deleteAllByOrder(orderEntity);
         this.orderRepository.delete(orderEntity);
     }
