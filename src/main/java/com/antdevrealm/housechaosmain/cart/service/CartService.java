@@ -12,12 +12,14 @@ import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class CartService {
 
@@ -39,7 +41,8 @@ public class CartService {
                 .owner(owner)
                 .build();
 
-        this.cartRepository.save(cartEntity);
+        CartEntity savedCart = this.cartRepository.save(cartEntity);
+        log.info("Cart created: cartId={}, ownerId={}", savedCart.getId(), owner.getId());
     }
 
     public void clearCartItems(UserEntity user) {
@@ -49,7 +52,7 @@ public class CartService {
                 ));
 
         this.cartItemRepository.deleteAllByCart(cart);
-
+        log.info("Cart items cleared: cartId={}, ownerId={}", cart.getId(), user.getId());
     }
 
     public CartResponseDTO getCartByOwnerId(UUID ownerId) {
@@ -87,9 +90,11 @@ public class CartService {
             throw new BusinessRuleException(String.format("Cart item quantity: %d for product with ID: %s can not exceed product available quantity in stock: %d", item.getQuantity(), productEntity.getId() , productEntity.getQuantity()));
         }
 
-        cartItemRepository.save(item);
+        CartItemEntity savedItem = cartItemRepository.save(item);
 
         List<CartItemEntity> items = cartItemRepository.findAllByCart(cartEntity);
+        log.info("Cart updated (add item): cartId={}, ownerId={}, productId={}, cartItemId={}, newQuantity={}, totalItems={}",
+                cartEntity.getId(), ownerId, productId, savedItem.getId(), savedItem.getQuantity(), items.size());
         return mapToCartResponseDTO(cartEntity, items);
     }
 
@@ -112,6 +117,10 @@ public class CartService {
         }
 
         List<CartItemEntity> items = cartItemRepository.findAllByCart(cartEntity);
+        log.info("Cart updated (decrease item): cartId={}, ownerId={}, cartItemId={}, productId={}, totalItems={}",
+                cartEntity.getId(), ownerId, cartItemId, cartItemEntity.getProduct().getId(),
+                items.size());
+
         return mapToCartResponseDTO(cartEntity, items);
     }
 
@@ -128,6 +137,9 @@ public class CartService {
         cartItemRepository.delete(cartItemEntity);
 
         List<CartItemEntity> items = cartItemRepository.findAllByCart(cartEntity);
+
+        log.info("Cart item deleted: cartId={}, ownerId={}, cartItemId={},  totalItemsAfterDelete={}",
+                cartEntity.getId(), ownerId, cartItemId, items.size());
         return mapToCartResponseDTO(cartEntity, items);
     }
 
