@@ -89,8 +89,8 @@ public class UserService {
 
         UserEntity saved = this.userRepository.save(userEntity);
 
-        log.info("User profile updated: id={}, firstName={}, lastName={}",
-                saved.getId(), saved.getFirstName(), saved.getLastName());
+        log.info("User profile updated: id={}",
+                saved.getId());
 
         return ResponseDTOMapper.mapToUserResponseDTO(saved);
     }
