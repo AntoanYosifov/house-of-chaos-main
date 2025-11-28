@@ -7,7 +7,6 @@ import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
-import com.antdevrealm.housechaosmain.review.ReviewService;
 import com.antdevrealm.housechaosmain.role.model.entity.RoleEntity;
 import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.role.repository.RoleRepository;
@@ -33,23 +32,18 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final CartRepository cartRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private final ReviewService reviewService;
-
-
     private final List<String> categoryNames = List.of("chair", "table", "couch", "lamp");
     @Autowired
     public DatabaseSeeder(ProductRepository productRepository,
                           CategoryRepository categoryRepository, RoleRepository roleRepository,
                           UserRepository userRepository, CartRepository cartRepository,
-                          PasswordEncoder passwordEncoder, ReviewService reviewService) {
+                          PasswordEncoder passwordEncoder) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.cartRepository = cartRepository;
         this.passwordEncoder = passwordEncoder;
-
-        this.reviewService = reviewService;
     }
 
     @Override
@@ -106,9 +100,6 @@ public class DatabaseSeeder implements CommandLineRunner {
             seedCouches();
             seedLamps();
         }
-
-        reviewService.getReviewById();
-
     }
 
     private void seedChairs() {
