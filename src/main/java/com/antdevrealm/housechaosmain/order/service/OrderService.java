@@ -18,6 +18,7 @@ import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import com.antdevrealm.housechaosmain.util.ResponseDTOMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
+@Slf4j
 @Service
 public class OrderService {
     private final OrderRepository orderRepository;
@@ -104,6 +105,9 @@ public class OrderService {
 
         this.cartService.clearCartItems(userEntity);
 
+        log.info("Order created: id={}, ownerId={}, items={}, total={}",
+                savedOrder.getId(), ownerId, savedItems.size(), savedOrder.getTotal());
+
         return mapToOrderResponseDto(savedOrder, savedItems);
     }
 
@@ -128,6 +132,11 @@ public class OrderService {
         OrderResponseDTO orderResponseDTO = mapToOrderResponseDto(orderEntity, items);
 
         items.forEach(this::reduceProductInventoryQuantity);
+
+        log.info("Order confirmed: id={}, ownerId={}, total={}, shippingAddressId={}",
+                updatedEntity.getId(), ownerId, updatedEntity.getTotal(),
+                updatedEntity.getShippingAddress().getId());
+
         return new ConfirmedOrderResponseDTO(orderResponseDTO, ResponseDTOMapper.mapToAddressResponseDTO(updatedEntity.getShippingAddress()));
     }
 
@@ -147,6 +156,8 @@ public class OrderService {
         OrderEntity updatedEntity = this.orderRepository.save(orderEntity);
 
         List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(updatedEntity);
+
+        log.info("Order cancelled: id={}, ownerId={}", updatedEntity.getId(), ownerId);
         return mapToOrderResponseDto(updatedEntity, items);
     }
 
@@ -157,6 +168,7 @@ public class OrderService {
 
 
         deleteOrderWithItems(orderEntity);
+        log.info("Order deleted: id={}, ownerId={}", orderEntity.getId(), ownerId);
     }
 
     @Transactional

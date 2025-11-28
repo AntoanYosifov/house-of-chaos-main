@@ -143,7 +143,6 @@ public class UserService {
         return ResponseDTOMapper.mapToUserResponseDTO(saved);
     }
 
-
     private UserEntity mapToEntity(RegistrationRequestDTO dto) {
         return UserEntity.builder()
                 .email(dto.email())
