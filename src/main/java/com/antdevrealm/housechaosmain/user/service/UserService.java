@@ -151,5 +151,4 @@ public class UserService {
                 .updatedAt(Instant.now())
                 .build();
     }
-
 }
