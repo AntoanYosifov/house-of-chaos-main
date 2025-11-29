@@ -27,10 +27,6 @@ public class JwtService {
         this.ttlSeconds = ttlSeconds;
     }
 
-    public long ttlSeconds() {
-        return this.ttlSeconds;
-    }
-
     public String generateToken(HOCUserDetails hocUserDetails) {
         Instant now = Instant.now();
 
@@ -50,6 +46,9 @@ public class JwtService {
         JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build();
 
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader,claims)).getTokenValue();
+    }
 
+    public long ttlSeconds() {
+        return this.ttlSeconds;
     }
 }

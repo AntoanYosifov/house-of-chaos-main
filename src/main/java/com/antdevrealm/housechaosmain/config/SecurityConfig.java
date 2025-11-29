@@ -1,5 +1,4 @@
 package com.antdevrealm.housechaosmain.config;
-
 import com.antdevrealm.housechaosmain.auth.jwt.handler.RestAuthenticationEntryPoint;
 import com.antdevrealm.housechaosmain.auth.service.HOCUserDetailsService;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;

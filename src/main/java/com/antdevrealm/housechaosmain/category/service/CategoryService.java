@@ -59,10 +59,10 @@ public class CategoryService {
         log.info("Category created: id={}, name={}", saved.getId(), saved.getName());
         return new CategoryResponseDTO(saved.getId(), saved.getName());
     }
+
     @CacheEvict(value = "categories", allEntries = true)
     public void delete(CategoryEntity categoryEntity) {
         this.categoryRepository.delete(categoryEntity);
         log.info("Category deleted: id={}, name={}", categoryEntity.getId(), categoryEntity.getName());
     }
-
 }

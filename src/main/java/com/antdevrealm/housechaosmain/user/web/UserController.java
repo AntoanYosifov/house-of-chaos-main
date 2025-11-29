@@ -1,5 +1,4 @@
 package com.antdevrealm.housechaosmain.user.web;
-
 import com.antdevrealm.housechaosmain.user.dto.RegistrationRequestDTO;
 import com.antdevrealm.housechaosmain.user.dto.UpdateProfileRequestDTO;
 import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
