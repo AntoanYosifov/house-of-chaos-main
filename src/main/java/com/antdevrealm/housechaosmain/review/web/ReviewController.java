@@ -3,8 +3,11 @@ package com.antdevrealm.housechaosmain.review.web;
 import com.antdevrealm.housechaosmain.review.dto.CreateReviewRequestDTO;
 import com.antdevrealm.housechaosmain.review.dto.ReviewResponseDTO;
 import com.antdevrealm.housechaosmain.review.service.ReviewService;
+import com.antdevrealm.housechaosmain.util.PrincipalUUIDExtractor;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,13 +20,6 @@ public class ReviewController {
 
     public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ReviewResponseDTO> getById(@PathVariable UUID id) {
-        ReviewResponseDTO responseDTO = this.reviewService.getReviewById(id);
-
-        return ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping("/product/{id}")
@@ -40,8 +36,9 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        this.reviewService.deleteById(id);
+    public ResponseEntity<Void> delete(@AuthenticationPrincipal Jwt principal, @PathVariable UUID id) {
+        UUID userId = PrincipalUUIDExtractor.extract(principal);
+        this.reviewService.deleteById(id, userId);
         return ResponseEntity.noContent().build();
     }
 }

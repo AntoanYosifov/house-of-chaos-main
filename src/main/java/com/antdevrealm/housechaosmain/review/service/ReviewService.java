@@ -28,11 +28,6 @@ public class ReviewService {
         this.reviewClient = reviewClient;
     }
 
-    public ReviewResponseDTO getReviewById(UUID id) {
-        ResponseEntity<ReviewResponseDTO> httpResponse = reviewClient.getById(id);
-        return httpResponse.getBody();
-    }
-
     public List<ReviewResponseDTO> getAllByProductId(UUID productId) {
         ResponseEntity<List<ReviewResponseDTO>> httpResponse = this.reviewClient.getAllBySubjectId(productId);
         return httpResponse.getBody();
@@ -50,7 +45,13 @@ public class ReviewService {
         return httpResponse.getBody();
     }
 
-    public void deleteById(UUID id) {
+    public void deleteById(UUID id, UUID userId) {
+        ResponseEntity<ReviewResponseDTO> httpResponse = this.reviewClient.getById(id);
+        ReviewResponseDTO body = httpResponse.getBody();
+        UUID authorId = body.authorId();
+        if(!authorId.equals(userId)) {
+            throw new BusinessRuleException(String.format("Author ID: %s and User ID: %s do not match", authorId, userId));
+        }
         this.reviewClient.delete(id);
     }
 
