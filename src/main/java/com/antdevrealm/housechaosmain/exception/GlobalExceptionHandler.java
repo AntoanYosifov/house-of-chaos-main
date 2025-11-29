@@ -2,6 +2,7 @@ package com.antdevrealm.housechaosmain.exception;
 
 import com.antdevrealm.housechaosmain.auth.refreshtoken.exception.RefreshTokenInvalidException;
 import com.antdevrealm.housechaosmain.category.exception.CategoryUniqueNameException;
+import com.antdevrealm.housechaosmain.review.exception.ReviewServiceFeignCallException;
 import com.antdevrealm.housechaosmain.user.exception.EmailAlreadyUsedException;
 import com.antdevrealm.housechaosmain.user.exception.UserAlreadyHasRoleException;
 import com.antdevrealm.housechaosmain.user.exception.UserHasNoRoleException;
@@ -34,7 +35,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ProblemDetail handleBadCredentials(BadCredentialsException ex) {
-
+        log.error("Unexpected error occurred", ex);
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
         problemDetail.setTitle("Invalid Credentials");
         problemDetail.setDetail("Invalid email or password");
@@ -125,6 +126,19 @@ public class GlobalExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.CONFLICT);
 
         problemDetail.setTitle("User doesn't have a role");
+        problemDetail.setDetail(ex.getMessage());
+        problemDetail.setProperty("timestamp", Instant.now());
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(ReviewServiceFeignCallException.class)
+    public ProblemDetail handleReviewServiceError(ReviewServiceFeignCallException ex) {
+        log.error("Error while calling review microservice", ex);
+
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.SERVICE_UNAVAILABLE);
+
+        problemDetail.setTitle("Review Service Unavailable");
         problemDetail.setDetail(ex.getMessage());
         problemDetail.setProperty("timestamp", Instant.now());
 

@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.review;
+package com.antdevrealm.housechaosmain.review.exception;
 
 public class ReviewServiceFeignCallException extends RuntimeException{
     public ReviewServiceFeignCallException(String message) {
