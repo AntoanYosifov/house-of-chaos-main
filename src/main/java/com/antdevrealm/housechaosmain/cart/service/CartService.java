@@ -93,7 +93,7 @@ public class CartService {
         CartItemEntity savedItem = cartItemRepository.save(item);
 
         List<CartItemEntity> items = cartItemRepository.findAllByCart(cartEntity);
-        log.info("Cart updated (add item): cartId={}, ownerId={}, productId={}, cartItemId={}, newQuantity={}, totalItems={}",
+        log.info("Cart updated (add item): cartId={}, ownerId={}, subjectId={}, cartItemId={}, newQuantity={}, totalItems={}",
                 cartEntity.getId(), ownerId, productId, savedItem.getId(), savedItem.getQuantity(), items.size());
         return mapToCartResponseDTO(cartEntity, items);
     }
@@ -117,7 +117,7 @@ public class CartService {
         }
 
         List<CartItemEntity> items = cartItemRepository.findAllByCart(cartEntity);
-        log.info("Cart updated (decrease item): cartId={}, ownerId={}, cartItemId={}, productId={}, totalItems={}",
+        log.info("Cart updated (decrease item): cartId={}, ownerId={}, cartItemId={}, subjectId={}, totalItems={}",
                 cartEntity.getId(), ownerId, cartItemId, cartItemEntity.getProduct().getId(),
                 items.size());
 

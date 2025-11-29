@@ -4,10 +4,7 @@ import com.antdevrealm.housechaosmain.review.dto.CreateReviewRequestDTO;
 import com.antdevrealm.housechaosmain.review.dto.ReviewResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +18,7 @@ public interface ReviewClient {
     ResponseEntity<List<ReviewResponseDTO>> getAllBySubjectId(@PathVariable("id") UUID subjectId);
 
     @PostMapping
-    ResponseEntity<ReviewResponseDTO> create(CreateReviewRequestDTO dto);
+    ResponseEntity<ReviewResponseDTO> create(@RequestBody CreateReviewRequestDTO dto);
 
     @DeleteMapping("/{id}")
     ResponseEntity<Void> delete(@PathVariable UUID id);

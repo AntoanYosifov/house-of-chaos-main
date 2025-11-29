@@ -9,6 +9,9 @@ public record CreateReviewRequestDTO(
         @NotNull(message = "User ID is required")
         UUID authorId,
 
+        @NotBlank(message = "Author name is required")
+        String authorName,
+
         @NotNull(message = "Product ID is required")
         UUID subjectId,
 
