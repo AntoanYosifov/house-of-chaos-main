@@ -1,6 +1,8 @@
 package com.antdevrealm.housechaosmain.category;
 
 import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
+import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
+import com.antdevrealm.housechaosmain.category.exception.CategoryUniqueNameException;
 import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
 import com.antdevrealm.housechaosmain.category.service.CategoryService;
@@ -99,5 +101,44 @@ public class CategoryServiceUTest {
         assertThat(result).isEmpty();
 
         verify(categoryRepository, times(1)).findAll();
+    }
+
+    @Test
+    void givenUniqueCategoryName_whenCreate_thenCategoryIsCreatedAndReturned() {
+        String uniqueCategoryName = "furniture";
+
+        CreateCategoryRequestDTO requestDTO = new CreateCategoryRequestDTO(uniqueCategoryName);
+
+        UUID generatedId = UUID.randomUUID();
+        CategoryEntity savedEntity = CategoryEntity.builder()
+                .id(generatedId)
+                .name(uniqueCategoryName)
+                .build();
+
+        when(categoryRepository.existsByName(uniqueCategoryName)).thenReturn(false);
+
+        when(categoryRepository.save(any(CategoryEntity.class))).thenReturn(savedEntity);
+
+        CategoryResponseDTO result = categoryService.create(requestDTO);
+
+        assertThat(result.id()).isEqualTo(generatedId);
+        assertThat(result.name()).isEqualTo(uniqueCategoryName);
+
+        verify(categoryRepository, times(1)).existsByName(uniqueCategoryName);
+        verify(categoryRepository, times(1)).save(any(CategoryEntity.class));
+    }
+
+    @Test
+    void givenCategoryNameAlreadyExists_whenCreate_thenCategoryUniqueNameExceptionIsThrown() {
+        String existingCategoryName = "furniture";
+
+        CreateCategoryRequestDTO requestDTO = new CreateCategoryRequestDTO(existingCategoryName);
+
+        when(categoryRepository.existsByName(existingCategoryName)).thenReturn(true);
+
+        assertThrows(CategoryUniqueNameException.class, () -> categoryService.create(requestDTO));
+
+        verify(categoryRepository, times(1)).existsByName(existingCategoryName);
+        verify(categoryRepository, never()).save(any(CategoryEntity.class));
     }
 }
