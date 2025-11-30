@@ -141,4 +141,19 @@ public class CategoryServiceUTest {
         verify(categoryRepository, times(1)).existsByName(existingCategoryName);
         verify(categoryRepository, never()).save(any(CategoryEntity.class));
     }
+
+    @Test
+    void givenCategoryEntity_whenDelete_thenCategoryIsDeleted() {
+        UUID categoryId = UUID.randomUUID();
+        String categoryName = "Furniture";
+
+        CategoryEntity categoryEntity = CategoryEntity.builder()
+                .id(categoryId)
+                .name(categoryName)
+                .build();
+
+        categoryService.delete(categoryEntity);
+
+        verify(categoryRepository, times(1)).delete(categoryEntity);
+    }
 }
