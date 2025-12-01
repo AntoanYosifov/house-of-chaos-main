@@ -37,7 +37,7 @@ public class CategoryServiceUTest {
 
         CategoryEntity categoryEntity = CategoryEntity.builder()
                 .id(categoryId)
-                .name("Furniture")
+                .name("lamp")
                 .build();
 
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(categoryEntity));
@@ -46,7 +46,7 @@ public class CategoryServiceUTest {
 
         assertThat(result).isEqualTo(categoryEntity);
         assertThat(result.getId()).isEqualTo(categoryId);
-        assertThat(result.getName()).isEqualTo("Furniture");
+        assertThat(result.getName()).isEqualTo("lamp");
 
         verify(categoryRepository, times(1)).findById(categoryId);
     }
@@ -69,12 +69,12 @@ public class CategoryServiceUTest {
 
         CategoryEntity category1 = CategoryEntity.builder()
                 .id(categoryId1)
-                .name("Furniture")
+                .name("lamp")
                 .build();
 
         CategoryEntity category2 = CategoryEntity.builder()
                 .id(categoryId2)
-                .name("Electronics")
+                .name("desk")
                 .build();
 
         List<CategoryEntity> categories = List.of(category1, category2);
@@ -85,9 +85,9 @@ public class CategoryServiceUTest {
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).id()).isEqualTo(categoryId1);
-        assertThat(result.get(0).name()).isEqualTo("Furniture");
+        assertThat(result.get(0).name()).isEqualTo("lamp");
         assertThat(result.get(1).id()).isEqualTo(categoryId2);
-        assertThat(result.get(1).name()).isEqualTo("Electronics");
+        assertThat(result.get(1).name()).isEqualTo("desk");
 
         verify(categoryRepository, times(1)).findAll();
     }
@@ -105,7 +105,7 @@ public class CategoryServiceUTest {
 
     @Test
     void givenUniqueCategoryName_whenCreate_thenCategoryIsCreatedAndReturned() {
-        String uniqueCategoryName = "furniture";
+        String uniqueCategoryName = "chair";
 
         CreateCategoryRequestDTO requestDTO = new CreateCategoryRequestDTO(uniqueCategoryName);
 
@@ -130,7 +130,7 @@ public class CategoryServiceUTest {
 
     @Test
     void givenCategoryNameAlreadyExists_whenCreate_thenCategoryUniqueNameExceptionIsThrown() {
-        String existingCategoryName = "furniture";
+        String existingCategoryName = "lamp";
 
         CreateCategoryRequestDTO requestDTO = new CreateCategoryRequestDTO(existingCategoryName);
 
@@ -145,7 +145,7 @@ public class CategoryServiceUTest {
     @Test
     void givenCategoryEntity_whenDelete_thenCategoryIsDeleted() {
         UUID categoryId = UUID.randomUUID();
-        String categoryName = "Furniture";
+        String categoryName = "desk";
 
         CategoryEntity categoryEntity = CategoryEntity.builder()
                 .id(categoryId)
