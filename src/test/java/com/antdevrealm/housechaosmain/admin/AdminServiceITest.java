@@ -250,4 +250,27 @@ public class AdminServiceITest {
         assertThat(result.stream().map(UserResponseDTO::id)).containsExactlyInAnyOrder(savedUser2.getId(), savedUser3.getId());
         assertThat(result.stream().map(UserResponseDTO::id)).doesNotContain(savedUser1.getId());
     }
+
+    @Test
+    void promoteToAdmin_addsAdminRoleThroughUserService() {
+        RoleEntity userRole = roleRepository.findByRole(UserRole.USER)
+                .orElseThrow(() -> new RuntimeException("USER role not found"));
+
+        UserEntity user = UserEntity.builder()
+                .email("testuser@test.com")
+                .password("encodedPassword")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        user.getRoles().add(userRole);
+        UserEntity savedUser = userRepository.save(user);
+
+        UserResponseDTO result = adminService.promoteToAdmin(savedUser.getId());
+
+        UserEntity updatedUser = userRepository.findById(savedUser.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        assertThat(updatedUser.getRoles()).hasSize(2);
+        assertThat(result.roles()).contains(UserRole.USER, UserRole.ADMIN);
+    }
 }
