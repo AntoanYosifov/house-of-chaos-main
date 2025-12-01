@@ -1,14 +1,13 @@
 package com.antdevrealm.housechaosmain.auth.refreshtoken.service;
 
 import com.antdevrealm.housechaosmain.auth.refreshtoken.dto.CreatedRefreshTokenDTO;
+import com.antdevrealm.housechaosmain.auth.refreshtoken.dto.RotationRefreshTokenResultDTO;
+import com.antdevrealm.housechaosmain.auth.refreshtoken.exception.RefreshTokenInvalidException;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.model.RefreshTokenEntity;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.repository.RefreshTokenRepository;
-import com.antdevrealm.housechaosmain.auth.refreshtoken.exception.RefreshTokenInvalidException;
-import com.antdevrealm.housechaosmain.auth.refreshtoken.dto.RotationRefreshTokenResultDTO;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.util.TokenHasher;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +28,7 @@ public class RefreshTokenService {
     public RefreshTokenService(RefreshTokenRepository tokenRepository,
                                TokenHasher tokenHasher,
                                SecureRandom secureRandom,
-                               @Qualifier("refreshTokenTtl") Duration refreshTokenTtl) {
+                               Duration refreshTokenTtl) {
         this.tokenRepository = tokenRepository;
         this.tokenHasher = tokenHasher;
         this.secureRandom = secureRandom;

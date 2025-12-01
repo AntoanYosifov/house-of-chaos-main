@@ -12,7 +12,7 @@ public class RefreshTokenConfig {
     @Value("${security.refresh.token.ttl-days:14}")
     private int ttlDays;
 
-    @Bean("refreshTokenTtl")
+    @Bean
     public Duration refreshTtl() {
         return Duration.ofDays(ttlDays);
     }

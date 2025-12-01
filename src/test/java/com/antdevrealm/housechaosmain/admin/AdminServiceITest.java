@@ -1,6 +1,8 @@
 package com.antdevrealm.housechaosmain.admin;
 
 import com.antdevrealm.housechaosmain.admin.service.AdminService;
+import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
+import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
 import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
@@ -132,5 +134,16 @@ public class AdminServiceITest {
         Optional<ProductEntity> softDeletedProduct = productRepository.findById(savedProduct.getId());
         assertThat(softDeletedProduct).isPresent();
         assertThat(softDeletedProduct.get().isActive()).isFalse();
+    }
+
+    @Test
+    void addCategory_createsCategoryThroughCategoryService() {
+        CreateCategoryRequestDTO categoryRequest = new CreateCategoryRequestDTO("table");
+
+        CategoryResponseDTO categoryResponse = adminService.addCategory(categoryRequest);
+
+        Optional<CategoryEntity> savedCategory = categoryRepository.findById(categoryResponse.id());
+        assertThat(savedCategory).isPresent();
+        assertThat(savedCategory.get().getName()).isEqualTo("table");
     }
 }
