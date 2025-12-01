@@ -262,5 +262,50 @@ public class UserServiceUTest {
         verify(addressService, never()).update(any(AddressRequestDTO.class), any(UUID.class));
         verify(userRepository, never()).save(any(UserEntity.class));
     }
+
+    @Test
+    void givenExistingUserId_whenGetById_thenUserResponseDTOIsReturned() {
+        UUID userId = UUID.randomUUID();
+        String email = "test@example.com";
+
+        RoleEntity userRole = RoleEntity.builder()
+                .id(UUID.randomUUID())
+                .role(UserRole.USER)
+                .build();
+
+        UserEntity userEntity = UserEntity.builder()
+                .id(userId)
+                .email(email)
+                .password("encodedPassword")
+                .firstName("John")
+                .lastName("Doe")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        userEntity.getRoles().add(userRole);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+
+        UserResponseDTO result = userService.getById(userId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(userId);
+        assertThat(result.email()).isEqualTo(email);
+        assertThat(result.roles()).contains(UserRole.USER);
+
+        verify(userRepository, times(1)).findById(userId);
+    }
+
+    @Test
+    void givenNonExistentUserId_whenGetById_thenResourceNotFoundExceptionIsThrown() {
+        UUID userId = UUID.randomUUID();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.getById(userId));
+
+        verify(userRepository, times(1)).findById(userId);
+    }
 }
 
