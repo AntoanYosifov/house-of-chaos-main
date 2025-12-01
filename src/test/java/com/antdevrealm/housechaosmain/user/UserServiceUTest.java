@@ -13,6 +13,7 @@ import com.antdevrealm.housechaosmain.user.dto.UpdateProfileRequestDTO;
 import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import com.antdevrealm.housechaosmain.user.exception.EmailAlreadyUsedException;
 import com.antdevrealm.housechaosmain.user.exception.UserAlreadyHasRoleException;
+import com.antdevrealm.housechaosmain.user.exception.UserHasNoRoleException;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.user.service.UserService;
@@ -392,6 +393,96 @@ public class UserServiceUTest {
         when(roleService.getByRole(UserRole.ADMIN)).thenReturn(adminRole);
 
         assertThrows(UserAlreadyHasRoleException.class, () -> userService.addAdminRole(userId));
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(roleService, times(1)).getByRole(UserRole.ADMIN);
+        verify(userRepository, never()).save(any(UserEntity.class));
+    }
+
+    @Test
+    void givenExistingUserWithAdminRole_whenRemoveAdminRole_thenAdminRoleIsRemoved() {
+        UUID userId = UUID.randomUUID();
+
+        RoleEntity userRole = RoleEntity.builder()
+                .id(UUID.randomUUID())
+                .role(UserRole.USER)
+                .build();
+
+        RoleEntity adminRole = RoleEntity.builder()
+                .id(UUID.randomUUID())
+                .role(UserRole.ADMIN)
+                .build();
+
+        UserEntity userEntity = UserEntity.builder()
+                .id(userId)
+                .email("test@example.com")
+                .password("encodedPassword")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        userEntity.getRoles().add(userRole);
+        userEntity.getRoles().add(adminRole);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+        when(roleService.getByRole(UserRole.ADMIN)).thenReturn(adminRole);
+        when(userRepository.save(userEntity)).thenReturn(userEntity);
+
+        UserResponseDTO result = userService.removeAdminRole(userId);
+
+        assertThat(userEntity.getRoles()).doesNotContain(adminRole);
+        assertThat(userEntity.getRoles()).contains(userRole);
+        assertThat(userEntity.getRoles()).hasSize(1);
+        assertThat(result).isNotNull();
+        assertThat(result.id()).isEqualTo(userId);
+        assertThat(result.roles()).containsOnly(UserRole.USER);
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(roleService, times(1)).getByRole(UserRole.ADMIN);
+        verify(userRepository, times(1)).save(userEntity);
+    }
+
+    @Test
+    void givenNonExistentUserId_whenRemoveAdminRole_thenResourceNotFoundExceptionIsThrown() {
+        UUID userId = UUID.randomUUID();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.removeAdminRole(userId));
+
+        verify(userRepository, times(1)).findById(userId);
+        verify(roleService, never()).getByRole(any(UserRole.class));
+        verify(userRepository, never()).save(any(UserEntity.class));
+    }
+
+    @Test
+    void givenUserDoesNotHaveAdminRole_whenRemoveAdminRole_thenUserHasNoRoleExceptionIsThrown() {
+        UUID userId = UUID.randomUUID();
+
+        RoleEntity userRole = RoleEntity.builder()
+                .id(UUID.randomUUID())
+                .role(UserRole.USER)
+                .build();
+
+        RoleEntity adminRole = RoleEntity.builder()
+                .id(UUID.randomUUID())
+                .role(UserRole.ADMIN)
+                .build();
+
+        UserEntity userEntity = UserEntity.builder()
+                .id(userId)
+                .email("test@example.com")
+                .password("encodedPassword")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        userEntity.getRoles().add(userRole);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
+        when(roleService.getByRole(UserRole.ADMIN)).thenReturn(adminRole);
+
+        assertThrows(UserHasNoRoleException.class, () -> userService.removeAdminRole(userId));
 
         verify(userRepository, times(1)).findById(userId);
         verify(roleService, times(1)).getByRole(UserRole.ADMIN);
