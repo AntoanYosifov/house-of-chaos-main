@@ -273,4 +273,30 @@ public class AdminServiceITest {
         assertThat(updatedUser.getRoles()).hasSize(2);
         assertThat(result.roles()).contains(UserRole.USER, UserRole.ADMIN);
     }
+
+    @Test
+    void demoteFromAdmin_removesAdminRoleThroughUserService() {
+        RoleEntity userRole = roleRepository.findByRole(UserRole.USER)
+                .orElseThrow(() -> new RuntimeException("USER role not found"));
+        RoleEntity adminRole = roleRepository.findByRole(UserRole.ADMIN)
+                .orElseThrow(() -> new RuntimeException("ADMIN role not found"));
+
+        UserEntity user = UserEntity.builder()
+                .email("adminuser@test.com")
+                .password("encodedPassword")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        user.getRoles().add(userRole);
+        user.getRoles().add(adminRole);
+        UserEntity savedUser = userRepository.save(user);
+
+        UserResponseDTO result = adminService.demoteFromAdmin(savedUser.getId());
+
+        UserEntity updatedUser = userRepository.findById(savedUser.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        assertThat(updatedUser.getRoles()).hasSize(1);
+        assertThat(result.roles()).containsOnly(UserRole.USER);
+    }
 }
