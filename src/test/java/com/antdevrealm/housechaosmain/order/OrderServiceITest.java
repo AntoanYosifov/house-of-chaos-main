@@ -373,4 +373,194 @@ public class OrderServiceITest {
 
         assertThrows(BusinessRuleException.class, () -> orderService.confirm(savedUser.getId(), savedOrder.getId(), addressRequest));
     }
+
+    @Test
+    void cancel_cancelsNewOrder() {
+        RoleEntity userRole = roleRepository.findByRole(UserRole.USER)
+                .orElseThrow(() -> new RuntimeException("USER role not found"));
+
+        UserEntity user = UserEntity.builder()
+                .email("testuser@test.com")
+                .password("encodedPassword")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        user.getRoles().add(userRole);
+        UserEntity savedUser = userRepository.save(user);
+
+        CategoryEntity category = CategoryEntity.builder()
+                .name("chair")
+                .build();
+        CategoryEntity savedCategory = categoryRepository.save(category);
+
+        ProductEntity product = ProductEntity.builder()
+                .name("Test Chair")
+                .description("Test description for chair")
+                .price(new BigDecimal("149.99"))
+                .quantity(10)
+                .imageUrl("http://example.com/chair.jpg")
+                .category(savedCategory)
+                .newArrival(true)
+                .isActive(true)
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        ProductEntity savedProduct = productRepository.save(product);
+
+        OrderEntity order = OrderEntity.builder()
+                .owner(savedUser)
+                .status(OrderStatus.NEW)
+                .total(new BigDecimal("299.98"))
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        OrderEntity savedOrder = orderRepository.save(order);
+
+        OrderItemEntity orderItem = OrderItemEntity.builder()
+                .order(savedOrder)
+                .product(savedProduct)
+                .unitPrice(savedProduct.getPrice())
+                .quantity(2)
+                .lineTotal(new BigDecimal("299.98"))
+                .build();
+        orderItemRepository.save(orderItem);
+
+        OrderResponseDTO cancelledOrder = orderService.cancel(savedUser.getId(), savedOrder.getId());
+
+        Optional<OrderEntity> updatedOrder = orderRepository.findById(savedOrder.getId());
+        assertThat(updatedOrder).isPresent();
+        assertThat(updatedOrder.get().getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        assertThat(cancelledOrder.status()).isEqualTo(OrderStatus.CANCELLED);
+    }
+
+    @Test
+    void cancel_whenOrderNotFound_thenResourceNotFoundExceptionIsThrown() {
+        RoleEntity userRole = roleRepository.findByRole(UserRole.USER)
+                .orElseThrow(() -> new RuntimeException("USER role not found"));
+
+        UserEntity user = UserEntity.builder()
+                .email("testuser@test.com")
+                .password("encodedPassword")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        user.getRoles().add(userRole);
+        UserEntity savedUser = userRepository.save(user);
+
+        UUID nonExistentOrderId = UUID.randomUUID();
+
+        assertThrows(ResourceNotFoundException.class, () -> orderService.cancel(savedUser.getId(), nonExistentOrderId));
+    }
+
+    @Test
+    void cancel_whenOrderAlreadyCancelled_thenBusinessRuleExceptionIsThrown() {
+        RoleEntity userRole = roleRepository.findByRole(UserRole.USER)
+                .orElseThrow(() -> new RuntimeException("USER role not found"));
+
+        UserEntity user = UserEntity.builder()
+                .email("testuser@test.com")
+                .password("encodedPassword")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        user.getRoles().add(userRole);
+        UserEntity savedUser = userRepository.save(user);
+
+        CategoryEntity category = CategoryEntity.builder()
+                .name("lamp")
+                .build();
+        CategoryEntity savedCategory = categoryRepository.save(category);
+
+        ProductEntity product = ProductEntity.builder()
+                .name("Test Lamp")
+                .description("Test description for lamp")
+                .price(new BigDecimal("99.99"))
+                .quantity(5)
+                .imageUrl("http://example.com/lamp.jpg")
+                .category(savedCategory)
+                .newArrival(true)
+                .isActive(true)
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        ProductEntity savedProduct = productRepository.save(product);
+
+        OrderEntity order = OrderEntity.builder()
+                .owner(savedUser)
+                .status(OrderStatus.CANCELLED)
+                .total(new BigDecimal("99.99"))
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        OrderEntity savedOrder = orderRepository.save(order);
+
+        OrderItemEntity orderItem = OrderItemEntity.builder()
+                .order(savedOrder)
+                .product(savedProduct)
+                .unitPrice(savedProduct.getPrice())
+                .quantity(1)
+                .lineTotal(new BigDecimal("99.99"))
+                .build();
+        orderItemRepository.save(orderItem);
+
+        assertThrows(BusinessRuleException.class, () -> orderService.cancel(savedUser.getId(), savedOrder.getId()));
+    }
+
+    @Test
+    void cancel_whenOrderAlreadyConfirmed_thenBusinessRuleExceptionIsThrown() {
+        RoleEntity userRole = roleRepository.findByRole(UserRole.USER)
+                .orElseThrow(() -> new RuntimeException("USER role not found"));
+
+        UserEntity user = UserEntity.builder()
+                .email("testuser@test.com")
+                .password("encodedPassword")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        user.getRoles().add(userRole);
+        UserEntity savedUser = userRepository.save(user);
+
+        CategoryEntity category = CategoryEntity.builder()
+                .name("desk")
+                .build();
+        CategoryEntity savedCategory = categoryRepository.save(category);
+
+        ProductEntity product = ProductEntity.builder()
+                .name("Test Desk")
+                .description("Test description for desk")
+                .price(new BigDecimal("199.99"))
+                .quantity(8)
+                .imageUrl("http://example.com/desk.jpg")
+                .category(savedCategory)
+                .newArrival(true)
+                .isActive(true)
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        ProductEntity savedProduct = productRepository.save(product);
+
+        OrderEntity order = OrderEntity.builder()
+                .owner(savedUser)
+                .status(OrderStatus.CONFIRMED)
+                .total(new BigDecimal("199.99"))
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        OrderEntity savedOrder = orderRepository.save(order);
+
+        OrderItemEntity orderItem = OrderItemEntity.builder()
+                .order(savedOrder)
+                .product(savedProduct)
+                .unitPrice(savedProduct.getPrice())
+                .quantity(1)
+                .lineTotal(new BigDecimal("199.99"))
+                .build();
+        orderItemRepository.save(orderItem);
+
+        assertThrows(BusinessRuleException.class, () -> orderService.cancel(savedUser.getId(), savedOrder.getId()));
+    }
 }
