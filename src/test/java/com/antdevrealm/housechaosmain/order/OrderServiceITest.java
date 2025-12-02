@@ -1,5 +1,7 @@
 package com.antdevrealm.housechaosmain.order;
 
+import com.antdevrealm.housechaosmain.address.dto.AddressRequestDTO;
+import com.antdevrealm.housechaosmain.address.repository.AddressRepository;
 import com.antdevrealm.housechaosmain.cart.model.CartEntity;
 import com.antdevrealm.housechaosmain.cart.model.CartItemEntity;
 import com.antdevrealm.housechaosmain.cart.repository.CartItemRepository;
@@ -8,6 +10,7 @@ import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
 import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
+import com.antdevrealm.housechaosmain.order.dto.ConfirmedOrderResponseDTO;
 import com.antdevrealm.housechaosmain.order.dto.CreateOrderItemRequestDTO;
 import com.antdevrealm.housechaosmain.order.dto.CreateOrderRequestDTO;
 import com.antdevrealm.housechaosmain.order.dto.OrderResponseDTO;
@@ -70,6 +73,9 @@ public class OrderServiceITest {
     @Autowired
     private RoleRepository roleRepository;
 
+    @Autowired
+    private AddressRepository addressRepository;
+
     @BeforeEach
     @Transactional
     void setUp() {
@@ -77,6 +83,7 @@ public class OrderServiceITest {
         orderRepository.deleteAll();
         cartItemRepository.deleteAll();
         cartRepository.deleteAll();
+        addressRepository.deleteAll();
         productRepository.deleteAll();
         categoryRepository.deleteAll();
         userRepository.deleteAll();
@@ -218,5 +225,152 @@ public class OrderServiceITest {
         CreateOrderRequestDTO orderRequest = new CreateOrderRequestDTO(List.of(orderItemRequest));
 
         assertThrows(BusinessRuleException.class, () -> orderService.create(savedUser.getId(), orderRequest));
+    }
+
+    @Test
+    void confirm_confirmsOrderCreatesAddressAndReducesInventory() {
+        RoleEntity userRole = roleRepository.findByRole(UserRole.USER)
+                .orElseThrow(() -> new RuntimeException("USER role not found"));
+
+        UserEntity user = UserEntity.builder()
+                .email("testuser@test.com")
+                .password("encodedPassword")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        user.getRoles().add(userRole);
+        UserEntity savedUser = userRepository.save(user);
+
+        CategoryEntity category = CategoryEntity.builder()
+                .name("desk")
+                .build();
+        CategoryEntity savedCategory = categoryRepository.save(category);
+
+        ProductEntity product = ProductEntity.builder()
+                .name("Test Desk")
+                .description("Test description for desk")
+                .price(new BigDecimal("199.99"))
+                .quantity(10)
+                .imageUrl("http://example.com/desk.jpg")
+                .category(savedCategory)
+                .newArrival(true)
+                .isActive(true)
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        ProductEntity savedProduct = productRepository.save(product);
+
+        OrderEntity order = OrderEntity.builder()
+                .owner(savedUser)
+                .status(OrderStatus.NEW)
+                .total(new BigDecimal("599.97"))
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        OrderEntity savedOrder = orderRepository.save(order);
+
+        OrderItemEntity orderItem = OrderItemEntity.builder()
+                .order(savedOrder)
+                .product(savedProduct)
+                .unitPrice(savedProduct.getPrice())
+                .quantity(3)
+                .lineTotal(new BigDecimal("599.97"))
+                .build();
+        orderItemRepository.save(orderItem);
+
+        AddressRequestDTO addressRequest = new AddressRequestDTO("Germany", "Berlin", 10115, "Test Street 1");
+
+        ConfirmedOrderResponseDTO confirmedOrder = orderService.confirm(savedUser.getId(), savedOrder.getId(), addressRequest);
+
+        Optional<OrderEntity> updatedOrder = orderRepository.findById(savedOrder.getId());
+
+        assertThat(updatedOrder).isPresent();
+        assertThat(updatedOrder.get().getStatus()).isEqualTo(OrderStatus.CONFIRMED);
+        assertThat(updatedOrder.get().getShippingAddress()).isNotNull();
+
+        assertThat(confirmedOrder.shippingAddress()).isNotNull();
+
+        ProductEntity updatedProduct = productRepository.findById(savedProduct.getId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        assertThat(updatedProduct.getQuantity()).isEqualTo(7);
+    }
+
+    @Test
+    void confirm_whenOrderNotFound_thenResourceNotFoundExceptionIsThrown() {
+        RoleEntity userRole = roleRepository.findByRole(UserRole.USER)
+                .orElseThrow(() -> new RuntimeException("USER role not found"));
+
+        UserEntity user = UserEntity.builder()
+                .email("testuser@test.com")
+                .password("encodedPassword")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        user.getRoles().add(userRole);
+        UserEntity savedUser = userRepository.save(user);
+
+        UUID nonExistentOrderId = UUID.randomUUID();
+        AddressRequestDTO addressRequest = new AddressRequestDTO("Germany", "Berlin", 10115, "Test Street 1");
+
+        assertThrows(ResourceNotFoundException.class, () -> orderService.confirm(savedUser.getId(), nonExistentOrderId, addressRequest));
+    }
+
+    @Test
+    void confirm_whenOrderAlreadyConfirmed_thenBusinessRuleExceptionIsThrown() {
+        RoleEntity userRole = roleRepository.findByRole(UserRole.USER)
+                .orElseThrow(() -> new RuntimeException("USER role not found"));
+
+        UserEntity user = UserEntity.builder()
+                .email("testuser@test.com")
+                .password("encodedPassword")
+                .roles(new ArrayList<>())
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        user.getRoles().add(userRole);
+        UserEntity savedUser = userRepository.save(user);
+
+        CategoryEntity category = CategoryEntity.builder()
+                .name("table")
+                .build();
+        CategoryEntity savedCategory = categoryRepository.save(category);
+
+        ProductEntity product = ProductEntity.builder()
+                .name("Test Table")
+                .description("Test description for table")
+                .price(new BigDecimal("249.99"))
+                .quantity(8)
+                .imageUrl("http://example.com/table.jpg")
+                .category(savedCategory)
+                .newArrival(true)
+                .isActive(true)
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        ProductEntity savedProduct = productRepository.save(product);
+
+        OrderEntity order = OrderEntity.builder()
+                .owner(savedUser)
+                .status(OrderStatus.CONFIRMED)
+                .total(new BigDecimal("499.98"))
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+        OrderEntity savedOrder = orderRepository.save(order);
+
+        OrderItemEntity orderItem = OrderItemEntity.builder()
+                .order(savedOrder)
+                .product(savedProduct)
+                .unitPrice(savedProduct.getPrice())
+                .quantity(2)
+                .lineTotal(new BigDecimal("499.98"))
+                .build();
+        orderItemRepository.save(orderItem);
+
+        AddressRequestDTO addressRequest = new AddressRequestDTO("Germany", "Berlin", 10115, "Test Street 1");
+
+        assertThrows(BusinessRuleException.class, () -> orderService.confirm(savedUser.getId(), savedOrder.getId(), addressRequest));
     }
 }
