@@ -1,6 +1,5 @@
-package com.antdevrealm.housechaosmain.admin;
+package com.antdevrealm.housechaosmain.admin.service;
 
-import com.antdevrealm.housechaosmain.admin.service.AdminService;
 import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
 import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
 import com.antdevrealm.housechaosmain.cart.repository.CartRepository;

@@ -52,7 +52,7 @@ public class AdminController {
     }
 
     @PostMapping("/categories")
-    public ResponseEntity<CategoryResponseDTO> deleteCategory(@RequestBody @Valid CreateCategoryRequestDTO dto) {
+    public ResponseEntity<CategoryResponseDTO> addCategory(@RequestBody @Valid CreateCategoryRequestDTO dto) {
         CategoryResponseDTO categoryResponseDTO = this.adminService.addCategory(dto);
         return ResponseEntity.ok(categoryResponseDTO);
     }
