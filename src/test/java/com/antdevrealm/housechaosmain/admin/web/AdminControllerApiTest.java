@@ -3,6 +3,7 @@ package com.antdevrealm.housechaosmain.admin.web;
 import com.antdevrealm.housechaosmain.admin.service.AdminService;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
+import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +14,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -60,7 +64,7 @@ public class AdminControllerApiTest {
         MockHttpServletRequestBuilder request = post("/api/v1/admin/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDTO))
-                .with(jwt().jwt(jwt -> jwt.claim("authorities", java.util.List.of("ROLE_ADMIN"))));
+                .with(jwt().jwt(jwt -> jwt.claim("authorities", List.of("ROLE_ADMIN"))));
 
         mockMvc.perform(request)
                 .andExpect(status().isCreated())
@@ -68,5 +72,36 @@ public class AdminControllerApiTest {
                 .andExpect(jsonPath("$.id").value(productId.toString()))
                 .andExpect(jsonPath("$.name").value("Test Chair"))
                 .andExpect(jsonPath("$.price").value(149.99));
+    }
+
+    @Test
+    void patchAuthorizedRequestToUpdateProduct_shouldReturn200() throws Exception {
+        UUID productId = UUID.randomUUID();
+        UpdateProductRequestDTO requestDTO = new UpdateProductRequestDTO(
+                "Updated test description for lamp",
+                new BigDecimal("399.99")
+        );
+
+        ProductResponseDTO responseDTO = new ProductResponseDTO(
+                productId,
+                "Test Lamp",
+                "Updated test description for lamp",
+                new BigDecimal("399.99"),
+                2,
+                "http://example.com/lamp.jpg"
+        );
+
+        when(adminService.updateProduct(any(UpdateProductRequestDTO.class), eq(productId))).thenReturn(responseDTO);
+
+        MockHttpServletRequestBuilder request = patch("/api/v1/admin/products/{id}", productId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDTO))
+                .with(jwt().jwt(jwt -> jwt.claim("authorities", List.of("ROLE_ADMIN"))));
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(productId.toString()))
+                .andExpect(jsonPath("$.description").value("Updated test description for lamp"))
+                .andExpect(jsonPath("$.price").value(399.99));
     }
 }
