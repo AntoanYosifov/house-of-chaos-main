@@ -19,10 +19,9 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AdminController.class)
@@ -103,5 +102,20 @@ public class AdminControllerApiTest {
                 .andExpect(jsonPath("$.id").value(productId.toString()))
                 .andExpect(jsonPath("$.description").value("Updated test description for lamp"))
                 .andExpect(jsonPath("$.price").value(399.99));
+    }
+
+    @Test
+    void deleteAuthorizedRequestToDeleteProduct_shouldReturn204() throws Exception {
+        UUID productId = UUID.randomUUID();
+
+        doNothing().when(adminService).deleteProduct(productId);
+
+        MockHttpServletRequestBuilder request = delete("/api/v1/admin/products/{id}", productId)
+                .with(jwt().jwt(jwt -> jwt.claim("authorities", List.of("ROLE_ADMIN"))));
+
+        mockMvc.perform(request)
+                .andExpect(status().isNoContent());
+
+        verify(adminService, times(1)).deleteProduct(productId);
     }
 }
