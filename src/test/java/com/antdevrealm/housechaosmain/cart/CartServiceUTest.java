@@ -407,4 +407,96 @@ public class CartServiceUTest {
         verify(cartItemRepository, never()).save(any());
         verify(cartItemRepository, never()).delete(any());
     }
+
+    @Test
+    void givenValidCartItem_whenDeleteItem_thenItemIsDeleted() {
+        UUID ownerId = UUID.randomUUID();
+        UUID cartItemId = UUID.randomUUID();
+        UUID cartId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        UserEntity owner = UserEntity.builder()
+                .id(ownerId)
+                .build();
+
+        CartEntity cart = CartEntity.builder()
+                .id(cartId)
+                .owner(owner)
+                .build();
+
+        ProductEntity product = ProductEntity.builder()
+                .id(productId)
+                .name("Test Table")
+                .imageUrl("/images/table.jpg")
+                .build();
+
+        CartItemEntity cartItem = CartItemEntity.builder()
+                .id(cartItemId)
+                .cart(cart)
+                .product(product)
+                .quantity(2)
+                .build();
+
+        when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(cartItem));
+        when(cartItemRepository.findAllByCart(cart)).thenReturn(List.of());
+
+        CartResponseDTO result = cartService.deleteItem(ownerId, cartItemId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.items()).isEmpty();
+
+        verify(cartItemRepository, times(1)).delete(cartItem);
+        verify(cartItemRepository, times(1)).findAllByCart(cart);
+    }
+
+    @Test
+    void givenNonExistentCartItem_whenDeleteItem_thenResourceNotFoundExceptionIsThrown() {
+        UUID ownerId = UUID.randomUUID();
+        UUID cartItemId = UUID.randomUUID();
+
+        when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> cartService.deleteItem(ownerId, cartItemId));
+
+        verify(cartItemRepository, times(1)).findById(cartItemId);
+        verify(cartItemRepository, never()).delete(any());
+    }
+
+    @Test
+    void givenOwnerIdMismatch_whenDeleteItem_thenResourceNotFoundExceptionIsThrown() {
+        UUID ownerId = UUID.randomUUID();
+        UUID differentOwnerId = UUID.randomUUID();
+        UUID cartItemId = UUID.randomUUID();
+        UUID cartId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        UserEntity owner = UserEntity.builder()
+                .id(differentOwnerId)
+                .build();
+
+        CartEntity cart = CartEntity.builder()
+                .id(cartId)
+                .owner(owner)
+                .build();
+
+        ProductEntity product = ProductEntity.builder()
+                .id(productId)
+                .name("Test Couch")
+                .imageUrl("/images/couch.jpg")
+                .build();
+
+        CartItemEntity cartItem = CartItemEntity.builder()
+                .id(cartItemId)
+                .cart(cart)
+                .product(product)
+                .quantity(1)
+                .build();
+
+        when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(cartItem));
+
+        assertThrows(ResourceNotFoundException.class, () -> cartService.deleteItem(ownerId, cartItemId));
+
+        verify(cartItemRepository, times(1)).findById(cartItemId);
+        verify(cartItemRepository, never()).delete(any());
+    }
 }
