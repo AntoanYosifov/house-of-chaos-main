@@ -201,4 +201,45 @@ public class OrderServiceUTest {
         verify(orderRepository, times(1)).findAllByOwnerIdAndStatus(ownerId, OrderStatus.NEW);
         verify(orderItemRepository, never()).findAllByOrder(any());
     }
+
+    @Test
+    void givenExistingOrder_whenDelete_thenOrderAndItemsAreDeleted() {
+        UUID ownerId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        UserEntity owner = UserEntity.builder()
+                .id(ownerId)
+                .build();
+
+        OrderEntity order = OrderEntity.builder()
+                .id(orderId)
+                .owner(owner)
+                .status(OrderStatus.NEW)
+                .total(new BigDecimal("149.99"))
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+
+        when(orderRepository.findByIdAndOwnerId(orderId, ownerId)).thenReturn(Optional.of(order));
+
+        orderService.delete(ownerId, orderId);
+
+        verify(orderRepository, times(1)).findByIdAndOwnerId(orderId, ownerId);
+        verify(orderItemRepository, times(1)).deleteAllByOrder(order);
+        verify(orderRepository, times(1)).delete(order);
+    }
+
+    @Test
+    void givenNonExistentOrder_whenDelete_thenResourceNotFoundExceptionIsThrown() {
+        UUID ownerId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        when(orderRepository.findByIdAndOwnerId(orderId, ownerId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> orderService.delete(ownerId, orderId));
+
+        verify(orderRepository, times(1)).findByIdAndOwnerId(orderId, ownerId);
+        verify(orderItemRepository, never()).deleteAllByOrder(any());
+        verify(orderRepository, never()).delete(any());
+    }
 }
