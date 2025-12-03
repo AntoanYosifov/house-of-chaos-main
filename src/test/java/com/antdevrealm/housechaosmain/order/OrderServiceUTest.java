@@ -1,7 +1,5 @@
 package com.antdevrealm.housechaosmain.order;
 
-import com.antdevrealm.housechaosmain.address.service.AddressService;
-import com.antdevrealm.housechaosmain.cart.service.CartService;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.order.dto.OrderResponseDTO;
 import com.antdevrealm.housechaosmain.order.model.entity.OrderEntity;
@@ -11,9 +9,7 @@ import com.antdevrealm.housechaosmain.order.repository.OrderItemRepository;
 import com.antdevrealm.housechaosmain.order.repository.OrderRepository;
 import com.antdevrealm.housechaosmain.order.service.OrderService;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
-import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
-import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +26,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,18 +37,6 @@ public class OrderServiceUTest {
 
     @Mock
     private OrderItemRepository orderItemRepository;
-
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private ProductRepository productRepository;
-
-    @Mock
-    private CartService cartService;
-
-    @Mock
-    private AddressService addressService;
 
     @Mock
     private ImgUrlExpander imgUrlExpander;
@@ -241,5 +226,61 @@ public class OrderServiceUTest {
         verify(orderRepository, times(1)).findByIdAndOwnerId(orderId, ownerId);
         verify(orderItemRepository, never()).deleteAllByOrder(any());
         verify(orderRepository, never()).delete(any());
+    }
+
+    @Test
+    void givenOldCancelledOrdersExist_whenCleanOldCancelledOrders_thenOrdersAreDeletedAndCountIsReturned() {
+        int retentionDays = 30;
+
+        UserEntity owner = UserEntity.builder()
+                .id(UUID.randomUUID())
+                .build();
+
+        OrderEntity order1 = OrderEntity.builder()
+                .id(UUID.randomUUID())
+                .owner(owner)
+                .status(OrderStatus.CANCELLED)
+                .total(new BigDecimal("100.00"))
+                .createdOn(Instant.now().minusSeconds(86400 * 40))
+                .updatedAt(Instant.now().minusSeconds(86400 * 40))
+                .build();
+
+        OrderEntity order2 = OrderEntity.builder()
+                .id(UUID.randomUUID())
+                .owner(owner)
+                .status(OrderStatus.CANCELLED)
+                .total(new BigDecimal("200.00"))
+                .createdOn(Instant.now().minusSeconds(86400 * 35))
+                .updatedAt(Instant.now().minusSeconds(86400 * 35))
+                .build();
+
+        when(orderRepository.findAllByStatusAndUpdatedAtBefore(eq(OrderStatus.CANCELLED), any(Instant.class)))
+                .thenReturn(List.of(order1, order2));
+
+        int result = orderService.cleanOldCancelledOrders(retentionDays);
+
+        assertThat(result).isEqualTo(2);
+
+        verify(orderRepository, times(1)).findAllByStatusAndUpdatedAtBefore(eq(OrderStatus.CANCELLED), any(Instant.class));
+        verify(orderItemRepository, times(1)).deleteAllByOrder(order1);
+        verify(orderItemRepository, times(1)).deleteAllByOrder(order2);
+        verify(orderRepository, times(1)).delete(order1);
+        verify(orderRepository, times(1)).delete(order2);
+    }
+
+    @Test
+    void givenNoOldCancelledOrders_whenCleanOldCancelledOrders_thenZeroIsReturned() {
+        int retentionDays = 30;
+
+        when(orderRepository.findAllByStatusAndUpdatedAtBefore(eq(OrderStatus.CANCELLED), any(Instant.class)))
+                .thenReturn(new ArrayList<>());
+
+        int result = orderService.cleanOldCancelledOrders(retentionDays);
+
+        assertThat(result).isEqualTo(0);
+
+        verify(orderRepository, times(1)).findAllByStatusAndUpdatedAtBefore(eq(OrderStatus.CANCELLED), any(Instant.class));
+        verify(orderItemRepository, never()).deleteAllByOrder(any());
+        verify(orderRepository, never()).delete(any(OrderEntity.class));
     }
 }
