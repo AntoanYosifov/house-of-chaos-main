@@ -211,4 +211,33 @@ public class AdminControllerApiTest {
 
         verify(adminService, times(1)).promoteToAdmin(userId);
     }
+
+    @Test
+    void patchRequestToDemoteFromAdmin_shouldReturn200() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        UserResponseDTO responseDTO = new UserResponseDTO(
+                userId,
+                "testuser@test.com",
+                null,
+                null,
+                null,
+                null,
+                null,
+                List.of(UserRole.USER)
+        );
+
+        when(adminService.demoteFromAdmin(userId)).thenReturn(responseDTO);
+
+        MockHttpServletRequestBuilder request = patch("/api/v1/admin/users/demote/{id}", userId)
+                .with(jwt());
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId.toString()))
+                .andExpect(jsonPath("$.roles").isArray())
+                .andExpect(jsonPath("$.roles.length()").value(1));
+
+        verify(adminService, times(1)).demoteFromAdmin(userId);
+    }
 }
