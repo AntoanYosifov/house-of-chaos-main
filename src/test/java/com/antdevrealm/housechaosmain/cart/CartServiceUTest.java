@@ -269,4 +269,142 @@ public class CartServiceUTest {
 
         verify(cartItemRepository, never()).save(any());
     }
+
+    @Test
+    void givenItemWithQuantityGreaterThanOne_whenDecreaseItemQuantity_thenQuantityIsDecremented() {
+        UUID ownerId = UUID.randomUUID();
+        UUID cartItemId = UUID.randomUUID();
+        UUID cartId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        UserEntity owner = UserEntity.builder()
+                .id(ownerId)
+                .build();
+
+        CartEntity cart = CartEntity.builder()
+                .id(cartId)
+                .owner(owner)
+                .build();
+
+        ProductEntity product = ProductEntity.builder()
+                .id(productId)
+                .name("Test Chair")
+                .imageUrl("/images/chair.jpg")
+                .build();
+
+        CartItemEntity cartItem = CartItemEntity.builder()
+                .id(cartItemId)
+                .cart(cart)
+                .product(product)
+                .quantity(3)
+                .build();
+
+        when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(cartItem));
+        when(cartItemRepository.save(cartItem)).thenReturn(cartItem);
+        when(cartItemRepository.findAllByCart(cart)).thenReturn(List.of(cartItem));
+        when(imgUrlExpander.toPublicUrl("/images/chair.jpg")).thenReturn("http://localhost:8080/images/chair.jpg");
+
+        CartResponseDTO result = cartService.decreaseItemQuantity(ownerId, cartItemId);
+
+        assertThat(cartItem.getQuantity()).isEqualTo(2);
+        assertThat(result).isNotNull();
+        assertThat(result.items()).hasSize(1);
+
+        verify(cartItemRepository, times(1)).save(cartItem);
+        verify(cartItemRepository, never()).delete(any());
+    }
+
+    @Test
+    void givenItemWithQuantityOne_whenDecreaseItemQuantity_thenItemIsDeleted() {
+        UUID ownerId = UUID.randomUUID();
+        UUID cartItemId = UUID.randomUUID();
+        UUID cartId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        UserEntity owner = UserEntity.builder()
+                .id(ownerId)
+                .build();
+
+        CartEntity cart = CartEntity.builder()
+                .id(cartId)
+                .owner(owner)
+                .build();
+
+        ProductEntity product = ProductEntity.builder()
+                .id(productId)
+                .name("Test Lamp")
+                .imageUrl("/images/lamp.jpg")
+                .build();
+
+        CartItemEntity cartItem = CartItemEntity.builder()
+                .id(cartItemId)
+                .cart(cart)
+                .product(product)
+                .quantity(1)
+                .build();
+
+        when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(cartItem));
+        when(cartItemRepository.findAllByCart(cart)).thenReturn(List.of());
+
+        CartResponseDTO result = cartService.decreaseItemQuantity(ownerId, cartItemId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.items()).isEmpty();
+
+        verify(cartItemRepository, times(1)).delete(cartItem);
+        verify(cartItemRepository, never()).save(any());
+    }
+
+    @Test
+    void givenNonExistentCartItem_whenDecreaseItemQuantity_thenResourceNotFoundExceptionIsThrown() {
+        UUID ownerId = UUID.randomUUID();
+        UUID cartItemId = UUID.randomUUID();
+
+        when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> cartService.decreaseItemQuantity(ownerId, cartItemId));
+
+        verify(cartItemRepository, times(1)).findById(cartItemId);
+        verify(cartItemRepository, never()).save(any());
+        verify(cartItemRepository, never()).delete(any());
+    }
+
+    @Test
+    void givenOwnerIdMismatch_whenDecreaseItemQuantity_thenResourceNotFoundExceptionIsThrown() {
+        UUID ownerId = UUID.randomUUID();
+        UUID differentOwnerId = UUID.randomUUID();
+        UUID cartItemId = UUID.randomUUID();
+        UUID cartId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        UserEntity owner = UserEntity.builder()
+                .id(differentOwnerId)
+                .build();
+
+        CartEntity cart = CartEntity.builder()
+                .id(cartId)
+                .owner(owner)
+                .build();
+
+        ProductEntity product = ProductEntity.builder()
+                .id(productId)
+                .name("Test Desk")
+                .imageUrl("/images/desk.jpg")
+                .build();
+
+        CartItemEntity cartItem = CartItemEntity.builder()
+                .id(cartItemId)
+                .cart(cart)
+                .product(product)
+                .quantity(2)
+                .build();
+
+        when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(cartItem));
+
+        assertThrows(ResourceNotFoundException.class, () -> cartService.decreaseItemQuantity(ownerId, cartItemId));
+
+        verify(cartItemRepository, times(1)).findById(cartItemId);
+        verify(cartItemRepository, never()).save(any());
+        verify(cartItemRepository, never()).delete(any());
+    }
 }
