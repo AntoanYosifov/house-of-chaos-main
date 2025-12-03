@@ -1,6 +1,8 @@
 package com.antdevrealm.housechaosmain.admin.web;
 
 import com.antdevrealm.housechaosmain.admin.service.AdminService;
+import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
+import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
@@ -117,5 +119,25 @@ public class AdminControllerApiTest {
                 .andExpect(status().isNoContent());
 
         verify(adminService, times(1)).deleteProduct(productId);
+    }
+
+    @Test
+    void postAuthorizedRequestToAddCategory_shouldReturn200() throws Exception {
+        CreateCategoryRequestDTO requestDTO = new CreateCategoryRequestDTO("table");
+
+        UUID categoryId = UUID.randomUUID();
+        CategoryResponseDTO responseDTO = new CategoryResponseDTO(categoryId, "table");
+
+        when(adminService.addCategory(any(CreateCategoryRequestDTO.class))).thenReturn(responseDTO);
+
+        MockHttpServletRequestBuilder request = post("/api/v1/admin/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDTO))
+                .with(jwt().jwt(jwt -> jwt.claim("authorities", List.of("ROLE_ADMIN"))));
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(categoryId.toString()))
+                .andExpect(jsonPath("$.name").value("table"));
     }
 }
