@@ -6,6 +6,7 @@ import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
+import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -180,5 +181,34 @@ public class AdminControllerApiTest {
                 .andExpect(jsonPath("$[1].id").value(user2Id.toString()));
 
         verify(adminService, times(1)).getAllUsers(currentUserId);
+    }
+
+    @Test
+    void patchRequestToPromoteToAdmin_shouldReturn200() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        UserResponseDTO responseDTO = new UserResponseDTO(
+                userId,
+                "testuser@test.com",
+                null,
+                null,
+                null,
+                null,
+                null,
+                List.of(UserRole.USER, UserRole.ADMIN)
+        );
+
+        when(adminService.promoteToAdmin(userId)).thenReturn(responseDTO);
+
+        MockHttpServletRequestBuilder request = patch("/api/v1/admin/users/promote/{id}", userId)
+                .with(jwt());
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId.toString()))
+                .andExpect(jsonPath("$.roles").isArray())
+                .andExpect(jsonPath("$.roles.length()").value(2));
+
+        verify(adminService, times(1)).promoteToAdmin(userId);
     }
 }
