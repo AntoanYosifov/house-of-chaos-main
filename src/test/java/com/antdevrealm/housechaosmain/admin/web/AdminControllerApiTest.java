@@ -66,7 +66,7 @@ public class AdminControllerApiTest {
         MockHttpServletRequestBuilder request = post("/api/v1/admin/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDTO))
-                .with(jwt().jwt(jwt -> jwt.claim("authorities", List.of("ROLE_ADMIN"))));
+                .with(jwt());
 
         mockMvc.perform(request)
                 .andExpect(status().isCreated())
@@ -98,7 +98,7 @@ public class AdminControllerApiTest {
         MockHttpServletRequestBuilder request = patch("/api/v1/admin/products/{id}", productId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDTO))
-                .with(jwt().jwt(jwt -> jwt.claim("authorities", List.of("ROLE_ADMIN"))));
+                .with(jwt());
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -114,7 +114,7 @@ public class AdminControllerApiTest {
         doNothing().when(adminService).deleteProduct(productId);
 
         MockHttpServletRequestBuilder request = delete("/api/v1/admin/products/{id}", productId)
-                .with(jwt().jwt(jwt -> jwt.claim("authorities", List.of("ROLE_ADMIN"))));
+                .with(jwt());
 
         mockMvc.perform(request)
                 .andExpect(status().isNoContent());
@@ -134,7 +134,7 @@ public class AdminControllerApiTest {
         MockHttpServletRequestBuilder request = post("/api/v1/admin/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDTO))
-                .with(jwt().jwt(jwt -> jwt.claim("authorities", List.of("ROLE_ADMIN"))));
+                .with(jwt());
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -149,7 +149,7 @@ public class AdminControllerApiTest {
         doNothing().when(adminService).deleteCategory(categoryId);
 
         MockHttpServletRequestBuilder request = delete("/api/v1/admin/categories/{id}", categoryId)
-                .with(jwt().jwt(jwt -> jwt.claim("authorities", List.of("ROLE_ADMIN"))));
+                .with(jwt());
 
         mockMvc.perform(request)
                 .andExpect(status().isNoContent());
@@ -170,8 +170,7 @@ public class AdminControllerApiTest {
 
         MockHttpServletRequestBuilder request = get("/api/v1/admin/users")
                 .with(jwt().jwt(jwt -> jwt
-                        .claim("uid", currentUserId.toString())
-                        .claim("authorities", List.of("ROLE_ADMIN"))));
+                        .claim("uid", currentUserId.toString())));
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
