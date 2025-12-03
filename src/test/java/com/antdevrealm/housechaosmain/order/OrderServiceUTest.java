@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -118,6 +119,86 @@ public class OrderServiceUTest {
         assertThrows(ResourceNotFoundException.class, () -> orderService.getById(ownerId, orderId));
 
         verify(orderRepository, times(1)).findByIdAndOwnerId(orderId, ownerId);
+        verify(orderItemRepository, never()).findAllByOrder(any());
+    }
+
+    @Test
+    void givenNewOrdersExist_whenGetNew_thenListOfNewOrdersIsReturned() {
+        UUID ownerId = UUID.randomUUID();
+
+        UserEntity owner = UserEntity.builder()
+                .id(ownerId)
+                .build();
+
+        OrderEntity order1 = OrderEntity.builder()
+                .id(UUID.randomUUID())
+                .owner(owner)
+                .status(OrderStatus.NEW)
+                .total(new BigDecimal("100.00"))
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+
+        OrderEntity order2 = OrderEntity.builder()
+                .id(UUID.randomUUID())
+                .owner(owner)
+                .status(OrderStatus.NEW)
+                .total(new BigDecimal("200.00"))
+                .createdOn(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+
+        ProductEntity product = ProductEntity.builder()
+                .id(UUID.randomUUID())
+                .name("Test Lamp")
+                .imageUrl("/images/lamp.jpg")
+                .build();
+
+        OrderItemEntity item1 = OrderItemEntity.builder()
+                .id(UUID.randomUUID())
+                .order(order1)
+                .product(product)
+                .unitPrice(new BigDecimal("100.00"))
+                .quantity(1)
+                .lineTotal(new BigDecimal("100.00"))
+                .build();
+
+        OrderItemEntity item2 = OrderItemEntity.builder()
+                .id(UUID.randomUUID())
+                .order(order2)
+                .product(product)
+                .unitPrice(new BigDecimal("100.00"))
+                .quantity(2)
+                .lineTotal(new BigDecimal("200.00"))
+                .build();
+
+        when(orderRepository.findAllByOwnerIdAndStatus(ownerId, OrderStatus.NEW)).thenReturn(List.of(order1, order2));
+        when(orderItemRepository.findAllByOrder(order1)).thenReturn(List.of(item1));
+        when(orderItemRepository.findAllByOrder(order2)).thenReturn(List.of(item2));
+        when(imgUrlExpander.toPublicUrl("/images/lamp.jpg")).thenReturn("http://localhost:8080/images/lamp.jpg");
+
+        List<OrderResponseDTO> result = orderService.getNew(ownerId);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).status()).isEqualTo(OrderStatus.NEW);
+        assertThat(result.get(1).status()).isEqualTo(OrderStatus.NEW);
+
+        verify(orderRepository, times(1)).findAllByOwnerIdAndStatus(ownerId, OrderStatus.NEW);
+        verify(orderItemRepository, times(1)).findAllByOrder(order1);
+        verify(orderItemRepository, times(1)).findAllByOrder(order2);
+    }
+
+    @Test
+    void givenNoNewOrders_whenGetNew_thenEmptyListIsReturned() {
+        UUID ownerId = UUID.randomUUID();
+
+        when(orderRepository.findAllByOwnerIdAndStatus(ownerId, OrderStatus.NEW)).thenReturn(new ArrayList<>());
+
+        List<OrderResponseDTO> result = orderService.getNew(ownerId);
+
+        assertThat(result).isEmpty();
+
+        verify(orderRepository, times(1)).findAllByOwnerIdAndStatus(ownerId, OrderStatus.NEW);
         verify(orderItemRepository, never()).findAllByOrder(any());
     }
 }
