@@ -2,6 +2,7 @@ package com.antdevrealm.housechaosmain.order.service;
 
 import com.antdevrealm.housechaosmain.address.dto.AddressRequestDTO;
 import com.antdevrealm.housechaosmain.address.repository.AddressRepository;
+import com.antdevrealm.housechaosmain.auth.refreshtoken.repository.RefreshTokenRepository;
 import com.antdevrealm.housechaosmain.cart.model.CartEntity;
 import com.antdevrealm.housechaosmain.cart.model.CartItemEntity;
 import com.antdevrealm.housechaosmain.cart.repository.CartItemRepository;
@@ -75,6 +76,9 @@ public class OrderServiceITest {
     @Autowired
     private AddressRepository addressRepository;
 
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
     @BeforeEach
     @Transactional
     void setUp() {
@@ -82,10 +86,11 @@ public class OrderServiceITest {
         orderRepository.deleteAll();
         cartItemRepository.deleteAll();
         cartRepository.deleteAll();
-        addressRepository.deleteAll();
+        refreshTokenRepository.deleteAll();
         productRepository.deleteAll();
-        categoryRepository.deleteAll();
         userRepository.deleteAll();
+        addressRepository.deleteAll();
+        categoryRepository.deleteAll();
     }
 
     @Test

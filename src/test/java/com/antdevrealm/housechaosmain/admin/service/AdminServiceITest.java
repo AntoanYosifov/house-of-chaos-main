@@ -1,10 +1,14 @@
 package com.antdevrealm.housechaosmain.admin.service;
 
+import com.antdevrealm.housechaosmain.auth.refreshtoken.repository.RefreshTokenRepository;
+import com.antdevrealm.housechaosmain.cart.repository.CartItemRepository;
 import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
 import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
 import com.antdevrealm.housechaosmain.cart.repository.CartRepository;
 import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
+import com.antdevrealm.housechaosmain.order.repository.OrderItemRepository;
+import com.antdevrealm.housechaosmain.order.repository.OrderRepository;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
@@ -53,13 +57,29 @@ public class AdminServiceITest {
     @Autowired
     private CartRepository cartRepository;
 
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private CartItemRepository cartItemRepository;
+
     @BeforeEach
     @Transactional
     void setUp() {
-        productRepository.deleteAll();
-        categoryRepository.deleteAll();
+        orderItemRepository.deleteAll();
+        orderRepository.deleteAll();
+        cartItemRepository.deleteAll();
         cartRepository.deleteAll();
+        refreshTokenRepository.deleteAll();
+        productRepository.deleteAll();
         userRepository.deleteAll();
+        categoryRepository.deleteAll();
     }
 
     @Test
