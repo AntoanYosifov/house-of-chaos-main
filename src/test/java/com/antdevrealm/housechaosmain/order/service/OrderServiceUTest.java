@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.order;
+package com.antdevrealm.housechaosmain.order.service;
 
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.order.dto.OrderResponseDTO;
@@ -7,7 +7,6 @@ import com.antdevrealm.housechaosmain.order.model.entity.OrderItemEntity;
 import com.antdevrealm.housechaosmain.order.model.enums.OrderStatus;
 import com.antdevrealm.housechaosmain.order.repository.OrderItemRepository;
 import com.antdevrealm.housechaosmain.order.repository.OrderRepository;
-import com.antdevrealm.housechaosmain.order.service.OrderService;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
