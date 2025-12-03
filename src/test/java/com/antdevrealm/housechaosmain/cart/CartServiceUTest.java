@@ -6,6 +6,7 @@ import com.antdevrealm.housechaosmain.cart.model.CartItemEntity;
 import com.antdevrealm.housechaosmain.cart.repository.CartItemRepository;
 import com.antdevrealm.housechaosmain.cart.repository.CartRepository;
 import com.antdevrealm.housechaosmain.cart.service.CartService;
+import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
@@ -99,5 +100,173 @@ public class CartServiceUTest {
 
         verify(cartRepository, times(1)).findByOwnerId(ownerId);
         verify(cartItemRepository, never()).findAllByCart(any());
+    }
+
+    @Test
+    void givenNewItemToCart_whenAddOneToCart_thenNewCartItemIsCreated() {
+        UUID ownerId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+        UUID cartId = UUID.randomUUID();
+
+        UserEntity owner = UserEntity.builder()
+                .id(ownerId)
+                .build();
+
+        CartEntity cart = CartEntity.builder()
+                .id(cartId)
+                .owner(owner)
+                .build();
+
+        ProductEntity product = ProductEntity.builder()
+                .id(productId)
+                .name("Test Lamp")
+                .imageUrl("/images/lamp.jpg")
+                .quantity(10)
+                .build();
+
+        CartItemEntity newItem = CartItemEntity.builder()
+                .id(UUID.randomUUID())
+                .cart(cart)
+                .product(product)
+                .quantity(1)
+                .build();
+
+        when(cartRepository.findByOwnerId(ownerId)).thenReturn(Optional.of(cart));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(cartItemRepository.findByCartIdAndProductId(cartId, productId)).thenReturn(Optional.empty());
+        when(cartItemRepository.save(any(CartItemEntity.class))).thenReturn(newItem);
+        when(cartItemRepository.findAllByCart(cart)).thenReturn(List.of(newItem));
+        when(imgUrlExpander.toPublicUrl("/images/lamp.jpg")).thenReturn("http://localhost:8080/images/lamp.jpg");
+
+        CartResponseDTO result = cartService.addOneToCart(ownerId, productId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.items()).hasSize(1);
+        assertThat(result.items().get(0).quantity()).isEqualTo(1);
+
+        verify(cartItemRepository, times(1)).save(any(CartItemEntity.class));
+    }
+
+    @Test
+    void givenExistingItemInCart_whenAddOneToCart_thenQuantityIsIncremented() {
+        UUID ownerId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+        UUID cartId = UUID.randomUUID();
+
+        UserEntity owner = UserEntity.builder()
+                .id(ownerId)
+                .build();
+
+        CartEntity cart = CartEntity.builder()
+                .id(cartId)
+                .owner(owner)
+                .build();
+
+        ProductEntity product = ProductEntity.builder()
+                .id(productId)
+                .name("Test Desk")
+                .imageUrl("/images/desk.jpg")
+                .quantity(10)
+                .build();
+
+        CartItemEntity existingItem = CartItemEntity.builder()
+                .id(UUID.randomUUID())
+                .cart(cart)
+                .product(product)
+                .quantity(2)
+                .build();
+
+        when(cartRepository.findByOwnerId(ownerId)).thenReturn(Optional.of(cart));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(cartItemRepository.findByCartIdAndProductId(cartId, productId)).thenReturn(Optional.of(existingItem));
+        when(cartItemRepository.save(existingItem)).thenReturn(existingItem);
+        when(cartItemRepository.findAllByCart(cart)).thenReturn(List.of(existingItem));
+        when(imgUrlExpander.toPublicUrl("/images/desk.jpg")).thenReturn("http://localhost:8080/images/desk.jpg");
+
+        CartResponseDTO result = cartService.addOneToCart(ownerId, productId);
+
+        assertThat(result).isNotNull();
+        assertThat(existingItem.getQuantity()).isEqualTo(3);
+        assertThat(result.items()).hasSize(1);
+        assertThat(result.items().get(0).quantity()).isEqualTo(3);
+
+        verify(cartItemRepository, times(1)).save(existingItem);
+    }
+
+    @Test
+    void givenNonExistentCart_whenAddOneToCart_thenResourceNotFoundExceptionIsThrown() {
+        UUID ownerId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        when(cartRepository.findByOwnerId(ownerId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> cartService.addOneToCart(ownerId, productId));
+
+        verify(cartRepository, times(1)).findByOwnerId(ownerId);
+        verify(productRepository, never()).findById(any());
+        verify(cartItemRepository, never()).save(any());
+    }
+
+    @Test
+    void givenNonExistentProduct_whenAddOneToCart_thenResourceNotFoundExceptionIsThrown() {
+        UUID ownerId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+        UUID cartId = UUID.randomUUID();
+
+        UserEntity owner = UserEntity.builder()
+                .id(ownerId)
+                .build();
+
+        CartEntity cart = CartEntity.builder()
+                .id(cartId)
+                .owner(owner)
+                .build();
+
+        when(cartRepository.findByOwnerId(ownerId)).thenReturn(Optional.of(cart));
+        when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> cartService.addOneToCart(ownerId, productId));
+
+        verify(cartRepository, times(1)).findByOwnerId(ownerId);
+        verify(productRepository, times(1)).findById(productId);
+        verify(cartItemRepository, never()).save(any());
+    }
+
+    @Test
+    void givenQuantityExceedsStock_whenAddOneToCart_thenBusinessRuleExceptionIsThrown() {
+        UUID ownerId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+        UUID cartId = UUID.randomUUID();
+
+        UserEntity owner = UserEntity.builder()
+                .id(ownerId)
+                .build();
+
+        CartEntity cart = CartEntity.builder()
+                .id(cartId)
+                .owner(owner)
+                .build();
+
+        ProductEntity product = ProductEntity.builder()
+                .id(productId)
+                .name("Test Table")
+                .imageUrl("/images/table.jpg")
+                .quantity(3)
+                .build();
+
+        CartItemEntity existingItem = CartItemEntity.builder()
+                .id(UUID.randomUUID())
+                .cart(cart)
+                .product(product)
+                .quantity(3)
+                .build();
+
+        when(cartRepository.findByOwnerId(ownerId)).thenReturn(Optional.of(cart));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(cartItemRepository.findByCartIdAndProductId(cartId, productId)).thenReturn(Optional.of(existingItem));
+
+        assertThrows(BusinessRuleException.class, () -> cartService.addOneToCart(ownerId, productId));
+
+        verify(cartItemRepository, never()).save(any());
     }
 }
