@@ -140,4 +140,19 @@ public class AdminControllerApiTest {
                 .andExpect(jsonPath("$.id").value(categoryId.toString()))
                 .andExpect(jsonPath("$.name").value("table"));
     }
+
+    @Test
+    void deleteAuthorizedRequestToDeleteCategory_shouldReturn204() throws Exception {
+        UUID categoryId = UUID.randomUUID();
+
+        doNothing().when(adminService).deleteCategory(categoryId);
+
+        MockHttpServletRequestBuilder request = delete("/api/v1/admin/categories/{id}", categoryId)
+                .with(jwt().jwt(jwt -> jwt.claim("authorities", List.of("ROLE_ADMIN"))));
+
+        mockMvc.perform(request)
+                .andExpect(status().isNoContent());
+
+        verify(adminService, times(1)).deleteCategory(categoryId);
+    }
 }
