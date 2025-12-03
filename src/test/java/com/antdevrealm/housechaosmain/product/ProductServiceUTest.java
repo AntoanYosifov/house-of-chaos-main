@@ -141,4 +141,98 @@ public class ProductServiceUTest {
         verify(categoryService, times(1)).getById(categoryId);
         verify(productRepository, times(1)).findAllByCategoryAndIsActiveIsTrue(category);
     }
+
+    @Test
+    void givenNewArrivalsExist_whenGetNewArrivals_thenListOfNewArrivalsIsReturned() {
+        ProductEntity product1 = ProductEntity.builder()
+                .id(UUID.randomUUID())
+                .name("New Chair")
+                .description("Test description for new chair")
+                .price(new BigDecimal("149.99"))
+                .quantity(5)
+                .imageUrl("/images/chair.jpg")
+                .newArrival(true)
+                .isActive(true)
+                .build();
+
+        ProductEntity product2 = ProductEntity.builder()
+                .id(UUID.randomUUID())
+                .name("New Lamp")
+                .description("Test description for new lamp")
+                .price(new BigDecimal("99.99"))
+                .quantity(3)
+                .imageUrl("/images/lamp.jpg")
+                .newArrival(true)
+                .isActive(true)
+                .build();
+
+        when(productRepository.findTop10NewArrivals()).thenReturn(List.of(product1, product2));
+        when(imgUrlExpander.toPublicUrl("/images/chair.jpg")).thenReturn("http://localhost:8080/images/chair.jpg");
+        when(imgUrlExpander.toPublicUrl("/images/lamp.jpg")).thenReturn("http://localhost:8080/images/lamp.jpg");
+
+        List<ProductResponseDTO> result = productService.getNewArrivals();
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).name()).isEqualTo("New Chair");
+        assertThat(result.get(1).name()).isEqualTo("New Lamp");
+
+        verify(productRepository, times(1)).findTop10NewArrivals();
+    }
+
+    @Test
+    void givenNoNewArrivals_whenGetNewArrivals_thenEmptyListIsReturned() {
+        when(productRepository.findTop10NewArrivals()).thenReturn(new ArrayList<>());
+
+        List<ProductResponseDTO> result = productService.getNewArrivals();
+
+        assertThat(result).isEmpty();
+
+        verify(productRepository, times(1)).findTop10NewArrivals();
+    }
+
+    @Test
+    void givenCheapestProductsExist_whenGetCheapest_thenListOfCheapestIsReturned() {
+        ProductEntity product1 = ProductEntity.builder()
+                .id(UUID.randomUUID())
+                .name("Cheap Table")
+                .description("Test description for cheap table")
+                .price(new BigDecimal("49.99"))
+                .quantity(10)
+                .imageUrl("/images/table.jpg")
+                .isActive(true)
+                .build();
+
+        ProductEntity product2 = ProductEntity.builder()
+                .id(UUID.randomUUID())
+                .name("Cheap Desk")
+                .description("Test description for cheap desk")
+                .price(new BigDecimal("79.99"))
+                .quantity(7)
+                .imageUrl("/images/desk.jpg")
+                .isActive(true)
+                .build();
+
+        when(productRepository.findTop10Cheapest()).thenReturn(List.of(product1, product2));
+        when(imgUrlExpander.toPublicUrl("/images/table.jpg")).thenReturn("http://localhost:8080/images/table.jpg");
+        when(imgUrlExpander.toPublicUrl("/images/desk.jpg")).thenReturn("http://localhost:8080/images/desk.jpg");
+
+        List<ProductResponseDTO> result = productService.getCheapest();
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).name()).isEqualTo("Cheap Table");
+        assertThat(result.get(1).name()).isEqualTo("Cheap Desk");
+
+        verify(productRepository, times(1)).findTop10Cheapest();
+    }
+
+    @Test
+    void givenNoCheapestProducts_whenGetCheapest_thenEmptyListIsReturned() {
+        when(productRepository.findTop10Cheapest()).thenReturn(new ArrayList<>());
+
+        List<ProductResponseDTO> result = productService.getCheapest();
+
+        assertThat(result).isEmpty();
+
+        verify(productRepository, times(1)).findTop10Cheapest();
+    }
 }
