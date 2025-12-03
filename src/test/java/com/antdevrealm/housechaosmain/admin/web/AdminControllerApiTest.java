@@ -6,6 +6,7 @@ import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
+import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,5 +155,31 @@ public class AdminControllerApiTest {
                 .andExpect(status().isNoContent());
 
         verify(adminService, times(1)).deleteCategory(categoryId);
+    }
+
+    @Test
+    void getAuthorizedRequestToGetAllUsers_shouldReturn200() throws Exception {
+        UUID currentUserId = UUID.randomUUID();
+        UUID user1Id = UUID.randomUUID();
+        UUID user2Id = UUID.randomUUID();
+
+        UserResponseDTO user1 = new UserResponseDTO(user1Id, "user1@test.com", null, null, null, null, null, null);
+        UserResponseDTO user2 = new UserResponseDTO(user2Id, "user2@test.com", null, null, null, null, null, null);
+
+        when(adminService.getAllUsers(currentUserId)).thenReturn(List.of(user1, user2));
+
+        MockHttpServletRequestBuilder request = get("/api/v1/admin/users")
+                .with(jwt().jwt(jwt -> jwt
+                        .claim("uid", currentUserId.toString())
+                        .claim("authorities", List.of("ROLE_ADMIN"))));
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(user1Id.toString()))
+                .andExpect(jsonPath("$[1].id").value(user2Id.toString()));
+
+        verify(adminService, times(1)).getAllUsers(currentUserId);
     }
 }
