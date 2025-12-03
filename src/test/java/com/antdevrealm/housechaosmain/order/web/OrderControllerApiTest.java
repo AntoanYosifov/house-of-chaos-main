@@ -58,4 +58,43 @@ public class OrderControllerApiTest {
                 .andExpect(jsonPath("$.status").value("NEW"))
                 .andExpect(jsonPath("$.total").value(299.98));
     }
+
+    @Test
+    void getRequestToGetNew_shouldReturn200() throws Exception {
+        UUID ownerId = UUID.randomUUID();
+
+        OrderResponseDTO order1 = new OrderResponseDTO(
+                UUID.randomUUID(),
+                ownerId,
+                OrderStatus.NEW,
+                Instant.now(),
+                Instant.now(),
+                new BigDecimal("100.00"),
+                null,
+                List.of()
+        );
+
+        OrderResponseDTO order2 = new OrderResponseDTO(
+                UUID.randomUUID(),
+                ownerId,
+                OrderStatus.NEW,
+                Instant.now(),
+                Instant.now(),
+                new BigDecimal("200.00"),
+                null,
+                List.of()
+        );
+
+        when(orderService.getNew(ownerId)).thenReturn(List.of(order1, order2));
+
+        MockHttpServletRequestBuilder request = get("/api/v1/orders/new")
+                .with(jwt().jwt(jwt -> jwt.claim("uid", ownerId.toString())));
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].status").value("NEW"))
+                .andExpect(jsonPath("$[1].status").value("NEW"));
+    }
 }
