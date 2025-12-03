@@ -36,6 +36,16 @@ public class CartService {
         this.imgUrlExpander = imgUrlExpander;
     }
 
+    public CartResponseDTO getCartByOwnerId(UUID ownerId) {
+        CartEntity cart = cartRepository.findByOwnerId(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format( "Cart for owner with ID: %s not found", ownerId)));
+
+        List<CartItemEntity> items = cartItemRepository.findAllByCart(cart);
+
+        return mapToCartResponseDTO(cart, items);
+    }
+
     public void createCart(UserEntity owner) {
         CartEntity cartEntity = CartEntity.builder()
                 .owner(owner)
@@ -43,26 +53,6 @@ public class CartService {
 
         CartEntity savedCart = this.cartRepository.save(cartEntity);
         log.info("Cart created: cartId={}, ownerId={}", savedCart.getId(), owner.getId());
-    }
-
-    public void clearCartItems(UserEntity user) {
-        CartEntity cart = cartRepository.findByOwnerId(user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Cart for owner %s not found".formatted(user.getId())
-                ));
-
-        this.cartItemRepository.deleteAllByCart(cart);
-        log.info("Cart items cleared: cartId={}, ownerId={}", cart.getId(), user.getId());
-    }
-
-    public CartResponseDTO getCartByOwnerId(UUID ownerId) {
-        CartEntity cart = cartRepository.findByOwnerId(ownerId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                       String.format( "Cart for owner with ID: %s not found", ownerId)));
-
-        List<CartItemEntity> items = cartItemRepository.findAllByCart(cart);
-
-        return mapToCartResponseDTO(cart, items);
     }
 
     public CartResponseDTO addOneToCart(UUID ownerId, UUID productId) {
@@ -143,6 +133,15 @@ public class CartService {
         return mapToCartResponseDTO(cartEntity, items);
     }
 
+    public void clearCartItems(UserEntity user) {
+        CartEntity cart = cartRepository.findByOwnerId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Cart for owner %s not found".formatted(user.getId())
+                ));
+
+        this.cartItemRepository.deleteAllByCart(cart);
+        log.info("Cart items cleared: cartId={}, ownerId={}", cart.getId(), user.getId());
+    }
 
     private CartResponseDTO mapToCartResponseDTO(CartEntity cartEntity,  List<CartItemEntity> items) {
         List<CartItemResponseDTO> itemDTOs = items.stream()
