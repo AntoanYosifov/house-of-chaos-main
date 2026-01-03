@@ -11,6 +11,8 @@ import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +46,7 @@ public class ProductService {
     }
 
     @Transactional
+    @Cacheable("by-category")
     public List<ProductResponseDTO> getAllByCategoryId(UUID categoryId) {
         CategoryEntity category = this.categoryService.getById(categoryId);
 
@@ -51,16 +54,18 @@ public class ProductService {
 
         return allByCategory.stream().map(this::mapToResponseDto).toList();
     }
-
+    @Cacheable("new-arrivals")
     public List<ProductResponseDTO> getNewArrivals() {
         return this.productRepository.findTop10NewArrivals().stream().map(this::mapToResponseDto).toList();
     }
 
+    @Cacheable("cheapest")
     public List<ProductResponseDTO> getCheapest() {
         return this.productRepository.findTop10Cheapest().stream().map(this::mapToResponseDto).toList();
     }
 
     @Transactional
+    @CacheEvict(cacheNames = {"by-category", "new-arrivals", "cheapest"}, allEntries = true)
     public ProductResponseDTO create(CreateProductRequestDTO productDTO) {
 
         CategoryEntity category = this.categoryService.getById(productDTO.categoryId());
@@ -75,6 +80,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = {"by-category", "new-arrivals", "cheapest"}, allEntries = true)
     public ProductResponseDTO update(UpdateProductRequestDTO dto, UUID productId) {
         ProductEntity productEntity = this.productRepository.findByIdAndIsActiveIsTrue(productId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with ID: %s not found!", productId)));
@@ -90,6 +96,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = {"by-category", "new-arrivals", "cheapest"}, allEntries = true)
     public void softDelete(UUID productId) {
         ProductEntity productEntity = this.productRepository.findByIdAndIsActiveIsTrue(productId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with ID: %s not found!", productId)));
@@ -104,6 +111,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(cacheNames = {"by-category", "new-arrivals", "cheapest"}, allEntries = true)
     public int markOldNewArrivalsAsNotNew(int daysAsNew) {
         Instant threshold = Instant.now().minus(Duration.ofDays(daysAsNew));
         return productRepository.markOldNewArrivalsAsNotNew(threshold);
