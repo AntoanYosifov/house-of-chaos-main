@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.config;
+package com.antdevrealm.housechaosmain.security;
 import com.antdevrealm.housechaosmain.auth.jwt.handler.RestAuthenticationEntryPoint;
 import com.antdevrealm.housechaosmain.auth.service.HOCUserDetailsService;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -53,6 +53,8 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers(
                                         "/images/**",
+                                        // Allow endpoint for smoke test of cloudinary image upload integration
+                                        "/api/v1/test/images/upload",
                                         "/api/v1/products/**",
                                         "/api/v1/categories/**",
                                         "/api/v1/users/register",
