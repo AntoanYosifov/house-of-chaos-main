@@ -39,7 +39,10 @@ public class ProductEntity {
 
     private boolean isActive;
 
-    @Column(nullable = false)
+    // TODO: Make field non nullable after finishing Cloudinary integration
+    private String imagePublicId;
+
+    // TODO: Remove field after finishing Cloudinary integration
     private String imageUrl;
 
     @Column(nullable = false)

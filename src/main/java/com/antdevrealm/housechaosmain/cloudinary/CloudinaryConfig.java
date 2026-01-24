@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.config;
+package com.antdevrealm.housechaosmain.cloudinary;
 
 import com.cloudinary.Cloudinary;
 import org.springframework.context.annotation.Bean;

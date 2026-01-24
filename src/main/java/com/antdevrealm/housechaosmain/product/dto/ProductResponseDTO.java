@@ -8,6 +8,7 @@ public record ProductResponseDTO(UUID id,
                                  String description,
                                  BigDecimal price,
                                  int quantity,
+                                 String thumbUrl,
                                  String imgUrl) {
 }
 

@@ -2,6 +2,7 @@ package com.antdevrealm.housechaosmain.product.service;
 
 import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.service.CategoryService;
+import com.antdevrealm.housechaosmain.cloudinary.CloudinaryService;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
@@ -28,14 +29,17 @@ import java.util.UUID;
 public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
+    private final CloudinaryService cloudinaryService;
+
     private final ImgUrlExpander imgUrlExpander;
 
     @Autowired
     public ProductService(ProductRepository productRepository,
-                          CategoryService categoryService,
+                          CategoryService categoryService, CloudinaryService cloudinaryService,
                           ImgUrlExpander imgUrlExpander) {
         this.productRepository = productRepository;
         this.categoryService = categoryService;
+        this.cloudinaryService = cloudinaryService;
         this.imgUrlExpander = imgUrlExpander;
     }
 
@@ -124,7 +128,8 @@ public class ProductService {
                 productEntity.getDescription(),
                 productEntity.getPrice(),
                 productEntity.getQuantity(),
-                imgUrlExpander.toPublicUrl(productEntity.getImageUrl())
+                cloudinaryService.buildThumbUrl(productEntity.getImagePublicId()),
+                cloudinaryService.buildLargeUrl(productEntity.getImagePublicId())
         );
     }
 

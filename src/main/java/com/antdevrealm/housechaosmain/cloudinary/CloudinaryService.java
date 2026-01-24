@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.product.service;
+package com.antdevrealm.housechaosmain.cloudinary;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;

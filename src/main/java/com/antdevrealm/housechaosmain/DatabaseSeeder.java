@@ -7,6 +7,7 @@ import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
+import com.antdevrealm.housechaosmain.cloudinary.CloudinaryService;
 import com.antdevrealm.housechaosmain.role.model.entity.RoleEntity;
 import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.role.repository.RoleRepository;
@@ -14,9 +15,12 @@ import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -32,18 +36,21 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final CartRepository cartRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private final CloudinaryService cloudinaryService;
+
     private final List<String> categoryNames = List.of("chair", "table", "couch", "lamp");
     @Autowired
     public DatabaseSeeder(ProductRepository productRepository,
                           CategoryRepository categoryRepository, RoleRepository roleRepository,
                           UserRepository userRepository, CartRepository cartRepository,
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder, CloudinaryService cloudinaryService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.cartRepository = cartRepository;
         this.passwordEncoder = passwordEncoder;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @Override
@@ -95,10 +102,37 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
 
         if (this.productRepository.count() == 0) {
-            seedChairs();
-            seedTables();
-            seedCouches();
-            seedLamps();
+//            seedChairs();
+//            seedTables();
+//            seedCouches();
+//            seedLamps();
+            CategoryEntity chairCategory = categoryRepository.findByName("chair")
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Category entity with name: \"chair\" not found!"));
+
+            Instant now = Instant.now();
+
+            ProductEntity p1 = ProductEntity.builder()
+                    .name("Ashwood Counter Stool")
+                    .description("Handcrafted ashwood counter stool ...")
+                    .price(new BigDecimal("129.99"))
+                    .quantity(6)
+                    .category(chairCategory)
+                    .createdOn(now.minus(30, ChronoUnit.DAYS))
+                    .updatedAt(now.minus(30, ChronoUnit.DAYS))
+                    .newArrival(false)
+                    .isActive(true)
+                    .build();
+
+            String publicId = uploadSeedImageFromClasspath(
+                    "static/images/chairs/chair-1.jpg",
+                    "house-of-chaos/chairs",
+                    slugify(p1.getName())
+            );
+
+            p1.setImagePublicId(publicId);
+
+            this.productRepository.save(p1);
         }
     }
 
@@ -635,8 +669,24 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .build()
         );
 
-
         this.productRepository.saveAll(lamps);
+    }
+
+    private String uploadSeedImageFromClasspath(String classpathLocation,
+                                                String folder,
+                                                String publicId) {
+        try (InputStream inputStream = new ClassPathResource(classpathLocation).getInputStream()) {
+            byte[] bytes = inputStream.readAllBytes();
+            return cloudinaryService.uploadSeedImage(bytes, folder, publicId);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload seed image: " + classpathLocation, e);
+        }
+    }
+
+    private String slugify(String name) {
+        return name.toLowerCase()
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("(^-|-$)", "");
     }
 
 }
