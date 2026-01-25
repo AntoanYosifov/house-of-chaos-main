@@ -9,7 +9,6 @@ import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
-import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -31,16 +30,14 @@ public class ProductService {
     private final CategoryService categoryService;
     private final CloudinaryService cloudinaryService;
 
-    private final ImgUrlExpander imgUrlExpander;
+
 
     @Autowired
     public ProductService(ProductRepository productRepository,
-                          CategoryService categoryService, CloudinaryService cloudinaryService,
-                          ImgUrlExpander imgUrlExpander) {
+                          CategoryService categoryService, CloudinaryService cloudinaryService) {
         this.productRepository = productRepository;
         this.categoryService = categoryService;
         this.cloudinaryService = cloudinaryService;
-        this.imgUrlExpander = imgUrlExpander;
     }
 
     public ProductResponseDTO getById(UUID id) {

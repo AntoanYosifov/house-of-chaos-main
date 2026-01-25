@@ -1,4 +1,5 @@
 package com.antdevrealm.housechaosmain.order.service;
+
 import com.antdevrealm.housechaosmain.address.dto.AddressRequestDTO;
 import com.antdevrealm.housechaosmain.address.model.AddressEntity;
 import com.antdevrealm.housechaosmain.address.service.AddressService;
@@ -15,7 +16,6 @@ import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
-import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import com.antdevrealm.housechaosmain.util.ResponseDTOMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,19 +40,21 @@ public class OrderService {
     private final CartService cartService;
     private final AddressService addressService;
 
-    private final ImgUrlExpander imgUrlExpander;
 
 
     @Autowired
     public OrderService(OrderRepository orderRepository,
-                        OrderItemRepository orderItemRepository, UserRepository userRepository, ProductRepository productRepository, CartService cartService, AddressService addressService, ImgUrlExpander imgUrlExpander) {
+                        OrderItemRepository orderItemRepository,
+                        UserRepository userRepository,
+                        ProductRepository productRepository,
+                        CartService cartService,
+                        AddressService addressService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.cartService = cartService;
         this.addressService = addressService;
-        this.imgUrlExpander = imgUrlExpander;
     }
 
     public OrderResponseDTO getById(UUID ownerId, UUID id) {
@@ -224,7 +226,7 @@ public class OrderService {
                 orderItemEntity.getProduct().getId(),
                 orderItemEntity.getProduct().getName(),
                 orderItemEntity.getUnitPrice(),
-                this.imgUrlExpander.toPublicUrl(orderItemEntity.getProduct().getImageUrl()),
+                orderItemEntity.getProduct().getImageUrl(),
                 orderItemEntity.getQuantity(),
                 orderItemEntity.getLineTotal());
     }

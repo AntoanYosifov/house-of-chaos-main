@@ -39,6 +39,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final CloudinaryService cloudinaryService;
 
     private final List<String> categoryNames = List.of("chair", "table", "couch", "lamp");
+
     @Autowired
     public DatabaseSeeder(ProductRepository productRepository,
                           CategoryRepository categoryRepository, RoleRepository roleRepository,
@@ -54,7 +55,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args)  {
+    public void run(String... args) {
 
         if (this.roleRepository.count() == 0) {
             List<RoleEntity> roles = List.of(
@@ -70,7 +71,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
 
 
-        if(this.userRepository.count() == 0) {
+        if (this.userRepository.count() == 0) {
             UserEntity defaultAdminEntity = UserEntity.builder()
                     .email("admin@email.com")
                     .password(this.passwordEncoder.encode("adminpassword"))
@@ -102,37 +103,10 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
 
         if (this.productRepository.count() == 0) {
-//            seedChairs();
-//            seedTables();
-//            seedCouches();
-//            seedLamps();
-            CategoryEntity chairCategory = categoryRepository.findByName("chair")
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Category entity with name: \"chair\" not found!"));
-
-            Instant now = Instant.now();
-
-            ProductEntity p1 = ProductEntity.builder()
-                    .name("Ashwood Counter Stool")
-                    .description("Handcrafted ashwood counter stool ...")
-                    .price(new BigDecimal("129.99"))
-                    .quantity(6)
-                    .category(chairCategory)
-                    .createdOn(now.minus(30, ChronoUnit.DAYS))
-                    .updatedAt(now.minus(30, ChronoUnit.DAYS))
-                    .newArrival(false)
-                    .isActive(true)
-                    .build();
-
-            String publicId = uploadSeedImageFromClasspath(
-                    "static/images/chairs/chair-1.jpg",
-                    "house-of-chaos/chairs",
-                    slugify(p1.getName())
-            );
-
-            p1.setImagePublicId(publicId);
-
-            this.productRepository.save(p1);
+            seedChairs();
+            seedTables();
+            seedCouches();
+            seedLamps();
         }
     }
 
@@ -150,7 +124,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("129.99"))
                         .quantity(6)
                         .category(chairCategory)
-                        .imageUrl("/images/chairs/chair-1.jpg")
                         .createdOn(now.minus(30, ChronoUnit.DAYS))
                         .updatedAt(now.minus(30, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -162,7 +135,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("149.99"))
                         .quantity(8)
                         .category(chairCategory)
-                        .imageUrl("/images/chairs/chair-2.jpg")
                         .createdOn(now.minus(20, ChronoUnit.DAYS))
                         .updatedAt(now.minus(20, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -174,7 +146,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("189.00"))
                         .quantity(4)
                         .category(chairCategory)
-                        .imageUrl("/images/chairs/chair-3.jpg")
                         .createdOn(now.minus(10, ChronoUnit.DAYS))
                         .updatedAt(now.minus(10, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -186,7 +157,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("169.00"))
                         .quantity(5)
                         .category(chairCategory)
-                        .imageUrl("/images/chairs/chair-4.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -198,7 +168,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("209.00"))
                         .quantity(3)
                         .category(chairCategory)
-                        .imageUrl("/images/chairs/chair-5.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -210,7 +179,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("119.00"))
                         .quantity(9)
                         .category(chairCategory)
-                        .imageUrl("/images/chairs/chair-6.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -222,7 +190,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("179.00"))
                         .quantity(5)
                         .category(chairCategory)
-                        .imageUrl("/images/chairs/chair-7.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -234,7 +201,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("199.00"))
                         .quantity(7)
                         .category(chairCategory)
-                        .imageUrl("/images/chairs/chair-8.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -246,7 +212,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("159.00"))
                         .quantity(6)
                         .category(chairCategory)
-                        .imageUrl("/images/chairs/chair-9.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -258,13 +223,37 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("139.00"))
                         .quantity(10)
                         .category(chairCategory)
-                        .imageUrl("/images/chairs/chair-10.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
                         .isActive(true)
                         .build()
         );
+
+        List<String> chairImagePaths = List.of(
+                "static/images/chairs/chair-1.jpg",
+                "static/images/chairs/chair-2.jpg",
+                "static/images/chairs/chair-3.jpg",
+                "static/images/chairs/chair-4.jpg",
+                "static/images/chairs/chair-5.jpg",
+                "static/images/chairs/chair-6.jpg",
+                "static/images/chairs/chair-7.jpg",
+                "static/images/chairs/chair-8.jpg",
+                "static/images/chairs/chair-9.jpg",
+                "static/images/chairs/chair-10.jpg"
+        );
+
+        for (int i = 0; i < chairs.size(); i++) {
+            ProductEntity p = chairs.get(i);
+
+            String publicId = uploadSeedImageFromClasspath(
+                    chairImagePaths.get(i),
+                    "house-of-chaos/chairs",
+                    slugify(p.getName())
+            );
+
+            p.setImagePublicId(publicId);
+        }
 
         this.productRepository.saveAll(chairs);
     }
@@ -284,7 +273,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("329.00"))
                         .quantity(5)
                         .category(tableCategory)
-                        .imageUrl("/images/tables/table-1.jpg")
                         .createdOn(now.minus(30, ChronoUnit.DAYS))
                         .updatedAt(now.minus(30, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -296,7 +284,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("249.00"))
                         .quantity(7)
                         .category(tableCategory)
-                        .imageUrl("/images/tables/table-2.jpg")
                         .createdOn(now.minus(20, ChronoUnit.DAYS))
                         .updatedAt(now.minus(20, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -308,7 +295,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("189.00"))
                         .quantity(10)
                         .category(tableCategory)
-                        .imageUrl("/images/tables/table-3.jpg")
                         .createdOn(now.minus(10, ChronoUnit.DAYS))
                         .updatedAt(now.minus(10, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -320,7 +306,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("179.00"))
                         .quantity(8)
                         .category(tableCategory)
-                        .imageUrl("/images/tables/table-4.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -332,7 +317,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("299.00"))
                         .quantity(6)
                         .category(tableCategory)
-                        .imageUrl("/images/tables/table-5.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -344,7 +328,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("269.00"))
                         .quantity(4)
                         .category(tableCategory)
-                        .imageUrl("/images/tables/table-6.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -356,7 +339,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("159.00"))
                         .quantity(9)
                         .category(tableCategory)
-                        .imageUrl("/images/tables/table-7.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -368,7 +350,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("449.00"))
                         .quantity(5)
                         .category(tableCategory)
-                        .imageUrl("/images/tables/table-8.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -380,7 +361,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("389.00"))
                         .quantity(6)
                         .category(tableCategory)
-                        .imageUrl("/images/tables/table-9.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -392,7 +372,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("329.00"))
                         .quantity(8)
                         .category(tableCategory)
-                        .imageUrl("/images/tables/table-10.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -400,10 +379,33 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .build()
         );
 
+        List<String> tableImagePaths = List.of(
+                "static/images/tables/table-1.jpg",
+                "static/images/tables/table-2.jpg",
+                "static/images/tables/table-3.jpg",
+                "static/images/tables/table-4.jpg",
+                "static/images/tables/table-5.jpg",
+                "static/images/tables/table-6.jpg",
+                "static/images/tables/table-7.jpg",
+                "static/images/tables/table-8.jpg",
+                "static/images/tables/table-9.jpg",
+                "static/images/tables/table-10.jpg"
+        );
+
+        for (int i = 0; i < tables.size(); i++) {
+            ProductEntity p = tables.get(i);
+
+            String publicId = uploadSeedImageFromClasspath(
+                    tableImagePaths.get(i),
+                    "house-of-chaos/tables",
+                    slugify(p.getName())
+            );
+
+            p.setImagePublicId(publicId);
+        }
 
         this.productRepository.saveAll(tables);
     }
-
 
     private void seedCouches() {
         CategoryEntity couchCategory = categoryRepository.findByName("couch")
@@ -419,7 +421,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("899.00"))
                         .quantity(3)
                         .category(couchCategory)
-                        .imageUrl("/images/couches/couch-1.jpg")
                         .createdOn(now.minus(30, ChronoUnit.DAYS))
                         .updatedAt(now.minus(30, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -431,7 +432,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("949.00"))
                         .quantity(4)
                         .category(couchCategory)
-                        .imageUrl("/images/couches/couch-2.jpg")
                         .createdOn(now.minus(20, ChronoUnit.DAYS))
                         .updatedAt(now.minus(20, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -443,7 +443,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("899.00"))
                         .quantity(6)
                         .category(couchCategory)
-                        .imageUrl("/images/couches/couch-3.jpg")
                         .createdOn(now.minus(10, ChronoUnit.DAYS))
                         .updatedAt(now.minus(10, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -455,7 +454,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("849.00"))
                         .quantity(5)
                         .category(couchCategory)
-                        .imageUrl("/images/couches/couch-4.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -467,7 +465,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("1199.00"))
                         .quantity(3)
                         .category(couchCategory)
-                        .imageUrl("/images/couches/couch-5.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -479,7 +476,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("999.00"))
                         .quantity(5)
                         .category(couchCategory)
-                        .imageUrl("/images/couches/couch-6.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -491,7 +487,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("850.00"))
                         .quantity(7)
                         .category(couchCategory)
-                        .imageUrl("/images/couches/couch-7.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -503,7 +498,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("980.00"))
                         .quantity(4)
                         .category(couchCategory)
-                        .imageUrl("/images/couches/couch-8.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -515,7 +509,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("890.00"))
                         .quantity(6)
                         .category(couchCategory)
-                        .imageUrl("/images/couches/couch-9.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -527,7 +520,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("670.00"))
                         .quantity(7)
                         .category(couchCategory)
-                        .imageUrl("/images/couches/couch-10.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -535,6 +527,30 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .build()
         );
 
+        List<String> couchImagePaths = List.of(
+                "static/images/couches/couch-1.jpg",
+                "static/images/couches/couch-2.jpg",
+                "static/images/couches/couch-3.jpg",
+                "static/images/couches/couch-4.jpg",
+                "static/images/couches/couch-5.jpg",
+                "static/images/couches/couch-6.jpg",
+                "static/images/couches/couch-7.jpg",
+                "static/images/couches/couch-8.jpg",
+                "static/images/couches/couch-9.jpg",
+                "static/images/couches/couch-10.jpg"
+        );
+
+        for (int i = 0; i < couches.size(); i++) {
+            ProductEntity p = couches.get(i);
+
+            String publicId = uploadSeedImageFromClasspath(
+                    couchImagePaths.get(i),
+                    "house-of-chaos/couches",
+                    slugify(p.getName())
+            );
+
+            p.setImagePublicId(publicId);
+        }
 
         this.productRepository.saveAll(couches);
     }
@@ -553,7 +569,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("129.00"))
                         .quantity(10)
                         .category(lampCategory)
-                        .imageUrl("/images/lamps/lamp-1.jpg")
                         .createdOn(now.minus(30, ChronoUnit.DAYS))
                         .updatedAt(now.minus(30, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -565,7 +580,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("89.00"))
                         .quantity(10)
                         .category(lampCategory)
-                        .imageUrl("/images/lamps/lamp-2.jpg")
                         .createdOn(now.minus(20, ChronoUnit.DAYS))
                         .updatedAt(now.minus(20, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -577,7 +591,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("129.00"))
                         .quantity(10)
                         .category(lampCategory)
-                        .imageUrl("/images/lamps/lamp-3.jpg")
                         .createdOn(now.minus(10, ChronoUnit.DAYS))
                         .updatedAt(now.minus(10, ChronoUnit.DAYS))
                         .newArrival(false)
@@ -589,7 +602,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("149.00"))
                         .quantity(8)
                         .category(lampCategory)
-                        .imageUrl("/images/lamps/lamp-4.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -601,7 +613,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("169.00"))
                         .quantity(12)
                         .category(lampCategory)
-                        .imageUrl("/images/lamps/lamp-5.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -613,7 +624,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("109.00"))
                         .quantity(20)
                         .category(lampCategory)
-                        .imageUrl("/images/lamps/lamp-6.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -625,7 +635,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("95.00"))
                         .quantity(15)
                         .category(lampCategory)
-                        .imageUrl("/images/lamps/lamp-7.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -637,7 +646,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("210.00"))
                         .quantity(10)
                         .category(lampCategory)
-                        .imageUrl("/images/lamps/lamp-8.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -649,7 +657,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("155.00"))
                         .quantity(10)
                         .category(lampCategory)
-                        .imageUrl("/images/lamps/lamp-9.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
@@ -661,13 +668,37 @@ public class DatabaseSeeder implements CommandLineRunner {
                         .price(new BigDecimal("185.00"))
                         .quantity(10)
                         .category(lampCategory)
-                        .imageUrl("/images/lamps/lamp-10.jpg")
                         .createdOn(now)
                         .updatedAt(now)
                         .newArrival(true)
                         .isActive(true)
                         .build()
         );
+
+        List<String> lampImagePaths = List.of(
+                "static/images/lamps/lamp-1.jpg",
+                "static/images/lamps/lamp-2.jpg",
+                "static/images/lamps/lamp-3.jpg",
+                "static/images/lamps/lamp-4.jpg",
+                "static/images/lamps/lamp-5.jpg",
+                "static/images/lamps/lamp-6.jpg",
+                "static/images/lamps/lamp-7.jpg",
+                "static/images/lamps/lamp-8.jpg",
+                "static/images/lamps/lamp-9.jpg",
+                "static/images/lamps/lamp-10.jpg"
+        );
+
+        for (int i = 0; i < lamps.size(); i++) {
+            ProductEntity p = lamps.get(i);
+
+            String publicId = uploadSeedImageFromClasspath(
+                    lampImagePaths.get(i),
+                    "house-of-chaos/lamps",
+                    slugify(p.getName())
+            );
+
+            p.setImagePublicId(publicId);
+        }
 
         this.productRepository.saveAll(lamps);
     }

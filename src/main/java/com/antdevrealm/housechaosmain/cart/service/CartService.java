@@ -6,12 +6,12 @@ import com.antdevrealm.housechaosmain.cart.model.CartEntity;
 import com.antdevrealm.housechaosmain.cart.model.CartItemEntity;
 import com.antdevrealm.housechaosmain.cart.repository.CartItemRepository;
 import com.antdevrealm.housechaosmain.cart.repository.CartRepository;
+import com.antdevrealm.housechaosmain.cloudinary.CloudinaryService;
 import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
-import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,20 +26,23 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
-    private final ImgUrlExpander imgUrlExpander;
+    private final CloudinaryService cloudinaryService;
 
     @Autowired
-    public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository, ProductRepository productRepository, ImgUrlExpander imgUrlExpander) {
+    public CartService(CartRepository cartRepository,
+                       CartItemRepository cartItemRepository,
+                       ProductRepository productRepository,
+                       CloudinaryService cloudinaryService) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
-        this.imgUrlExpander = imgUrlExpander;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public CartResponseDTO getCartByOwnerId(UUID ownerId) {
         CartEntity cart = cartRepository.findByOwnerId(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format( "Cart for owner with ID: %s not found", ownerId)));
+                        String.format("Cart for owner with ID: %s not found", ownerId)));
 
         List<CartItemEntity> items = cartItemRepository.findAllByCart(cart);
 
@@ -66,7 +69,7 @@ public class CartService {
                 .findByCartIdAndProductId(cartEntity.getId(), productId)
                 .orElse(null);
 
-        if(item == null) {
+        if (item == null) {
             item = CartItemEntity.builder()
                     .cart(cartEntity)
                     .product(productEntity)
@@ -76,8 +79,8 @@ public class CartService {
             item.setQuantity(item.getQuantity() + 1);
         }
 
-        if(item.getQuantity() > productEntity.getQuantity()) {
-            throw new BusinessRuleException(String.format("Cart item quantity: %d for product with ID: %s can not exceed product available quantity in stock: %d", item.getQuantity(), productEntity.getId() , productEntity.getQuantity()));
+        if (item.getQuantity() > productEntity.getQuantity()) {
+            throw new BusinessRuleException(String.format("Cart item quantity: %d for product with ID: %s can not exceed product available quantity in stock: %d", item.getQuantity(), productEntity.getId(), productEntity.getQuantity()));
         }
 
         CartItemEntity savedItem = cartItemRepository.save(item);
@@ -94,12 +97,12 @@ public class CartService {
 
         CartEntity cartEntity = cartItemEntity.getCart();
 
-        if(!cartEntity.getOwner().getId().equals(ownerId)) {
+        if (!cartEntity.getOwner().getId().equals(ownerId)) {
             throw new ResourceNotFoundException(String.format("Cart for owner with ID: %s not found", ownerId));
         }
 
         int newQuantity = cartItemEntity.getQuantity() - 1;
-        if(newQuantity <= 0) {
+        if (newQuantity <= 0) {
             cartItemRepository.delete(cartItemEntity);
         } else {
             cartItemEntity.setQuantity(newQuantity);
@@ -120,7 +123,7 @@ public class CartService {
 
         CartEntity cartEntity = cartItemEntity.getCart();
 
-        if(!cartEntity.getOwner().getId().equals(ownerId)) {
+        if (!cartEntity.getOwner().getId().equals(ownerId)) {
             throw new ResourceNotFoundException(String.format("Cart for owner with ID: %s not found", ownerId));
         }
 
@@ -143,7 +146,7 @@ public class CartService {
         log.info("Cart items cleared: cartId={}, ownerId={}", cart.getId(), user.getId());
     }
 
-    private CartResponseDTO mapToCartResponseDTO(CartEntity cartEntity,  List<CartItemEntity> items) {
+    private CartResponseDTO mapToCartResponseDTO(CartEntity cartEntity, List<CartItemEntity> items) {
         List<CartItemResponseDTO> itemDTOs = items.stream()
                 .map(this::mapToItemResponseDTO)
                 .toList();
@@ -155,7 +158,7 @@ public class CartService {
         return new CartItemResponseDTO(cartItemEntity.getId(),
                 cartItemEntity.getProduct().getId(),
                 cartItemEntity.getProduct().getName(),
-                imgUrlExpander.toPublicUrl(cartItemEntity.getProduct().getImageUrl()),
+                cloudinaryService.buildThumbUrl(cartItemEntity.getProduct().getImagePublicId()),
                 cartItemEntity.getQuantity());
     }
 }
