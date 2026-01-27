@@ -4,6 +4,7 @@ import com.antdevrealm.housechaosmain.address.dto.AddressRequestDTO;
 import com.antdevrealm.housechaosmain.address.model.AddressEntity;
 import com.antdevrealm.housechaosmain.address.service.AddressService;
 import com.antdevrealm.housechaosmain.cart.service.CartService;
+import com.antdevrealm.housechaosmain.cloudinary.CloudinaryService;
 import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.order.dto.*;
@@ -40,7 +41,7 @@ public class OrderService {
     private final CartService cartService;
     private final AddressService addressService;
 
-
+    private final CloudinaryService cloudinaryService;
 
     @Autowired
     public OrderService(OrderRepository orderRepository,
@@ -48,13 +49,14 @@ public class OrderService {
                         UserRepository userRepository,
                         ProductRepository productRepository,
                         CartService cartService,
-                        AddressService addressService) {
+                        AddressService addressService, CloudinaryService cloudinaryService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.cartService = cartService;
         this.addressService = addressService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public OrderResponseDTO getById(UUID ownerId, UUID id) {
@@ -226,7 +228,7 @@ public class OrderService {
                 orderItemEntity.getProduct().getId(),
                 orderItemEntity.getProduct().getName(),
                 orderItemEntity.getUnitPrice(),
-                orderItemEntity.getProduct().getImageUrl(),
+                cloudinaryService.buildThumbUrl(orderItemEntity.getProduct().getImagePublicId()),
                 orderItemEntity.getQuantity(),
                 orderItemEntity.getLineTotal());
     }

@@ -1,12 +1,11 @@
 package com.antdevrealm.housechaosmain.product.dto;
 
 import jakarta.validation.constraints.*;
-import org.hibernate.validator.constraints.URL;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public record CreateProductRequestDTO(
+public record CreateProductForm(
         @NotBlank(message = "Name is required")
         String name,
 
@@ -22,10 +21,6 @@ public record CreateProductRequestDTO(
         @NotNull(message = "Quantity is required")
         @Min(value = 1, message = "Quantity must be at least {value}")
         Integer quantity,
-
-        @NotBlank(message = "Image URL is required")
-        @URL(message = "Image URL must be a valid URL")
-        String imgUrl,
 
         @NotNull(message = "Category is required")
         UUID categoryId

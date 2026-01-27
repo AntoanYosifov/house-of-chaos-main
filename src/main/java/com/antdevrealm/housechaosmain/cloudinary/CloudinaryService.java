@@ -18,7 +18,7 @@ public class CloudinaryService {
         this.cloudinary = cloudinary;
     }
 
-    public String uploadSeedImage(byte[] bytes, String folder, String publicId) throws IOException {
+    public String uploadImage(byte[] bytes, String folder, String publicId) throws IOException {
         Map<?, ?> result = cloudinary.uploader().upload(bytes, ObjectUtils.asMap(
                 "folder", folder,
                 "public_id", publicId,

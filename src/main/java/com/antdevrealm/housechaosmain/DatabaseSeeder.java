@@ -708,7 +708,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                                                 String publicId) {
         try (InputStream inputStream = new ClassPathResource(classpathLocation).getInputStream()) {
             byte[] bytes = inputStream.readAllBytes();
-            return cloudinaryService.uploadSeedImage(bytes, folder, publicId);
+            return cloudinaryService.uploadImage(bytes, folder, publicId);
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload seed image: " + classpathLocation, e);
         }

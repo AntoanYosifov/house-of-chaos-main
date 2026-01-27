@@ -4,7 +4,7 @@ import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.service.CategoryService;
 import com.antdevrealm.housechaosmain.cloudinary.CloudinaryService;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
-import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
+import com.antdevrealm.housechaosmain.product.dto.CreateProductForm;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
@@ -15,7 +15,9 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -29,8 +31,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
     private final CloudinaryService cloudinaryService;
-
-
 
     @Autowired
     public ProductService(ProductRepository productRepository,
@@ -67,17 +67,29 @@ public class ProductService {
 
     @Transactional
     @CacheEvict(cacheNames = {"by-category", "new-arrivals", "cheapest"}, allEntries = true)
-    public ProductResponseDTO create(CreateProductRequestDTO productDTO) {
+    public ProductResponseDTO create(CreateProductForm productForm, MultipartFile file) throws IOException {
 
-        CategoryEntity category = this.categoryService.getById(productDTO.categoryId());
-        ProductEntity productEntity = mapToEntity(productDTO);
+        CategoryEntity category = this.categoryService.getById(productForm.categoryId());
+
+        ProductEntity productEntity = mapToEntity(productForm);
         productEntity.setCategory(category);
 
-        ProductEntity saved = this.productRepository.save(productEntity);
+        ProductEntity created = this.productRepository.save(productEntity);
+
+        String publicId = cloudinaryService.uploadImage(
+                file.getBytes(),
+                "house-of-chaos/" + category.getName(),
+                created.getId().toString()
+        );
+
+        created.setImagePublicId(publicId);
+        created.setUpdatedAt(Instant.now());
+
+        ProductEntity updated = this.productRepository.save(created);
 
         log.info("Product created: id={}, name={}, categoryId={}",
-                saved.getId(), saved.getName(), category.getId());
-        return mapToResponseDto(saved);
+                updated.getId(), updated.getName(), category.getId());
+        return mapToResponseDto(updated);
     }
 
     @Transactional
@@ -130,19 +142,19 @@ public class ProductService {
         );
     }
 
-    private ProductEntity mapToEntity(CreateProductRequestDTO createProductRequestDTO) {
-        BigDecimal normalizedPrice = createProductRequestDTO.price()
+    private ProductEntity mapToEntity(CreateProductForm createProductForm) {
+        BigDecimal normalizedPrice = createProductForm.price()
                 .setScale(2, RoundingMode.HALF_UP);
 
         return ProductEntity.builder()
-                .name(createProductRequestDTO.name())
-                .description(createProductRequestDTO.description())
+                .name(createProductForm.name())
+                .description(createProductForm.description())
                 .price(normalizedPrice)
                 .createdOn(Instant.now())
                 .updatedAt(Instant.now())
                 .newArrival(true)
                 .isActive(true)
-                .quantity(createProductRequestDTO.quantity())
-                .imageUrl(createProductRequestDTO.imgUrl()).build();
+                .quantity(createProductForm.quantity())
+                .build();
     }
 }

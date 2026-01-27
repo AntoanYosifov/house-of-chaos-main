@@ -3,7 +3,7 @@ package com.antdevrealm.housechaosmain.admin.web;
 import com.antdevrealm.housechaosmain.admin.service.AdminService;
 import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
 import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
-import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
+import com.antdevrealm.housechaosmain.product.dto.CreateProductForm;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
 import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
@@ -43,7 +43,7 @@ public class AdminControllerApiTest {
     @Test
     void postAuthorizedRequestToAddProduct_shouldReturn201Created() throws Exception {
         UUID categoryId = UUID.randomUUID();
-        CreateProductRequestDTO requestDTO = new CreateProductRequestDTO(
+        CreateProductForm requestDTO = new CreateProductForm(
                 "Test Chair",
                 "Test description for chair",
                 new BigDecimal("149.99"),
@@ -62,7 +62,7 @@ public class AdminControllerApiTest {
                 "http://example.com/chair.jpg"
         );
 
-        when(adminService.addProduct(any(CreateProductRequestDTO.class))).thenReturn(responseDTO);
+        when(adminService.addProduct(any(CreateProductForm.class))).thenReturn(responseDTO);
 
         MockHttpServletRequestBuilder request = post("/api/v1/admin/products")
                 .contentType(MediaType.APPLICATION_JSON)

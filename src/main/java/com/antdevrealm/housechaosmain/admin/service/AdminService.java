@@ -5,7 +5,7 @@ import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
 import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.service.CategoryService;
 import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
-import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
+import com.antdevrealm.housechaosmain.product.dto.CreateProductForm;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
 import com.antdevrealm.housechaosmain.product.service.ProductService;
@@ -13,7 +13,9 @@ import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import com.antdevrealm.housechaosmain.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,8 +32,8 @@ public class AdminService {
         this.categoryService = categoryService;
     }
 
-    public ProductResponseDTO addProduct(CreateProductRequestDTO dto) {
-        return this.productService.create(dto);
+    public ProductResponseDTO addProduct(CreateProductForm form, MultipartFile file) throws IOException {
+        return this.productService.create(form, file);
     }
 
     public ProductResponseDTO updateProduct(UpdateProductRequestDTO dto, UUID id) {

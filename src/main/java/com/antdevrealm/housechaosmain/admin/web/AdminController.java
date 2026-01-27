@@ -1,20 +1,22 @@
 package com.antdevrealm.housechaosmain.admin.web;
 
-
 import com.antdevrealm.housechaosmain.admin.service.AdminService;
 import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
 import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
-import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
+import com.antdevrealm.housechaosmain.product.dto.CreateProductForm;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
 import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -30,15 +32,17 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-    @PostMapping("/products")
-    public ResponseEntity<ProductResponseDTO> addProduct(@RequestBody @Valid CreateProductRequestDTO productDTO) {
-        ProductResponseDTO productResponseDTO = this.adminService.addProduct(productDTO);
+    @PostMapping(value = "/products", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductResponseDTO> addProduct(@Valid @ModelAttribute CreateProductForm form,
+                                                         @RequestPart("file") MultipartFile file) throws IOException {
+        ProductResponseDTO productResponseDTO = this.adminService.addProduct(form, file);
         URI uriLocation = URI.create("/api/v1/products/" + productResponseDTO.id());
         return ResponseEntity.created(uriLocation).body(productResponseDTO);
     }
 
     @PatchMapping("/products/{id}")
-    public ResponseEntity<ProductResponseDTO> updateProduct(@RequestBody @Valid UpdateProductRequestDTO productRequestDTO, @PathVariable UUID id) {
+    public ResponseEntity<ProductResponseDTO> updateProduct(@RequestBody @Valid UpdateProductRequestDTO productRequestDTO,
+                                                            @PathVariable UUID id) {
         ProductResponseDTO productResponseDTO = this.adminService.updateProduct(productRequestDTO, id);
 
         return ResponseEntity.ok(productResponseDTO);

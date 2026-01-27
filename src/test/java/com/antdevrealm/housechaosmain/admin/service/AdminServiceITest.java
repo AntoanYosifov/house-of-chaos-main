@@ -9,7 +9,7 @@ import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
 import com.antdevrealm.housechaosmain.order.repository.OrderItemRepository;
 import com.antdevrealm.housechaosmain.order.repository.OrderRepository;
-import com.antdevrealm.housechaosmain.product.dto.CreateProductRequestDTO;
+import com.antdevrealm.housechaosmain.product.dto.CreateProductForm;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
@@ -89,7 +89,7 @@ public class AdminServiceITest {
                 .build();
         CategoryEntity savedCategory = categoryRepository.save(category);
 
-        CreateProductRequestDTO productRequest = new CreateProductRequestDTO(
+        CreateProductForm productRequest = new CreateProductForm(
                 "Test Chair",
                 "Test description for chair",
                 new BigDecimal("149.99"),
