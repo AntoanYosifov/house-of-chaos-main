@@ -9,6 +9,7 @@ import com.antdevrealm.housechaosmain.cart.repository.CartItemRepository;
 import com.antdevrealm.housechaosmain.cart.repository.CartRepository;
 import com.antdevrealm.housechaosmain.category.model.CategoryEntity;
 import com.antdevrealm.housechaosmain.category.repository.CategoryRepository;
+import com.antdevrealm.housechaosmain.cloudinary.CloudinaryService;
 import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.order.dto.ConfirmedOrderResponseDTO;
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -79,6 +81,9 @@ public class OrderServiceITest {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
+    @MockitoBean
+    private CloudinaryService cloudinaryService;
+
     @BeforeEach
     @Transactional
     void setUp() {
@@ -118,12 +123,13 @@ public class OrderServiceITest {
                 .build();
         CategoryEntity savedCategory = categoryRepository.save(category);
 
+        String mockPublicId = "house-of-chaos/chair/test-chair-id";
         ProductEntity product = ProductEntity.builder()
                 .name("Test Chair")
                 .description("Test description for chair")
                 .price(new BigDecimal("149.99"))
                 .quantity(10)
-                .imageUrl("http://example.com/chair.jpg")
+                .imagePublicId(mockPublicId)
                 .category(savedCategory)
                 .newArrival(true)
                 .isActive(true)
@@ -211,12 +217,13 @@ public class OrderServiceITest {
                 .build();
         CategoryEntity savedCategory = categoryRepository.save(category);
 
+        String mockPublicId = "house-of-chaos/lamp/test-lamp-id";
         ProductEntity product = ProductEntity.builder()
                 .name("Test Lamp")
                 .description("Test description for lamp")
                 .price(new BigDecimal("99.99"))
                 .quantity(5)
-                .imageUrl("http://example.com/lamp.jpg")
+                .imagePublicId(mockPublicId)
                 .category(savedCategory)
                 .newArrival(true)
                 .isActive(true)
@@ -251,12 +258,13 @@ public class OrderServiceITest {
                 .build();
         CategoryEntity savedCategory = categoryRepository.save(category);
 
+        String mockPublicId = "house-of-chaos/desk/test-desk-id";
         ProductEntity product = ProductEntity.builder()
                 .name("Test Desk")
                 .description("Test description for desk")
                 .price(new BigDecimal("199.99"))
                 .quantity(10)
-                .imageUrl("http://example.com/desk.jpg")
+                .imagePublicId(mockPublicId)
                 .category(savedCategory)
                 .newArrival(true)
                 .isActive(true)
@@ -341,12 +349,13 @@ public class OrderServiceITest {
                 .build();
         CategoryEntity savedCategory = categoryRepository.save(category);
 
+        String mockPublicId = "house-of-chaos/table/test-table-id";
         ProductEntity product = ProductEntity.builder()
                 .name("Test Table")
                 .description("Test description for table")
                 .price(new BigDecimal("249.99"))
                 .quantity(8)
-                .imageUrl("http://example.com/table.jpg")
+                .imagePublicId(mockPublicId)
                 .category(savedCategory)
                 .newArrival(true)
                 .isActive(true)
@@ -398,12 +407,13 @@ public class OrderServiceITest {
                 .build();
         CategoryEntity savedCategory = categoryRepository.save(category);
 
+        String mockPublicId = "house-of-chaos/chair/test-chair-id";
         ProductEntity product = ProductEntity.builder()
                 .name("Test Chair")
                 .description("Test description for chair")
                 .price(new BigDecimal("149.99"))
                 .quantity(10)
-                .imageUrl("http://example.com/chair.jpg")
+                .imagePublicId(mockPublicId)
                 .category(savedCategory)
                 .newArrival(true)
                 .isActive(true)
@@ -478,12 +488,13 @@ public class OrderServiceITest {
                 .build();
         CategoryEntity savedCategory = categoryRepository.save(category);
 
+        String mockPublicId = "house-of-chaos/lamp/test-lamp-id";
         ProductEntity product = ProductEntity.builder()
                 .name("Test Lamp")
                 .description("Test description for lamp")
                 .price(new BigDecimal("99.99"))
                 .quantity(5)
-                .imageUrl("http://example.com/lamp.jpg")
+                .imagePublicId(mockPublicId)
                 .category(savedCategory)
                 .newArrival(true)
                 .isActive(true)
@@ -533,12 +544,13 @@ public class OrderServiceITest {
                 .build();
         CategoryEntity savedCategory = categoryRepository.save(category);
 
+        String mockPublicId = "house-of-chaos/desk/test-desk-id";
         ProductEntity product = ProductEntity.builder()
                 .name("Test Desk")
                 .description("Test description for desk")
                 .price(new BigDecimal("199.99"))
                 .quantity(8)
-                .imageUrl("http://example.com/desk.jpg")
+                .imagePublicId(mockPublicId)
                 .category(savedCategory)
                 .newArrival(true)
                 .isActive(true)

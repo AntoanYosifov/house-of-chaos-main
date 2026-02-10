@@ -7,9 +7,9 @@ import com.antdevrealm.housechaosmain.order.model.entity.OrderItemEntity;
 import com.antdevrealm.housechaosmain.order.model.enums.OrderStatus;
 import com.antdevrealm.housechaosmain.order.repository.OrderItemRepository;
 import com.antdevrealm.housechaosmain.order.repository.OrderRepository;
+import com.antdevrealm.housechaosmain.cloudinary.CloudinaryService;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
-import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,7 +38,7 @@ public class OrderServiceUTest {
     private OrderItemRepository orderItemRepository;
 
     @Mock
-    private ImgUrlExpander imgUrlExpander;
+    private CloudinaryService cloudinaryService;
 
     @InjectMocks
     private OrderService orderService;
@@ -61,10 +61,12 @@ public class OrderServiceUTest {
                 .updatedAt(Instant.now())
                 .build();
 
+        String mockPublicId = "house-of-chaos/chair/test-chair-id";
+        String mockThumbUrl = "https://res.cloudinary.com/test/image/upload/w_400,h_400,c_fill/test-chair-id";
         ProductEntity product = ProductEntity.builder()
                 .id(UUID.randomUUID())
                 .name("Test Chair")
-                .imageUrl("/images/chair.jpg")
+                .imagePublicId(mockPublicId)
                 .build();
 
         OrderItemEntity orderItem = OrderItemEntity.builder()
@@ -78,7 +80,7 @@ public class OrderServiceUTest {
 
         when(orderRepository.findByIdAndOwnerId(orderId, ownerId)).thenReturn(Optional.of(order));
         when(orderItemRepository.findAllByOrder(order)).thenReturn(List.of(orderItem));
-        when(imgUrlExpander.toPublicUrl("/images/chair.jpg")).thenReturn("http://localhost:8080/images/chair.jpg");
+        when(cloudinaryService.buildThumbUrl(mockPublicId)).thenReturn(mockThumbUrl);
 
         OrderResponseDTO result = orderService.getById(ownerId, orderId);
 
@@ -132,10 +134,12 @@ public class OrderServiceUTest {
                 .updatedAt(Instant.now())
                 .build();
 
+        String mockPublicId = "house-of-chaos/lamp/test-lamp-id";
+        String mockThumbUrl = "https://res.cloudinary.com/test/image/upload/w_400,h_400,c_fill/test-lamp-id";
         ProductEntity product = ProductEntity.builder()
                 .id(UUID.randomUUID())
                 .name("Test Lamp")
-                .imageUrl("/images/lamp.jpg")
+                .imagePublicId(mockPublicId)
                 .build();
 
         OrderItemEntity item1 = OrderItemEntity.builder()
@@ -159,7 +163,7 @@ public class OrderServiceUTest {
         when(orderRepository.findAllByOwnerIdAndStatus(ownerId, OrderStatus.NEW)).thenReturn(List.of(order1, order2));
         when(orderItemRepository.findAllByOrder(order1)).thenReturn(List.of(item1));
         when(orderItemRepository.findAllByOrder(order2)).thenReturn(List.of(item2));
-        when(imgUrlExpander.toPublicUrl("/images/lamp.jpg")).thenReturn("http://localhost:8080/images/lamp.jpg");
+        when(cloudinaryService.buildThumbUrl(mockPublicId)).thenReturn(mockThumbUrl);
 
         List<OrderResponseDTO> result = orderService.getNew(ownerId);
 

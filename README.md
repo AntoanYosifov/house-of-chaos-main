@@ -15,7 +15,7 @@ This is the main backend service for **House of Chaos**, an e-commerce platform 
 - ⭐ **Review System**: Microservice integration via Feign client
 - ⏰ **Automated Tasks**: Scheduled cleanup for old orders and product status updates
 - 💾 **Caching**: Spring Cache for frequently accessed categories
-- ✅ **Comprehensive Testing**: 81% line coverage with unit, integration, and API tests
+- ✅ **Comprehensive Testing**: 80% line coverage with unit, integration, and API tests
 
 ---
 

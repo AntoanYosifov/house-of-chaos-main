@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -25,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -43,30 +45,45 @@ public class AdminControllerApiTest {
     @Test
     void postAuthorizedRequestToAddProduct_shouldReturn201Created() throws Exception {
         UUID categoryId = UUID.randomUUID();
-        CreateProductForm requestDTO = new CreateProductForm(
+        CreateProductForm requestForm = new CreateProductForm(
                 "Test Chair",
                 "Test description for chair",
                 new BigDecimal("149.99"),
                 5,
-                "http://example.com/chair.jpg",
                 categoryId
         );
 
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-chair.jpg",
+                "image/jpeg",
+                "test image content".getBytes()
+        );
+
         UUID productId = UUID.randomUUID();
+        String mockThumbUrl = "https://res.cloudinary.com/test/image/upload/w_400,h_400,c_fill/test-chair-id";
+        String mockLargeUrl = "https://res.cloudinary.com/test/image/upload/w_1200,c_limit/test-chair-id";
         ProductResponseDTO responseDTO = new ProductResponseDTO(
                 productId,
                 "Test Chair",
                 "Test description for chair",
                 new BigDecimal("149.99"),
                 5,
-                "http://example.com/chair.jpg"
+                mockThumbUrl,
+                mockLargeUrl
         );
 
-        when(adminService.addProduct(any(CreateProductForm.class))).thenReturn(responseDTO);
+        when(adminService.addProduct(any(CreateProductForm.class), any(org.springframework.web.multipart.MultipartFile.class)))
+                .thenReturn(responseDTO);
 
-        MockHttpServletRequestBuilder request = post("/api/v1/admin/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requestDTO))
+        MockHttpServletRequestBuilder request = multipart("/api/v1/admin/products")
+                .file(file)
+                .param("name", requestForm.name())
+                .param("description", requestForm.description())
+                .param("price", requestForm.price().toString())
+                .param("quantity", requestForm.quantity().toString())
+                .param("categoryId", requestForm.categoryId().toString())
+                .contentType(MediaType.MULTIPART_FORM_DATA)
                 .with(jwt());
 
         mockMvc.perform(request)
@@ -74,7 +91,9 @@ public class AdminControllerApiTest {
                 .andExpect(header().string("Location", "/api/v1/products/" + productId))
                 .andExpect(jsonPath("$.id").value(productId.toString()))
                 .andExpect(jsonPath("$.name").value("Test Chair"))
-                .andExpect(jsonPath("$.price").value(149.99));
+                .andExpect(jsonPath("$.price").value(149.99))
+                .andExpect(jsonPath("$.thumbUrl").value(mockThumbUrl))
+                .andExpect(jsonPath("$.imgUrl").value(mockLargeUrl));
     }
 
     @Test
@@ -85,13 +104,16 @@ public class AdminControllerApiTest {
                 new BigDecimal("399.99")
         );
 
+        String mockThumbUrl = "https://res.cloudinary.com/test/image/upload/w_400,h_400,c_fill/test-lamp-id";
+        String mockLargeUrl = "https://res.cloudinary.com/test/image/upload/w_1200,c_limit/test-lamp-id";
         ProductResponseDTO responseDTO = new ProductResponseDTO(
                 productId,
                 "Test Lamp",
                 "Updated test description for lamp",
                 new BigDecimal("399.99"),
                 2,
-                "http://example.com/lamp.jpg"
+                mockThumbUrl,
+                mockLargeUrl
         );
 
         when(adminService.updateProduct(any(UpdateProductRequestDTO.class), eq(productId))).thenReturn(responseDTO);
@@ -105,7 +127,9 @@ public class AdminControllerApiTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(productId.toString()))
                 .andExpect(jsonPath("$.description").value("Updated test description for lamp"))
-                .andExpect(jsonPath("$.price").value(399.99));
+                .andExpect(jsonPath("$.price").value(399.99))
+                .andExpect(jsonPath("$.thumbUrl").value(mockThumbUrl))
+                .andExpect(jsonPath("$.imgUrl").value(mockLargeUrl));
     }
 
     @Test

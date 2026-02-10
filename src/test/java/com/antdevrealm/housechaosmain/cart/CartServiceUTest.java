@@ -8,10 +8,10 @@ import com.antdevrealm.housechaosmain.cart.repository.CartRepository;
 import com.antdevrealm.housechaosmain.cart.service.CartService;
 import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
+import com.antdevrealm.housechaosmain.cloudinary.CloudinaryService;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
-import com.antdevrealm.housechaosmain.util.ImgUrlExpander;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,7 +39,7 @@ public class CartServiceUTest {
     private ProductRepository productRepository;
 
     @Mock
-    private ImgUrlExpander imgUrlExpander;
+    private CloudinaryService cloudinaryService;
 
     @InjectMocks
     private CartService cartService;
@@ -59,10 +59,12 @@ public class CartServiceUTest {
                 .build();
 
         UUID productId = UUID.randomUUID();
+        String mockPublicId = "house-of-chaos/chair/test-chair-id";
+        String mockThumbUrl = "https://res.cloudinary.com/test/image/upload/w_400,h_400,c_fill/test-chair-id";
         ProductEntity product = ProductEntity.builder()
                 .id(productId)
                 .name("Test Chair")
-                .imageUrl("/images/chair.jpg")
+                .imagePublicId(mockPublicId)
                 .build();
 
         UUID cartItemId = UUID.randomUUID();
@@ -75,7 +77,7 @@ public class CartServiceUTest {
 
         when(cartRepository.findByOwnerId(ownerId)).thenReturn(Optional.of(cart));
         when(cartItemRepository.findAllByCart(cart)).thenReturn(List.of(cartItem));
-        when(imgUrlExpander.toPublicUrl("/images/chair.jpg")).thenReturn("http://localhost:8080/images/chair.jpg");
+        when(cloudinaryService.buildThumbUrl(mockPublicId)).thenReturn(mockThumbUrl);
 
         CartResponseDTO result = cartService.getCartByOwnerId(ownerId);
 
@@ -117,10 +119,12 @@ public class CartServiceUTest {
                 .owner(owner)
                 .build();
 
+        String mockPublicId = "house-of-chaos/lamp/test-lamp-id";
+        String mockThumbUrl = "https://res.cloudinary.com/test/image/upload/w_400,h_400,c_fill/test-lamp-id";
         ProductEntity product = ProductEntity.builder()
                 .id(productId)
                 .name("Test Lamp")
-                .imageUrl("/images/lamp.jpg")
+                .imagePublicId(mockPublicId)
                 .quantity(10)
                 .build();
 
@@ -136,7 +140,7 @@ public class CartServiceUTest {
         when(cartItemRepository.findByCartIdAndProductId(cartId, productId)).thenReturn(Optional.empty());
         when(cartItemRepository.save(any(CartItemEntity.class))).thenReturn(newItem);
         when(cartItemRepository.findAllByCart(cart)).thenReturn(List.of(newItem));
-        when(imgUrlExpander.toPublicUrl("/images/lamp.jpg")).thenReturn("http://localhost:8080/images/lamp.jpg");
+        when(cloudinaryService.buildThumbUrl(mockPublicId)).thenReturn(mockThumbUrl);
 
         CartResponseDTO result = cartService.addOneToCart(ownerId, productId);
 
@@ -162,10 +166,12 @@ public class CartServiceUTest {
                 .owner(owner)
                 .build();
 
+        String mockPublicId = "house-of-chaos/desk/test-desk-id";
+        String mockThumbUrl = "https://res.cloudinary.com/test/image/upload/w_400,h_400,c_fill/test-desk-id";
         ProductEntity product = ProductEntity.builder()
                 .id(productId)
                 .name("Test Desk")
-                .imageUrl("/images/desk.jpg")
+                .imagePublicId(mockPublicId)
                 .quantity(10)
                 .build();
 
@@ -181,7 +187,7 @@ public class CartServiceUTest {
         when(cartItemRepository.findByCartIdAndProductId(cartId, productId)).thenReturn(Optional.of(existingItem));
         when(cartItemRepository.save(existingItem)).thenReturn(existingItem);
         when(cartItemRepository.findAllByCart(cart)).thenReturn(List.of(existingItem));
-        when(imgUrlExpander.toPublicUrl("/images/desk.jpg")).thenReturn("http://localhost:8080/images/desk.jpg");
+        when(cloudinaryService.buildThumbUrl(mockPublicId)).thenReturn(mockThumbUrl);
 
         CartResponseDTO result = cartService.addOneToCart(ownerId, productId);
 
@@ -247,10 +253,11 @@ public class CartServiceUTest {
                 .owner(owner)
                 .build();
 
+        String mockPublicId = "house-of-chaos/table/test-table-id";
         ProductEntity product = ProductEntity.builder()
                 .id(productId)
                 .name("Test Table")
-                .imageUrl("/images/table.jpg")
+                .imagePublicId(mockPublicId)
                 .quantity(3)
                 .build();
 
@@ -286,10 +293,12 @@ public class CartServiceUTest {
                 .owner(owner)
                 .build();
 
+        String mockPublicId = "house-of-chaos/chair/test-chair-id";
+        String mockThumbUrl = "https://res.cloudinary.com/test/image/upload/w_400,h_400,c_fill/test-chair-id";
         ProductEntity product = ProductEntity.builder()
                 .id(productId)
                 .name("Test Chair")
-                .imageUrl("/images/chair.jpg")
+                .imagePublicId(mockPublicId)
                 .build();
 
         CartItemEntity cartItem = CartItemEntity.builder()
@@ -302,7 +311,7 @@ public class CartServiceUTest {
         when(cartItemRepository.findById(cartItemId)).thenReturn(Optional.of(cartItem));
         when(cartItemRepository.save(cartItem)).thenReturn(cartItem);
         when(cartItemRepository.findAllByCart(cart)).thenReturn(List.of(cartItem));
-        when(imgUrlExpander.toPublicUrl("/images/chair.jpg")).thenReturn("http://localhost:8080/images/chair.jpg");
+        when(cloudinaryService.buildThumbUrl(mockPublicId)).thenReturn(mockThumbUrl);
 
         CartResponseDTO result = cartService.decreaseItemQuantity(ownerId, cartItemId);
 
@@ -330,10 +339,11 @@ public class CartServiceUTest {
                 .owner(owner)
                 .build();
 
+        String mockPublicId = "house-of-chaos/lamp/test-lamp-id";
         ProductEntity product = ProductEntity.builder()
                 .id(productId)
                 .name("Test Lamp")
-                .imageUrl("/images/lamp.jpg")
+                .imagePublicId(mockPublicId)
                 .build();
 
         CartItemEntity cartItem = CartItemEntity.builder()
@@ -386,10 +396,11 @@ public class CartServiceUTest {
                 .owner(owner)
                 .build();
 
+        String mockPublicId = "house-of-chaos/desk/test-desk-id";
         ProductEntity product = ProductEntity.builder()
                 .id(productId)
                 .name("Test Desk")
-                .imageUrl("/images/desk.jpg")
+                .imagePublicId(mockPublicId)
                 .build();
 
         CartItemEntity cartItem = CartItemEntity.builder()
@@ -424,10 +435,11 @@ public class CartServiceUTest {
                 .owner(owner)
                 .build();
 
+        String mockPublicId = "house-of-chaos/table/test-table-id";
         ProductEntity product = ProductEntity.builder()
                 .id(productId)
                 .name("Test Table")
-                .imageUrl("/images/table.jpg")
+                .imagePublicId(mockPublicId)
                 .build();
 
         CartItemEntity cartItem = CartItemEntity.builder()
@@ -479,10 +491,11 @@ public class CartServiceUTest {
                 .owner(owner)
                 .build();
 
+        String mockPublicId = "house-of-chaos/couch/test-couch-id";
         ProductEntity product = ProductEntity.builder()
                 .id(productId)
                 .name("Test Couch")
-                .imageUrl("/images/couch.jpg")
+                .imagePublicId(mockPublicId)
                 .build();
 
         CartItemEntity cartItem = CartItemEntity.builder()
