@@ -52,9 +52,6 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.OPTIONS, "/**")
                                 .permitAll()
                                 .requestMatchers(
-                                        "/images/**",
-                                        // Allow endpoint for smoke test of cloudinary image upload integration
-                                        "/api/v1/test/images/upload",
                                         "/api/v1/products/**",
                                         "/api/v1/categories/**",
                                         "/api/v1/users/register",
