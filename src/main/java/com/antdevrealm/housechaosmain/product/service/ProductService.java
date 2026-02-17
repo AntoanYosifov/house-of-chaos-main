@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,6 +46,11 @@ public class ProductService {
         ProductEntity productEntity = productRepository.findByIdAndIsActiveIsTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with id: %s not found!", id)));
         return mapToResponseDto(productEntity);
+    }
+
+    public Page<ProductResponseDTO> getAll(Pageable pageable) {
+        Page<ProductEntity> entities = this.productRepository.findAllByIsActiveIsTrue(pageable);
+        return entities.map(this::mapToResponseDto);
     }
 
     @Transactional
@@ -157,4 +164,6 @@ public class ProductService {
                 .quantity(createProductForm.quantity())
                 .build();
     }
+
+
 }

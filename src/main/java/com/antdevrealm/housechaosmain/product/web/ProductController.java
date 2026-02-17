@@ -3,6 +3,8 @@ package com.antdevrealm.housechaosmain.product.web;
 import com.antdevrealm.housechaosmain.product.dto.ProductResponseDTO;
 import com.antdevrealm.housechaosmain.product.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +28,12 @@ public class ProductController {
     public ResponseEntity<ProductResponseDTO> getById(@PathVariable UUID id) {
         ProductResponseDTO productById = productService.getById(id);
         return ResponseEntity.ok(productById);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<ProductResponseDTO>> getAll(Pageable pageable) {
+        Page<ProductResponseDTO> allProducts = productService.getAll(pageable);
+        return ResponseEntity.ok(allProducts);
     }
 
     @GetMapping("/category/{id}")
