@@ -48,20 +48,16 @@ public class ProductService {
         return mapToResponseDto(productEntity);
     }
 
-    public Page<ProductResponseDTO> getAll(Pageable pageable) {
-        Page<ProductEntity> entities = this.productRepository.findAllByIsActiveIsTrue(pageable);
+    @Transactional
+    @Cacheable("all-products")
+    public Page<ProductResponseDTO> getAll(UUID categoryId, Pageable pageable) {
+        Page<ProductEntity> entities = categoryId != null
+                ? this.productRepository.findAllByCategoryAndIsActiveIsTrue(this.categoryService.getById(categoryId), pageable)
+                : this.productRepository.findAllByIsActiveIsTrue(pageable);
+
         return entities.map(this::mapToResponseDto);
     }
 
-    @Transactional
-    @Cacheable("by-category")
-    public List<ProductResponseDTO> getAllByCategoryId(UUID categoryId) {
-        CategoryEntity category = this.categoryService.getById(categoryId);
-
-        List<ProductEntity> allByCategory = this.productRepository.findAllByCategoryAndIsActiveIsTrue(category);
-
-        return allByCategory.stream().map(this::mapToResponseDto).toList();
-    }
     @Cacheable("new-arrivals")
     public List<ProductResponseDTO> getNewArrivals() {
         return this.productRepository.findTop10NewArrivals().stream().map(this::mapToResponseDto).toList();
@@ -73,7 +69,7 @@ public class ProductService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = {"by-category", "new-arrivals", "cheapest"}, allEntries = true)
+    @CacheEvict(cacheNames = {"all-products", "new-arrivals", "cheapest"}, allEntries = true)
     public ProductResponseDTO create(CreateProductForm productForm, MultipartFile file) throws IOException {
 
         CategoryEntity category = this.categoryService.getById(productForm.categoryId());

@@ -12,7 +12,6 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 @EnableCaching
 @EnableScheduling
 @EnableFeignClients
-@EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 
 @SpringBootApplication
 public class HouseOfChaosApplication {
