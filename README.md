@@ -49,7 +49,7 @@ The system consists of three main components:
 - H2 (in-memory database for tests)
 - JUnit 5 + Mockito
 - Spring Security Test
-- 81% line coverage
+- 80% line coverage
 
 ---
 
