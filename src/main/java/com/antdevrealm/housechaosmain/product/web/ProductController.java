@@ -43,8 +43,8 @@ public class ProductController {
     }
 
     @GetMapping("/top-deals")
-    public ResponseEntity<List<ProductResponseDTO>> getTopDeals() {
-        List<ProductResponseDTO> cheapest = this.productService.getCheapest();
+    public ResponseEntity<Page<ProductResponseDTO>> getTopDeals(Pageable pageable) {
+        Page<ProductResponseDTO> cheapest = this.productService.getCheapest(pageable);
 
         return ResponseEntity.ok(cheapest);
     }

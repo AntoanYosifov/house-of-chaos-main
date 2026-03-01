@@ -66,8 +66,9 @@ public class ProductService {
     }
 
     @Cacheable("cheapest")
-    public List<ProductResponseDTO> getCheapest() {
-        return this.productRepository.findTop10Cheapest().stream().map(this::mapToResponseDto).toList();
+    public Page<ProductResponseDTO> getCheapest(Pageable pageable) {
+        Page<ProductEntity> entities = this.productRepository.findAllByIsActiveIsTrueOrderByPriceAsc(pageable);
+        return entities.map(this::mapToResponseDto);
     }
 
     @Transactional
