@@ -36,8 +36,8 @@ public class ProductController {
     }
 
     @GetMapping("/new-arrivals")
-    public ResponseEntity<List<ProductResponseDTO>> getNewArrivals() {
-        List<ProductResponseDTO> newArrivals = this.productService.getNewArrivals();
+    public ResponseEntity<Page<ProductResponseDTO>> getNewArrivals(Pageable pageable) {
+        Page<ProductResponseDTO> newArrivals = this.productService.getNewArrivals(pageable);
 
         return ResponseEntity.ok(newArrivals);
     }

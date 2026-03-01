@@ -23,16 +23,18 @@ public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
 
     Optional<ProductEntity> findByIdAndIsActiveIsTrue(UUID id);
 
-    @Query(
-            value = """
-                    SELECT * FROM house_of_chaos_main.products p
-                    WHERE p.new_arrival = true
-                    AND p.is_active = true
-                    LIMIT 10
-                    """,
-            nativeQuery = true
-    )
-    List<ProductEntity> findTop10NewArrivals();
+//    @Query(
+//            value = """
+//                    SELECT * FROM house_of_chaos_main.products p
+//                    WHERE p.new_arrival = true
+//                    AND p.is_active = true
+//                    LIMIT 10
+//                    """,
+//            nativeQuery = true
+//    )
+//    List<ProductEntity> findTop10NewArrivals();
+
+    Page<ProductEntity> findAllByNewArrivalIsTrueAndIsActiveIsTrueOrderByCreatedOnDesc(Pageable pageable);
 
     @Query(
             value = """

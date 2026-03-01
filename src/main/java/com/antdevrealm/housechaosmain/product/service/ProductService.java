@@ -59,8 +59,10 @@ public class ProductService {
     }
 
     @Cacheable("new-arrivals")
-    public List<ProductResponseDTO> getNewArrivals() {
-        return this.productRepository.findTop10NewArrivals().stream().map(this::mapToResponseDto).toList();
+    public Page<ProductResponseDTO> getNewArrivals(Pageable pageable) {
+//        return this.productRepository.findTop10NewArrivals().stream().map(this::mapToResponseDto).toList();
+        Page<ProductEntity> entities = this.productRepository.findAllByNewArrivalIsTrueAndIsActiveIsTrueOrderByCreatedOnDesc(pageable);
+        return entities.map(this::mapToResponseDto);
     }
 
     @Cacheable("cheapest")
@@ -160,6 +162,4 @@ public class ProductService {
                 .quantity(createProductForm.quantity())
                 .build();
     }
-
-
 }
