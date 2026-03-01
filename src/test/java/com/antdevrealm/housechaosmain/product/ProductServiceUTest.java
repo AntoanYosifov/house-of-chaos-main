@@ -13,6 +13,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -83,8 +86,9 @@ public class ProductServiceUTest {
     }
 
     @Test
-    void givenCategoryWithProducts_whenGetAllByCategoryId_thenListOfProductsIsReturned() {
+    void givenCategoryWithProducts_whenGetAll_thenPageOfProductsIsReturned() {
         UUID categoryId = UUID.randomUUID();
+        Pageable pageable = Pageable.unpaged();
 
         CategoryEntity category = CategoryEntity.builder()
                 .id(categoryId)
@@ -118,25 +122,27 @@ public class ProductServiceUTest {
                 .build();
 
         when(categoryService.getById(categoryId)).thenReturn(category);
-        when(productRepository.findAllByCategoryAndIsActiveIsTrue(category)).thenReturn(List.of(product1, product2));
+        when(productRepository.findAllByCategoryAndIsActiveIsTrue(category, pageable))
+                .thenReturn(new PageImpl<>(List.of(product1, product2)));
         when(cloudinaryService.buildThumbUrl(mockPublicId1)).thenReturn(mockThumbUrl1);
         when(cloudinaryService.buildLargeUrl(mockPublicId1)).thenReturn(mockLargeUrl1);
         when(cloudinaryService.buildThumbUrl(mockPublicId2)).thenReturn(mockThumbUrl2);
         when(cloudinaryService.buildLargeUrl(mockPublicId2)).thenReturn(mockLargeUrl2);
 
-        List<ProductResponseDTO> result = productService.getAllByCategoryId(categoryId);
+        Page<ProductResponseDTO> result = productService.getAll(categoryId, pageable);
 
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).name()).isEqualTo("Test Chair 1");
-        assertThat(result.get(1).name()).isEqualTo("Test Chair 2");
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).name()).isEqualTo("Test Chair 1");
+        assertThat(result.getContent().get(1).name()).isEqualTo("Test Chair 2");
 
         verify(categoryService, times(1)).getById(categoryId);
-        verify(productRepository, times(1)).findAllByCategoryAndIsActiveIsTrue(category);
+        verify(productRepository, times(1)).findAllByCategoryAndIsActiveIsTrue(category, pageable);
     }
 
     @Test
-    void givenCategoryWithNoProducts_whenGetAllByCategoryId_thenEmptyListIsReturned() {
+    void givenCategoryWithNoProducts_whenGetAll_thenEmptyPageIsReturned() {
         UUID categoryId = UUID.randomUUID();
+        Pageable pageable = Pageable.unpaged();
 
         CategoryEntity category = CategoryEntity.builder()
                 .id(categoryId)
@@ -144,18 +150,21 @@ public class ProductServiceUTest {
                 .build();
 
         when(categoryService.getById(categoryId)).thenReturn(category);
-        when(productRepository.findAllByCategoryAndIsActiveIsTrue(category)).thenReturn(new ArrayList<>());
+        when(productRepository.findAllByCategoryAndIsActiveIsTrue(category, pageable))
+                .thenReturn(new PageImpl<>(new ArrayList<>()));
 
-        List<ProductResponseDTO> result = productService.getAllByCategoryId(categoryId);
+        Page<ProductResponseDTO> result = productService.getAll(categoryId, pageable);
 
-        assertThat(result).isEmpty();
+        assertThat(result.getContent()).isEmpty();
 
         verify(categoryService, times(1)).getById(categoryId);
-        verify(productRepository, times(1)).findAllByCategoryAndIsActiveIsTrue(category);
+        verify(productRepository, times(1)).findAllByCategoryAndIsActiveIsTrue(category, pageable);
     }
 
     @Test
-    void givenNewArrivalsExist_whenGetNewArrivals_thenListOfNewArrivalsIsReturned() {
+    void givenNewArrivalsExist_whenGetNewArrivals_thenPageOfNewArrivalsIsReturned() {
+        Pageable pageable = Pageable.unpaged();
+
         String mockPublicId1 = "house-of-chaos/chair/test-chair-id";
         String mockThumbUrl1 = "https://res.cloudinary.com/test/image/upload/w_400,h_400,c_fill/test-chair-id";
         String mockLargeUrl1 = "https://res.cloudinary.com/test/image/upload/w_1200,c_limit/test-chair-id";
@@ -184,34 +193,40 @@ public class ProductServiceUTest {
                 .isActive(true)
                 .build();
 
-        when(productRepository.findTop10NewArrivals()).thenReturn(List.of(product1, product2));
+        when(productRepository.findAllByNewArrivalIsTrueAndIsActiveIsTrueOrderByCreatedOnDesc(pageable))
+                .thenReturn(new PageImpl<>(List.of(product1, product2)));
         when(cloudinaryService.buildThumbUrl(mockPublicId1)).thenReturn(mockThumbUrl1);
         when(cloudinaryService.buildLargeUrl(mockPublicId1)).thenReturn(mockLargeUrl1);
         when(cloudinaryService.buildThumbUrl(mockPublicId2)).thenReturn(mockThumbUrl2);
         when(cloudinaryService.buildLargeUrl(mockPublicId2)).thenReturn(mockLargeUrl2);
 
-        List<ProductResponseDTO> result = productService.getNewArrivals();
+        Page<ProductResponseDTO> result = productService.getNewArrivals(pageable);
 
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).name()).isEqualTo("New Chair");
-        assertThat(result.get(1).name()).isEqualTo("New Lamp");
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).name()).isEqualTo("New Chair");
+        assertThat(result.getContent().get(1).name()).isEqualTo("New Lamp");
 
-        verify(productRepository, times(1)).findTop10NewArrivals();
+        verify(productRepository, times(1)).findAllByNewArrivalIsTrueAndIsActiveIsTrueOrderByCreatedOnDesc(pageable);
     }
 
     @Test
-    void givenNoNewArrivals_whenGetNewArrivals_thenEmptyListIsReturned() {
-        when(productRepository.findTop10NewArrivals()).thenReturn(new ArrayList<>());
+    void givenNoNewArrivals_whenGetNewArrivals_thenEmptyPageIsReturned() {
+        Pageable pageable = Pageable.unpaged();
 
-        List<ProductResponseDTO> result = productService.getNewArrivals();
+        when(productRepository.findAllByNewArrivalIsTrueAndIsActiveIsTrueOrderByCreatedOnDesc(pageable))
+                .thenReturn(new PageImpl<>(new ArrayList<>()));
 
-        assertThat(result).isEmpty();
+        Page<ProductResponseDTO> result = productService.getNewArrivals(pageable);
 
-        verify(productRepository, times(1)).findTop10NewArrivals();
+        assertThat(result.getContent()).isEmpty();
+
+        verify(productRepository, times(1)).findAllByNewArrivalIsTrueAndIsActiveIsTrueOrderByCreatedOnDesc(pageable);
     }
 
     @Test
-    void givenCheapestProductsExist_whenGetCheapest_thenListOfCheapestIsReturned() {
+    void givenCheapestProductsExist_whenGetCheapest_thenPageOfCheapestIsReturned() {
+        Pageable pageable = Pageable.unpaged();
+
         String mockPublicId1 = "house-of-chaos/table/test-table-id";
         String mockThumbUrl1 = "https://res.cloudinary.com/test/image/upload/w_400,h_400,c_fill/test-table-id";
         String mockLargeUrl1 = "https://res.cloudinary.com/test/image/upload/w_1200,c_limit/test-table-id";
@@ -238,29 +253,33 @@ public class ProductServiceUTest {
                 .isActive(true)
                 .build();
 
-        when(productRepository.findTop10Cheapest()).thenReturn(List.of(product1, product2));
+        when(productRepository.findAllByIsActiveIsTrueOrderByPriceAsc(pageable))
+                .thenReturn(new PageImpl<>(List.of(product1, product2)));
         when(cloudinaryService.buildThumbUrl(mockPublicId1)).thenReturn(mockThumbUrl1);
         when(cloudinaryService.buildLargeUrl(mockPublicId1)).thenReturn(mockLargeUrl1);
         when(cloudinaryService.buildThumbUrl(mockPublicId2)).thenReturn(mockThumbUrl2);
         when(cloudinaryService.buildLargeUrl(mockPublicId2)).thenReturn(mockLargeUrl2);
 
-        List<ProductResponseDTO> result = productService.getCheapest();
+        Page<ProductResponseDTO> result = productService.getCheapest(pageable);
 
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).name()).isEqualTo("Cheap Table");
-        assertThat(result.get(1).name()).isEqualTo("Cheap Desk");
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).name()).isEqualTo("Cheap Table");
+        assertThat(result.getContent().get(1).name()).isEqualTo("Cheap Desk");
 
-        verify(productRepository, times(1)).findTop10Cheapest();
+        verify(productRepository, times(1)).findAllByIsActiveIsTrueOrderByPriceAsc(pageable);
     }
 
     @Test
-    void givenNoCheapestProducts_whenGetCheapest_thenEmptyListIsReturned() {
-        when(productRepository.findTop10Cheapest()).thenReturn(new ArrayList<>());
+    void givenNoCheapestProducts_whenGetCheapest_thenEmptyPageIsReturned() {
+        Pageable pageable = Pageable.unpaged();
 
-        List<ProductResponseDTO> result = productService.getCheapest();
+        when(productRepository.findAllByIsActiveIsTrueOrderByPriceAsc(pageable))
+                .thenReturn(new PageImpl<>(new ArrayList<>()));
 
-        assertThat(result).isEmpty();
+        Page<ProductResponseDTO> result = productService.getCheapest(pageable);
 
-        verify(productRepository, times(1)).findTop10Cheapest();
+        assertThat(result.getContent()).isEmpty();
+
+        verify(productRepository, times(1)).findAllByIsActiveIsTrueOrderByPriceAsc(pageable);
     }
 }

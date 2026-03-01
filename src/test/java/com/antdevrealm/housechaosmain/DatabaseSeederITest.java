@@ -13,6 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import org.springframework.data.domain.Pageable;
+
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -96,10 +98,10 @@ public class DatabaseSeederITest {
         var couchCategory = categoryRepository.findByName("couch").orElseThrow();
         var lampCategory = categoryRepository.findByName("lamp").orElseThrow();
 
-        assertThat(productRepository.findAllByCategoryAndIsActiveIsTrue(chairCategory)).hasSize(10);
-        assertThat(productRepository.findAllByCategoryAndIsActiveIsTrue(tableCategory)).hasSize(10);
-        assertThat(productRepository.findAllByCategoryAndIsActiveIsTrue(couchCategory)).hasSize(10);
-        assertThat(productRepository.findAllByCategoryAndIsActiveIsTrue(lampCategory)).hasSize(10);
+        assertThat(productRepository.findAllByCategoryAndIsActiveIsTrue(chairCategory, Pageable.unpaged()).getContent()).hasSize(10);
+        assertThat(productRepository.findAllByCategoryAndIsActiveIsTrue(tableCategory, Pageable.unpaged()).getContent()).hasSize(10);
+        assertThat(productRepository.findAllByCategoryAndIsActiveIsTrue(couchCategory, Pageable.unpaged()).getContent()).hasSize(10);
+        assertThat(productRepository.findAllByCategoryAndIsActiveIsTrue(lampCategory, Pageable.unpaged()).getContent()).hasSize(10);
     }
 
     @Test
