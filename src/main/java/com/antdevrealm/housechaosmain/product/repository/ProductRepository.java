@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,16 +24,9 @@ public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
 
     Page<ProductEntity> findAllByNewArrivalIsTrueAndIsActiveIsTrueOrderByCreatedOnDesc(Pageable pageable);
 
-//    @Query(
-//            value = """
-//                    SELECT * FROM house_of_chaos_main.products p
-//                    WHERE p.is_active = true
-//                    ORDER BY p.price
-//                    LIMIT 10
-//                    """,
-//            nativeQuery = true
-//    )
     Page<ProductEntity> findAllByIsActiveIsTrueOrderByPriceAsc(Pageable pageable);
+
+    Page<ProductEntity> findAllByNameContainingIgnoreCaseAndIsActiveIsTrueOrderByPriceAsc (String search, Pageable pageable);
 
     @Modifying
     @Query(

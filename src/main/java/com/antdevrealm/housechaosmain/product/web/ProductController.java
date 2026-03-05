@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -43,8 +42,10 @@ public class ProductController {
     }
 
     @GetMapping("/top-deals")
-    public ResponseEntity<Page<ProductResponseDTO>> getTopDeals(Pageable pageable) {
-        Page<ProductResponseDTO> cheapest = this.productService.getCheapest(pageable);
+    public ResponseEntity<Page<ProductResponseDTO>> getTopDeals(
+            @RequestParam(required = false) String search,
+            Pageable pageable) {
+        Page<ProductResponseDTO> cheapest = this.productService.getCheapest(search, pageable);
 
         return ResponseEntity.ok(cheapest);
     }

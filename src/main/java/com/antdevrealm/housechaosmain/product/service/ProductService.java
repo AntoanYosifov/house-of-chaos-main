@@ -24,7 +24,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -60,14 +59,16 @@ public class ProductService {
 
     @Cacheable("new-arrivals")
     public Page<ProductResponseDTO> getNewArrivals(Pageable pageable) {
-//        return this.productRepository.findTop10NewArrivals().stream().map(this::mapToResponseDto).toList();
         Page<ProductEntity> entities = this.productRepository.findAllByNewArrivalIsTrueAndIsActiveIsTrueOrderByCreatedOnDesc(pageable);
         return entities.map(this::mapToResponseDto);
     }
 
     @Cacheable("cheapest")
-    public Page<ProductResponseDTO> getCheapest(Pageable pageable) {
-        Page<ProductEntity> entities = this.productRepository.findAllByIsActiveIsTrueOrderByPriceAsc(pageable);
+    public Page<ProductResponseDTO> getCheapest(String search, Pageable pageable) {
+
+        Page<ProductEntity> entities = (search != null && !search.isBlank())
+                ? this.productRepository.findAllByNameContainingIgnoreCaseAndIsActiveIsTrueOrderByPriceAsc(search, pageable)
+                : this.productRepository.findAllByIsActiveIsTrueOrderByPriceAsc(pageable);
         return entities.map(this::mapToResponseDto);
     }
 
