@@ -1,21 +1,21 @@
 # House of Chaos – Antiques E-commerce API
 
-A comprehensive REST API backend for an online antiques marketplace, built with Spring Boot 3.4 and modern security practices.
+REST API backend for an online antiques marketplace. Spring Boot 3.4, JWT auth with refresh token rotation, paginated catalog, and Feign-based review microservice integration.
 
 ## Overview
 
-This is the main backend service for **House of Chaos**, an e-commerce platform specializing in antique furniture (chairs, tables, lamps, couches). It provides a stateless REST API consumed by an Angular SPA and integrates with a separate microservice for product reviews.
+Main backend for **House of Chaos**, an e-commerce platform for antique furniture (chairs, tables, lamps, couches). Stateless REST API consumed by an Angular SPA; product reviews are handled by a separate service (Feign client).
 
 ### Key Features
 
-- 🔐 **OAuth2 Resource Server** with JWT access tokens and secure refresh token rotation
-- 🛒 **Full E-commerce Flow**: Browse products, manage cart, place orders, confirm/cancel orders
-- 👤 **User Management**: Registration, profile updates, address management
-- 👑 **Admin Panel**: Product/category management, user role administration
-- ⭐ **Review System**: Microservice integration via Feign client
-- ⏰ **Automated Tasks**: Scheduled cleanup for old orders and product status updates
-- 💾 **Caching**: Spring Cache for frequently accessed categories
-- ✅ **Comprehensive Testing**: 80% line coverage with unit, integration, and API tests
+- 🔐 **OAuth2 Resource Server** – JWT access tokens, HttpOnly refresh cookies with rotation
+- 🛒 **E-commerce** – Browse (paginated), cart, orders (create, confirm, cancel)
+- 👤 **Users** – Registration, profile and address management
+- 👑 **Admin** – Products, categories, user roles (promote/demote)
+- ⭐ **Reviews** – Feign client to dedicated review service
+- ⏰ **Scheduled jobs** – New-arrival expiry, cancelled-order cleanup
+- 💾 **Caching** – Spring Cache (categories, product lists)
+- ✅ **Tests** – Unit, integration, API; 81% line coverage. CI via GitHub Actions (tests on push/PR)
 
 ---
 
@@ -29,27 +29,11 @@ The system consists of three main components:
 
 ### Technology Stack
 
-**Core:**
-- Java 17
-- Spring Boot 3.4.0
-- Gradle
+**Core:** Java 17, Spring Boot 3.4.x, Gradle
 
-**Backend:**
-- Spring Web (REST API)
-- Spring Security + OAuth2 Resource Server
-- Spring Data JPA (Hibernate)
-- MySQL Database
-- Spring Cloud OpenFeign (microservice communication)
-- Nimbus JOSE JWT (token signing)
-- Spring Cache (category caching)
-- Spring Scheduling (automated tasks)
+**Backend:** Spring Web, Security (OAuth2 Resource Server, JWT), Data JPA, MySQL, OpenFeign (review service), Nimbus JOSE JWT, Spring Cache, Scheduling. Product images via Cloudinary.
 
-**Development & Testing:**
-- Lombok (reduce boilerplate)
-- H2 (in-memory database for tests)
-- JUnit 5 + Mockito
-- Spring Security Test
-- 80% line coverage
+**Tests:** JUnit 5, Mockito, Spring Security Test, H2. 81% line coverage.
 
 ---
 
@@ -71,13 +55,10 @@ The system consists of three main components:
 
 ### Products & Categories
 
-- Full CRUD for products (admin only)
-- Soft delete for products (maintains referential integrity)
-- Category management with validation (no delete if products exist)
-- Special endpoints:
-  - `GET /api/v1/products/new-arrivals` – Top 10 newest products
-  - `GET /api/v1/products/top-deals` – Top 10 cheapest products
-- Product images served from `/images` directory
+- Full CRUD for products (admin only); soft delete
+- Category management (delete blocked if products exist)
+- Paginated endpoints: product list (optional category filter), new-arrivals, top-deals (cheapest; optional name search). Default page size 8, max 50.
+- Product images via Cloudinary (thumb + large URLs built from `imagePublicId`)
 
 ### Shopping Cart
 
@@ -141,13 +122,11 @@ The system consists of three main components:
 
 ### Prerequisites
 
-- **Java 17** or higher
-- **MySQL 8.0+** running locally
-- **Gradle** (wrapper included)
+Java 17+, MySQL 8.0+ (or use Docker below), Gradle (wrapper included).
 
 ### Database Setup
 
-1. Start MySQL server
+1. Start MySQL (e.g. `cd infra && docker compose up -d`; or use a local instance).
 
 2. Create database (or let Spring create it):
    ```sql
@@ -191,17 +170,12 @@ On first run, the application automatically seeds:
 ### Running Tests
 
 ```bash
-# Run all tests with coverage
 ./gradlew test
-
-# View coverage report
-open build/reports/jacoco/test/html/index.html
+# Coverage report: build/reports/jacoco/test/html/index.html
+# Open it (e.g. on macOS: open build/reports/jacoco/test/html/index.html)
 ```
 
-**Test Coverage: 81% line coverage**
-- Unit tests for services (UserService, CartService, ProductService, etc.)
-- Integration tests for service interactions (AdminService, OrderService, AuthService)
-- API tests for controllers (AdminController, OrderController)
+Unit tests (services), integration tests (AdminService, OrderService, AuthService), API tests (AdminController, OrderController). 81% line coverage.
 
 ---
 
@@ -272,17 +246,13 @@ spring.datasource.url=jdbc:mysql://localhost:3306/house_of_chaos_main?createData
 spring.datasource.username=${DB_USERNAME:username}
 spring.datasource.password=${DB_PASSWORD:password}
 
-# Security
-spring.security.oauth2.resourceserver.jwt.secret-key=<your-256-bit-secret>
-security.jwt.ttl-seconds=300  # 5 minutes
+# Security (use env vars or a secrets manager in production)
+spring.security.oauth2.resourceserver.jwt.secret-key=<base64-encoded-256-bit-key>
+security.jwt.ttl-seconds=300
 security.refresh.token.ttl-days=14
-security.refresh.cookie.secure=false  # Set to true in production
+security.refresh.cookie.secure=false  # true in production
 
-# Note: The JWT secret key is included in the repository for testing and 
-# examination purposes. In a production environment, this should be 
-# externalized via environment variables or a secrets management system.
-
-# Public URL (for image links)
+# Optional
 app.public-base-url=http://localhost:8080
 ```
 
@@ -348,31 +318,11 @@ The review service must be running on **http://localhost:8081** for review featu
 
 ## Testing
 
-The project includes comprehensive test coverage (81% line coverage):
-
-### Test Types
-
-**Unit Tests** – Service layer with mocked dependencies
-- `UserServiceUTest`, `CartServiceUTest`, `ProductServiceUTest`, `OrderServiceUTest`
-- `CategoryServiceUTest`, `RoleServiceUTest`, `AddressServiceUTest`
-
-**Integration Tests** – Multi-service interactions with real database (H2)
-- `AdminServiceITest` – Product/category/user management
-- `OrderServiceITest` – Order creation, confirmation, cancellation
-- `AuthServiceITest` – Login flow with token generation
-
-**API Tests** – Controller layer with mocked services
-- `AdminControllerApiTest` – Admin endpoints
-- `OrderControllerApiTest` – Order endpoints
-
-### Running Tests
+Unit tests (services, mocked deps), integration tests (AdminService, OrderService, AuthService with H2), API tests (AdminController, OrderController). 81% line coverage.
 
 ```bash
-# Run all tests
 ./gradlew test
-
-# Run with coverage report
-./gradlew test jacocoTestReport
+# Coverage: build/reports/jacoco/test/html/index.html
 ```
 
 ---
@@ -403,14 +353,13 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 ### Browse Products
 
 ```bash
-# Get new arrivals
-curl http://localhost:8080/api/v1/products/new-arrivals
+# All products (paginated; optional categoryId)
+curl "http://localhost:8080/api/v1/products?page=0&size=8"
+curl "http://localhost:8080/api/v1/products?categoryId={categoryUuid}"
 
-# Get products by category
-curl http://localhost:8080/api/v1/products/category/{categoryId}
-
-# Get cheapest products
-curl http://localhost:8080/api/v1/products/top-deals
+# New arrivals / top deals (paginated)
+curl "http://localhost:8080/api/v1/products/new-arrivals"
+curl "http://localhost:8080/api/v1/products/top-deals"
 ```
 
 ### Cart Operations
@@ -442,41 +391,18 @@ curl -X POST http://localhost:8080/api/v1/orders \
 
 ## Development
 
-### Project Highlights
+**Structure** – Feature-based packages (auth, user, product, category, cart, order, review, admin), each with web/service/repository layers. DTOs for API contracts; Jakarta Validation; global exception handler (RFC 7807 Problem Detail). UUID primary keys, soft deletes for products.
 
-✨ **Feature-Based Architecture** – Code organized by business domain (auth, cart, order, product, etc.) with layered structure (web, service, repository) within each feature  
-✨ **Security Best Practices** – Stateless JWT, refresh token rotation, password hashing  
-✨ **Validation** – Request-level validation with detailed error messages  
-✨ **Exception Handling** – Global error handler with RFC 7807 Problem Detail  
-✨ **Testing** – Comprehensive test suite with 81% coverage  
-✨ **Microservices** – Feign client integration with graceful degradation  
-✨ **Scheduled Tasks** – Automated cleanup and maintenance  
-✨ **Database Design** – UUID primary keys, proper relationships, soft deletes
-
-### Code Quality
-
-- Consistent package structure
-- DTOs for all API contracts
-- Custom exceptions for business rules
-- Proper transaction management
-- Logging for important operations
+**Security** – Stateless JWT, refresh token rotation (HttpOnly cookie), BCrypt. Feign client to review service with clear failure handling. Scheduled jobs for new-arrival expiry and order cleanup.
 
 ---
 
-## Related Repositories
+## Related
 
-- **Main API** – [house-of-chaos-main](https://github.com/AntoanYosifov/house-of-chaos-main) (this repo)
-- **Angular Frontend** – [house-of-chaos-web](https://github.com/AntoanYosifov/house-of-chaos-web)
-- **Review Microservice** – [review-microservice](https://github.com/AntoanYosifov/review-microservice)
-
----
-
-## License
-
-This project is part of an educational portfolio.
+- [house-of-chaos-main](https://github.com/AntoanYosifov/house-of-chaos-main) (this repo)
+- [house-of-chaos-web](https://github.com/AntoanYosifov/house-of-chaos-web) – Angular frontend
+- [review-microservice](https://github.com/AntoanYosifov/review-microservice) – Review service
 
 ---
 
-## Author
-
-Developed by Antoan Yosifov
+Antoan Yosifov
