@@ -25,6 +25,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -224,7 +226,7 @@ public class ProductServiceUTest {
     }
 
     @Test
-    void givenCheapestProductsExist_whenGetCheapest_thenPageOfCheapestIsReturned() {
+    void givenCheapestProductsExist_whenGetCheapestWithNoSearch_thenPageOfCheapestIsReturned() {
         Pageable pageable = Pageable.unpaged();
 
         String mockPublicId1 = "house-of-chaos/table/test-table-id";
@@ -260,13 +262,46 @@ public class ProductServiceUTest {
         when(cloudinaryService.buildThumbUrl(mockPublicId2)).thenReturn(mockThumbUrl2);
         when(cloudinaryService.buildLargeUrl(mockPublicId2)).thenReturn(mockLargeUrl2);
 
-        Page<ProductResponseDTO> result = productService.getCheapest(pageable);
+        Page<ProductResponseDTO> result = productService.getCheapest(null, pageable);
 
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getContent().get(0).name()).isEqualTo("Cheap Table");
         assertThat(result.getContent().get(1).name()).isEqualTo("Cheap Desk");
 
         verify(productRepository, times(1)).findAllByIsActiveIsTrueOrderByPriceAsc(pageable);
+        verify(productRepository, never()).findAllByNameContainingIgnoreCaseAndIsActiveIsTrueOrderByPriceAsc(anyString(), any());
+    }
+
+    @Test
+    void givenSearchTerm_whenGetCheapest_thenPageOfMatchingCheapestIsReturned() {
+        Pageable pageable = Pageable.unpaged();
+        String search = "table";
+
+        String mockPublicId1 = "house-of-chaos/table/test-table-id";
+        String mockThumbUrl1 = "https://res.cloudinary.com/test/image/upload/w_400,h_400,c_fill/test-table-id";
+        String mockLargeUrl1 = "https://res.cloudinary.com/test/image/upload/w_1200,c_limit/test-table-id";
+        ProductEntity product1 = ProductEntity.builder()
+                .id(UUID.randomUUID())
+                .name("Cheap Table")
+                .description("Test description for cheap table")
+                .price(new BigDecimal("49.99"))
+                .quantity(10)
+                .imagePublicId(mockPublicId1)
+                .isActive(true)
+                .build();
+
+        when(productRepository.findAllByNameContainingIgnoreCaseAndIsActiveIsTrueOrderByPriceAsc(search, pageable))
+                .thenReturn(new PageImpl<>(List.of(product1)));
+        when(cloudinaryService.buildThumbUrl(mockPublicId1)).thenReturn(mockThumbUrl1);
+        when(cloudinaryService.buildLargeUrl(mockPublicId1)).thenReturn(mockLargeUrl1);
+
+        Page<ProductResponseDTO> result = productService.getCheapest(search, pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).name()).isEqualTo("Cheap Table");
+
+        verify(productRepository, times(1)).findAllByNameContainingIgnoreCaseAndIsActiveIsTrueOrderByPriceAsc(search, pageable);
+        verify(productRepository, never()).findAllByIsActiveIsTrueOrderByPriceAsc(any());
     }
 
     @Test
@@ -276,7 +311,7 @@ public class ProductServiceUTest {
         when(productRepository.findAllByIsActiveIsTrueOrderByPriceAsc(pageable))
                 .thenReturn(new PageImpl<>(new ArrayList<>()));
 
-        Page<ProductResponseDTO> result = productService.getCheapest(pageable);
+        Page<ProductResponseDTO> result = productService.getCheapest(null, pageable);
 
         assertThat(result.getContent()).isEmpty();
 

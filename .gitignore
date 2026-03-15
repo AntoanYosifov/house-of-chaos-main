@@ -36,3 +36,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Cursor / Agent context (local only) ###
+AGENTS.md
+CI-CD-PLAN.md
