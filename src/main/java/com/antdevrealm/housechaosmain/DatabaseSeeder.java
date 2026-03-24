@@ -58,7 +58,6 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-
         if (this.roleRepository.count() == 0) {
             List<RoleEntity> roles = List.of(
                     RoleEntity.builder()
@@ -71,7 +70,6 @@ public class DatabaseSeeder implements CommandLineRunner {
 
             this.roleRepository.saveAll(roles);
         }
-
 
         if (this.userRepository.count() == 0) {
             UserEntity defaultAdminEntity = UserEntity.builder()
@@ -97,7 +95,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .build();
 
             this.cartRepository.save(adminCart);
-
         }
 
         if (this.categoryRepository.count() == 0) {
@@ -721,5 +718,4 @@ public class DatabaseSeeder implements CommandLineRunner {
                 .replaceAll("[^a-z0-9]+", "-")
                 .replaceAll("(^-|-$)", "");
     }
-
 }

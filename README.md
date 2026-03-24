@@ -15,6 +15,7 @@ Main backend for **House of Chaos**, an e-commerce platform for antique furnitur
 - ⭐ **Reviews** – Feign client to dedicated review service
 - ⏰ **Scheduled jobs** – New-arrival expiry, cancelled-order cleanup
 - 💾 **Caching** – Spring Cache (categories, product lists)
+- 🐳 **Dockerized local stack** – One-command startup with Docker Compose (API + MySQL)
 - ✅ **Tests** – Unit, integration, API; 81% line coverage. CI via GitHub Actions (tests on push/PR)
 
 ---
@@ -32,6 +33,8 @@ The system consists of three main components:
 **Core:** Java 17, Spring Boot 3.4.x, Gradle
 
 **Backend:** Spring Web, Security (OAuth2 Resource Server, JWT), Data JPA, MySQL, OpenFeign (review service), Nimbus JOSE JWT, Spring Cache, Scheduling. Product images via Cloudinary.
+
+**DevOps/Runtime:** Docker, Docker Compose
 
 **Tests:** JUnit 5, Mockito, Spring Security Test, H2. 81% line coverage.
 
@@ -126,7 +129,10 @@ Java 17+, MySQL 8.0+ (or use Docker below), Gradle (wrapper included).
 
 ### Database Setup
 
-1. Start MySQL (e.g. `cd infra && docker compose up -d`; or use a local instance).
+1. Start the database:
+   - MySQL only (for local `bootRun`): `cd docker && docker compose up -d mysql`
+   - Or use a local MySQL instance.
+   - For full Docker startup (API + MySQL), use the `Run with Docker Compose (API + MySQL)` section below.
 
 2. Create database (or let Spring create it):
    ```sql
@@ -147,6 +153,20 @@ Java 17+, MySQL 8.0+ (or use Docker below), Gradle (wrapper included).
    spring.datasource.password=your_mysql_password
    ```
 
+4. Set required application secrets (environment variables):
+   - `JWT_SECRET` (required on startup)
+   - `CLOUDINARY_URL` (required for image upload; used during product seeding on first run)
+
+   Generate a JWT secret (Base64, 32 bytes) for local use:
+   ```bash
+   openssl rand -base64 32
+   ```
+
+   Cloudinary setup:
+   - Create a Cloudinary account.
+   - Copy your `CLOUDINARY_URL` from the Cloudinary dashboard.
+   - Export both variables (or place them in `docker/.env` for Docker Compose).
+
 ### Running the Application
 
 ```bash
@@ -158,6 +178,46 @@ Java 17+, MySQL 8.0+ (or use Docker below), Gradle (wrapper included).
 ```
 
 The API will start on **http://localhost:8080**
+
+### Run with Docker Compose (API + MySQL)
+
+Use this mode to start both services with one command.
+
+1. Ensure `src/main/resources/application-docker.properties` exists with:
+   ```properties
+   spring.datasource.url=jdbc:mysql://mysql:3306/house_of_chaos_main?createDatabaseIfNotExist=true
+   ```
+
+2. Ensure `docker/.env` contains:
+   - `MYSQL_ROOT_PASSWORD`
+   - `MYSQL_DATABASE`
+   - `MYSQL_USER`
+   - `MYSQL_PASSWORD`
+   - `DB_USERNAME`
+   - `DB_PASSWORD`
+   - `JWT_SECRET`
+   - `CLOUDINARY_URL`
+
+   Notes:
+   - `JWT_SECRET` is required for Spring Security JWT startup.
+   - `CLOUDINARY_URL` is required for Cloudinary uploads and initial product image seeding.
+
+3. Start everything:
+   ```bash
+   cd docker
+   docker compose --env-file .env up --build -d
+   ```
+
+4. Verify:
+   ```bash
+   docker compose ps
+   curl -sS http://localhost:8080/actuator/health
+   ```
+
+5. Stop:
+   ```bash
+   docker compose --env-file .env down
+   ```
 
 ### Initial Setup
 
