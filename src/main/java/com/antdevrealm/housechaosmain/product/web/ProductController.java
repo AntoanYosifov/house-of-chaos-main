@@ -45,8 +45,10 @@ public class ProductController {
     public ResponseEntity<Page<ProductResponseDTO>> getTopDeals(
             @RequestParam(required = false) String search,
             Pageable pageable) {
-        Page<ProductResponseDTO> cheapest = this.productService.getCheapest(search, pageable);
-
-        return ResponseEntity.ok(cheapest);
+        String term = (search != null) ? search.trim() : null;
+        Page<ProductResponseDTO> result = (term != null && !term.isBlank())
+                ? productService.searchTopDeals(term, pageable)
+                : productService.getTopDeals(pageable);
+        return ResponseEntity.ok(result);
     }
 }

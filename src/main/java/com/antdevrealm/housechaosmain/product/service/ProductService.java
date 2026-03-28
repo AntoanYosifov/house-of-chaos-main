@@ -63,18 +63,19 @@ public class ProductService {
         return entities.map(this::mapToResponseDto);
     }
 
-    @Cacheable("cheapest")
-    public Page<ProductResponseDTO> getCheapest(String search, Pageable pageable) {
-        String term = (search != null) ? search.trim() : null;
+    @Cacheable("top-deals")
+    public Page<ProductResponseDTO> getTopDeals(Pageable pageable) {
+        return productRepository.findAllByIsActiveIsTrueOrderByPriceAsc(pageable)
+                .map(this::mapToResponseDto);
+    }
 
-        Page<ProductEntity> entities = (term != null && !term.isBlank())
-                ? this.productRepository.findAllByNameContainingIgnoreCaseAndIsActiveIsTrueOrderByPriceAsc(term, pageable)
-                : this.productRepository.findAllByIsActiveIsTrueOrderByPriceAsc(pageable);
-        return entities.map(this::mapToResponseDto);
+    public Page<ProductResponseDTO> searchTopDeals(String term, Pageable pageable) {
+        return productRepository.findAllByNameContainingIgnoreCaseAndIsActiveIsTrueOrderByPriceAsc(term, pageable)
+                .map(this::mapToResponseDto);
     }
 
     @Transactional
-    @CacheEvict(cacheNames = {"all-products", "new-arrivals", "cheapest"}, allEntries = true)
+    @CacheEvict(cacheNames = {"all-products", "new-arrivals", "top-deals"}, allEntries = true)
     public ProductResponseDTO create(CreateProductForm productForm, MultipartFile file) throws IOException {
 
         CategoryEntity category = this.categoryService.getById(productForm.categoryId());
@@ -101,7 +102,7 @@ public class ProductService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = {"by-category", "new-arrivals", "cheapest"}, allEntries = true)
+    @CacheEvict(cacheNames = {"by-category", "new-arrivals", "top-deals"}, allEntries = true)
     public ProductResponseDTO update(UpdateProductRequestDTO dto, UUID productId) {
         ProductEntity productEntity = this.productRepository.findByIdAndIsActiveIsTrue(productId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with ID: %s not found!", productId)));
@@ -117,7 +118,7 @@ public class ProductService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = {"by-category", "new-arrivals", "cheapest"}, allEntries = true)
+    @CacheEvict(cacheNames = {"by-category", "new-arrivals", "top-deals"}, allEntries = true)
     public void softDelete(UUID productId) {
         ProductEntity productEntity = this.productRepository.findByIdAndIsActiveIsTrue(productId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with ID: %s not found!", productId)));
@@ -132,7 +133,7 @@ public class ProductService {
     }
 
     @Transactional
-    @CacheEvict(cacheNames = {"by-category", "new-arrivals", "cheapest"}, allEntries = true)
+    @CacheEvict(cacheNames = {"by-category", "new-arrivals", "top-deals"}, allEntries = true)
     public int markOldNewArrivalsAsNotNew(int daysAsNew) {
         Instant threshold = Instant.now().minus(Duration.ofDays(daysAsNew));
         return productRepository.markOldNewArrivalsAsNotNew(threshold);
