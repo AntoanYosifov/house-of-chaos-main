@@ -1,6 +1,8 @@
 package com.antdevrealm.housechaosmain.admin.web;
 
 import com.antdevrealm.housechaosmain.admin.service.AdminService;
+import com.antdevrealm.housechaosmain.auth.jwt.handler.RestAuthenticationEntryPoint;
+import com.antdevrealm.housechaosmain.auth.service.HOCUserDetailsService;
 import com.antdevrealm.housechaosmain.category.dto.CategoryResponseDTO;
 import com.antdevrealm.housechaosmain.category.dto.CreateCategoryRequestDTO;
 import com.antdevrealm.housechaosmain.product.dto.CreateProductForm;
@@ -9,9 +11,11 @@ import com.antdevrealm.housechaosmain.product.dto.UpdateProductRequestDTO;
 import com.antdevrealm.housechaosmain.role.model.enums.UserRole;
 import com.antdevrealm.housechaosmain.user.dto.UserResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.antdevrealm.housechaosmain.security.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,6 +26,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -31,10 +37,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AdminController.class)
+@Import({SecurityConfig.class, RestAuthenticationEntryPoint.class})
 public class AdminControllerApiTest {
 
     @MockitoBean
     private AdminService adminService;
+
+    @MockitoBean
+    private HOCUserDetailsService hocUserDetailsService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -84,7 +94,7 @@ public class AdminControllerApiTest {
                 .param("quantity", requestForm.quantity().toString())
                 .param("categoryId", requestForm.categoryId().toString())
                 .contentType(MediaType.MULTIPART_FORM_DATA)
-                .with(jwt());
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")));
 
         mockMvc.perform(request)
                 .andExpect(status().isCreated())
@@ -121,7 +131,7 @@ public class AdminControllerApiTest {
         MockHttpServletRequestBuilder request = patch("/api/v1/admin/products/{id}", productId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDTO))
-                .with(jwt());
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")));
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -139,7 +149,7 @@ public class AdminControllerApiTest {
         doNothing().when(adminService).deleteProduct(productId);
 
         MockHttpServletRequestBuilder request = delete("/api/v1/admin/products/{id}", productId)
-                .with(jwt());
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")));
 
         mockMvc.perform(request)
                 .andExpect(status().isNoContent());
@@ -159,7 +169,7 @@ public class AdminControllerApiTest {
         MockHttpServletRequestBuilder request = post("/api/v1/admin/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDTO))
-                .with(jwt());
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")));
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -174,7 +184,7 @@ public class AdminControllerApiTest {
         doNothing().when(adminService).deleteCategory(categoryId);
 
         MockHttpServletRequestBuilder request = delete("/api/v1/admin/categories/{id}", categoryId)
-                .with(jwt());
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")));
 
         mockMvc.perform(request)
                 .andExpect(status().isNoContent());
@@ -194,8 +204,9 @@ public class AdminControllerApiTest {
         when(adminService.getAllUsers(currentUserId)).thenReturn(List.of(user1, user2));
 
         MockHttpServletRequestBuilder request = get("/api/v1/admin/users")
-                .with(jwt().jwt(jwt -> jwt
-                        .claim("uid", currentUserId.toString())));
+                .with(jwt()
+                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                        .jwt(jwt -> jwt.claim("uid", currentUserId.toString())));
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -225,7 +236,7 @@ public class AdminControllerApiTest {
         when(adminService.promoteToAdmin(userId)).thenReturn(responseDTO);
 
         MockHttpServletRequestBuilder request = patch("/api/v1/admin/users/promote/{id}", userId)
-                .with(jwt());
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")));
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -234,6 +245,31 @@ public class AdminControllerApiTest {
                 .andExpect(jsonPath("$.roles.length()").value(2));
 
         verify(adminService, times(1)).promoteToAdmin(userId);
+    }
+
+    @Test
+    void requestWithNoToken_shouldReturn401() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/users"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void requestWithTokenButNoAdminRole_shouldReturn403() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/users")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_USER"))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void requestWithAdminRoleToken_shouldReturn200() throws Exception {
+        UUID currentUserId = UUID.randomUUID();
+        when(adminService.getAllUsers(currentUserId)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/admin/users")
+                        .with(jwt()
+                                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                                .jwt(jwt -> jwt.claim("uid", currentUserId.toString()))))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -254,7 +290,7 @@ public class AdminControllerApiTest {
         when(adminService.demoteFromAdmin(userId)).thenReturn(responseDTO);
 
         MockHttpServletRequestBuilder request = patch("/api/v1/admin/users/demote/{id}", userId)
-                .with(jwt());
+                .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")));
 
         mockMvc.perform(request)
                 .andExpect(status().isOk())
