@@ -65,9 +65,10 @@ public class ProductService {
 
     @Cacheable("cheapest")
     public Page<ProductResponseDTO> getCheapest(String search, Pageable pageable) {
+        String term = (search != null) ? search.trim() : null;
 
-        Page<ProductEntity> entities = (search != null && !search.isBlank())
-                ? this.productRepository.findAllByNameContainingIgnoreCaseAndIsActiveIsTrueOrderByPriceAsc(search, pageable)
+        Page<ProductEntity> entities = (term != null && !term.isBlank())
+                ? this.productRepository.findAllByNameContainingIgnoreCaseAndIsActiveIsTrueOrderByPriceAsc(term, pageable)
                 : this.productRepository.findAllByIsActiveIsTrueOrderByPriceAsc(pageable);
         return entities.map(this::mapToResponseDto);
     }

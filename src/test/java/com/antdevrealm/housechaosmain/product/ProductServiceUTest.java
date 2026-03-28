@@ -317,4 +317,17 @@ public class ProductServiceUTest {
 
         verify(productRepository, times(1)).findAllByIsActiveIsTrueOrderByPriceAsc(pageable);
     }
+
+    @Test
+    void givenWhitespaceSearchTerm_whenGetCheapest_thenFallsBackToUnfilteredQuery() {
+        Pageable pageable = Pageable.unpaged();
+
+        when(productRepository.findAllByIsActiveIsTrueOrderByPriceAsc(pageable))
+                .thenReturn(new PageImpl<>(new ArrayList<>()));
+
+        productService.getCheapest("   ", pageable);
+
+        verify(productRepository, times(1)).findAllByIsActiveIsTrueOrderByPriceAsc(pageable);
+        verify(productRepository, never()).findAllByNameContainingIgnoreCaseAndIsActiveIsTrueOrderByPriceAsc(anyString(), any());
+    }
 }
