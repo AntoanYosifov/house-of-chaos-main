@@ -7,10 +7,10 @@ import com.antdevrealm.housechaosmain.cart.model.CartItemEntity;
 import com.antdevrealm.housechaosmain.cart.repository.CartItemRepository;
 import com.antdevrealm.housechaosmain.cart.repository.CartRepository;
 import com.antdevrealm.housechaosmain.cloudinary.CloudinaryService;
-import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
+import com.antdevrealm.housechaosmain.product.service.InventoryService;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,16 +26,19 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final InventoryService inventoryService;
     private final CloudinaryService cloudinaryService;
 
     @Autowired
     public CartService(CartRepository cartRepository,
                        CartItemRepository cartItemRepository,
                        ProductRepository productRepository,
+                       InventoryService inventoryService,
                        CloudinaryService cloudinaryService) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
+        this.inventoryService = inventoryService;
         this.cloudinaryService = cloudinaryService;
     }
 
@@ -79,9 +82,7 @@ public class CartService {
             item.setQuantity(item.getQuantity() + 1);
         }
 
-        if (item.getQuantity() > productEntity.getQuantity()) {
-            throw new BusinessRuleException(String.format("Cart item quantity: %d for product with ID: %s can not exceed product available quantity in stock: %d", item.getQuantity(), productEntity.getId(), productEntity.getQuantity()));
-        }
+        inventoryService.assertSufficientStock(productEntity, item.getQuantity());
 
         CartItemEntity savedItem = cartItemRepository.save(item);
 

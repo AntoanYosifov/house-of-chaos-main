@@ -9,8 +9,10 @@ import com.antdevrealm.housechaosmain.cart.service.CartService;
 import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.exception.ResourceNotFoundException;
 import com.antdevrealm.housechaosmain.cloudinary.CloudinaryService;
+import com.antdevrealm.housechaosmain.exception.BusinessRuleException;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
+import com.antdevrealm.housechaosmain.product.service.InventoryService;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +39,9 @@ public class CartServiceUTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private InventoryService inventoryService;
 
     @Mock
     private CloudinaryService cloudinaryService;
@@ -271,6 +276,8 @@ public class CartServiceUTest {
         when(cartRepository.findByOwnerId(ownerId)).thenReturn(Optional.of(cart));
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(cartItemRepository.findByCartIdAndProductId(cartId, productId)).thenReturn(Optional.of(existingItem));
+        doThrow(new BusinessRuleException("quantity exceeds stock"))
+                .when(inventoryService).assertSufficientStock(product, 4);
 
         assertThrows(BusinessRuleException.class, () -> cartService.addOneToCart(ownerId, productId));
 

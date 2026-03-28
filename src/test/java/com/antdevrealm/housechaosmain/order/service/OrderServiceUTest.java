@@ -9,6 +9,7 @@ import com.antdevrealm.housechaosmain.order.repository.OrderItemRepository;
 import com.antdevrealm.housechaosmain.order.repository.OrderRepository;
 import com.antdevrealm.housechaosmain.cloudinary.CloudinaryService;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
+import com.antdevrealm.housechaosmain.product.service.InventoryService;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +37,9 @@ public class OrderServiceUTest {
 
     @Mock
     private OrderItemRepository orderItemRepository;
+
+    @Mock
+    private InventoryService inventoryService;
 
     @Mock
     private CloudinaryService cloudinaryService;

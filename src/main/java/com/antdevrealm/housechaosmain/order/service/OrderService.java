@@ -15,6 +15,7 @@ import com.antdevrealm.housechaosmain.order.repository.OrderItemRepository;
 import com.antdevrealm.housechaosmain.order.repository.OrderRepository;
 import com.antdevrealm.housechaosmain.product.model.ProductEntity;
 import com.antdevrealm.housechaosmain.product.repository.ProductRepository;
+import com.antdevrealm.housechaosmain.product.service.InventoryService;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import com.antdevrealm.housechaosmain.util.ResponseDTOMapper;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
 @Slf4j
 @Service
 public class OrderService {
@@ -40,6 +42,7 @@ public class OrderService {
 
     private final CartService cartService;
     private final AddressService addressService;
+    private final InventoryService inventoryService;
 
     private final CloudinaryService cloudinaryService;
 
@@ -49,13 +52,16 @@ public class OrderService {
                         UserRepository userRepository,
                         ProductRepository productRepository,
                         CartService cartService,
-                        AddressService addressService, CloudinaryService cloudinaryService) {
+                        AddressService addressService,
+                        InventoryService inventoryService,
+                        CloudinaryService cloudinaryService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.cartService = cartService;
         this.addressService = addressService;
+        this.inventoryService = inventoryService;
         this.cloudinaryService = cloudinaryService;
     }
 
@@ -90,6 +96,8 @@ public class OrderService {
 
         List<CreateOrderItemRequestDTO> createOrderItemRequestDTOS = orderRequestDTO.items();
         List<OrderItemEntity> orderItemEntities = createOrderItemRequestDTOS.stream().map(this::mapToItemEntity).toList();
+
+        inventoryService.assertSufficientStock(orderItemEntities);
 
         BigDecimal orderTotal = calculateOrderTotal(orderItemEntities);
 
@@ -134,7 +142,7 @@ public class OrderService {
         List<OrderItemEntity> items = this.orderItemRepository.findAllByOrder(updatedEntity);
         OrderResponseDTO orderResponseDTO = mapToOrderResponseDto(orderEntity, items);
 
-        items.forEach(this::reduceProductInventoryQuantity);
+        inventoryService.deductStock(items);
 
         log.info("Order confirmed: id={}, ownerId={}, total={}, shippingAddressId={}",
                 updatedEntity.getId(), ownerId, updatedEntity.getTotal(),
@@ -168,7 +176,6 @@ public class OrderService {
     public void delete(UUID ownerId, UUID id) {
         OrderEntity orderEntity = this.orderRepository.findByIdAndOwnerId(id, ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with ID: %s for owner with ID: %s not found!", id, ownerId)));
-
 
         deleteOrderWithItems(orderEntity);
         log.info("Order deleted: id={}, ownerId={}", orderEntity.getId(), ownerId);
@@ -237,10 +244,6 @@ public class OrderService {
         ProductEntity productEntity = this.productRepository.findByIdAndIsActiveIsTrue(dto.productId())
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Product with ID: %s not found!", dto.productId())));
 
-        if(dto.quantity() > productEntity.getQuantity()) {
-            throw new BusinessRuleException(String.format("Order item quantity: %d can not exceed product available quantity in stock: %d", dto.quantity(), productEntity.getQuantity()));
-        }
-
         return OrderItemEntity.builder()
                 .product(productEntity)
                 .unitPrice(productEntity.getPrice())
@@ -258,19 +261,9 @@ public class OrderService {
             return BigDecimal.ZERO;
         }
 
-           return items.stream()
-                    .map(OrderItemEntity::getLineTotal)
-                    .filter(Objects::nonNull)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private void reduceProductInventoryQuantity(OrderItemEntity item) {
-        ProductEntity productEntity = item.getProduct();
-        if(item.getQuantity() > productEntity.getQuantity()) {
-            throw new BusinessRuleException(String.format("Order item quantity: %d for product with ID: %s can not exceed product available quantity in stock: %d", item.getQuantity(), productEntity.getId(), productEntity.getQuantity()));
-        }
-
-        productEntity.setQuantity(productEntity.getQuantity() - item.getQuantity());
-        this.productRepository.save(productEntity);
+        return items.stream()
+                .map(OrderItemEntity::getLineTotal)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
