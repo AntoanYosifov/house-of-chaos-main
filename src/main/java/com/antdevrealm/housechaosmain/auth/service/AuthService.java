@@ -1,14 +1,14 @@
 package com.antdevrealm.housechaosmain.auth.service;
 
-import com.antdevrealm.housechaosmain.auth.dto.token.IssuedTokenDTO;
-import com.antdevrealm.housechaosmain.auth.dto.token.LoginIssuedTokenDTO;
 import com.antdevrealm.housechaosmain.auth.dto.login.LoginRequestDTO;
+import com.antdevrealm.housechaosmain.auth.dto.login.LoginResultDTO;
+import com.antdevrealm.housechaosmain.auth.dto.token.TokenIssuanceResultDTO;
 
 public interface AuthService {
 
-    LoginIssuedTokenDTO login(LoginRequestDTO req);
+    LoginResultDTO login(LoginRequestDTO req);
 
-    IssuedTokenDTO refresh(String rawRefreshToken);
+    TokenIssuanceResultDTO refresh(String rawRefreshToken);
 
     void logout(String rawRefreshToken);
 }

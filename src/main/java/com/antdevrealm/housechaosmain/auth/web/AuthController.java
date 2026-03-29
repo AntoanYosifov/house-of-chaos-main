@@ -1,10 +1,10 @@
 package com.antdevrealm.housechaosmain.auth.web;
 
-import com.antdevrealm.housechaosmain.auth.dto.token.IssuedTokenDTO;
-import com.antdevrealm.housechaosmain.auth.dto.token.LoginIssuedTokenDTO;
-import com.antdevrealm.housechaosmain.auth.dto.accesstoken.AccessTokenResponseDTO;
 import com.antdevrealm.housechaosmain.auth.dto.login.LoginRequestDTO;
 import com.antdevrealm.housechaosmain.auth.dto.login.LoginResponseDTO;
+import com.antdevrealm.housechaosmain.auth.dto.login.LoginResultDTO;
+import com.antdevrealm.housechaosmain.auth.dto.token.AccessTokenResponseDTO;
+import com.antdevrealm.housechaosmain.auth.dto.token.TokenIssuanceResultDTO;
 import com.antdevrealm.housechaosmain.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,7 +31,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO req, HttpServletResponse res) {
-        LoginIssuedTokenDTO result = authService.login(req);
+        LoginResultDTO result = authService.login(req);
         refreshCookieHelper.write(res, result.issuedToken().rawRefreshToken(), result.issuedToken().refreshExpiresAt());
         AccessTokenResponseDTO tokenResponse = new AccessTokenResponseDTO(
                 result.issuedToken().accessToken(), "Bearer", result.issuedToken().accessTtlSeconds());
@@ -49,8 +49,8 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<AccessTokenResponseDTO> refresh(HttpServletRequest req, HttpServletResponse res) {
         String rawToken = refreshCookieHelper.extract(req);
-        IssuedTokenDTO issued = authService.refresh(rawToken);
-        refreshCookieHelper.write(res, issued.rawRefreshToken(), issued.refreshExpiresAt());
-        return ResponseEntity.ok(new AccessTokenResponseDTO(issued.accessToken(), "Bearer", issued.accessTtlSeconds()));
+        TokenIssuanceResultDTO result = authService.refresh(rawToken);
+        refreshCookieHelper.write(res, result.rawRefreshToken(), result.refreshExpiresAt());
+        return ResponseEntity.ok(new AccessTokenResponseDTO(result.accessToken(), "Bearer", result.accessTtlSeconds()));
     }
 }

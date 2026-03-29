@@ -1,4 +1,4 @@
-package com.antdevrealm.housechaosmain.auth.dto.accesstoken;
+package com.antdevrealm.housechaosmain.auth.dto.token;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

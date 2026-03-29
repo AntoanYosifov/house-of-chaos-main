@@ -1,8 +1,8 @@
 package com.antdevrealm.housechaosmain.auth.service;
 
-import com.antdevrealm.housechaosmain.auth.dto.token.IssuedTokenDTO;
-import com.antdevrealm.housechaosmain.auth.dto.token.LoginIssuedTokenDTO;
 import com.antdevrealm.housechaosmain.auth.dto.login.LoginRequestDTO;
+import com.antdevrealm.housechaosmain.auth.dto.login.LoginResultDTO;
+import com.antdevrealm.housechaosmain.auth.dto.token.TokenIssuanceResultDTO;
 import com.antdevrealm.housechaosmain.auth.jwt.service.JwtService;
 import com.antdevrealm.housechaosmain.auth.model.HOCUserDetails;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.dto.CreatedRefreshTokenDTO;
@@ -41,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginIssuedTokenDTO login(LoginRequestDTO req) {
+    public LoginResultDTO login(LoginRequestDTO req) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(req.email(), req.password()));
 
@@ -53,24 +53,24 @@ public class AuthServiceImpl implements AuthService {
         CreatedRefreshTokenDTO refreshToken = refreshTokenService.create(user);
         String accessToken = jwtService.generateToken(principal);
 
-        IssuedTokenDTO issuedToken = new IssuedTokenDTO(
+        TokenIssuanceResultDTO issuedToken = new TokenIssuanceResultDTO(
                 accessToken,
                 refreshToken.rawToken(),
                 refreshToken.expiresAt(),
                 jwtService.ttlSeconds()
         );
 
-        return new LoginIssuedTokenDTO(issuedToken, ResponseDTOMapper.mapToUserResponseDTO(user));
+        return new LoginResultDTO(issuedToken, ResponseDTOMapper.mapToUserResponseDTO(user));
     }
 
     @Override
-    public IssuedTokenDTO refresh(String rawRefreshToken) {
+    public TokenIssuanceResultDTO refresh(String rawRefreshToken) {
         RotationRefreshTokenResultDTO rotation = refreshTokenService.rotateInPlace(rawRefreshToken);
 
         HOCUserDetails principal = (HOCUserDetails) hocUserDetailsService.loadUserByUsername(rotation.userEmail());
         String accessToken = jwtService.generateToken(principal);
 
-        return new IssuedTokenDTO(
+        return new TokenIssuanceResultDTO(
                 accessToken,
                 rotation.newRaw(),
                 rotation.expiresAt(),

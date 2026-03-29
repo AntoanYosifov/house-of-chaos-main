@@ -1,7 +1,7 @@
 package com.antdevrealm.housechaosmain.auth;
 
-import com.antdevrealm.housechaosmain.auth.dto.token.IssuedTokenDTO;
-import com.antdevrealm.housechaosmain.auth.dto.token.LoginIssuedTokenDTO;
+import com.antdevrealm.housechaosmain.auth.dto.token.TokenIssuanceResultDTO;
+import com.antdevrealm.housechaosmain.auth.dto.login.LoginResultDTO;
 import com.antdevrealm.housechaosmain.auth.dto.login.LoginRequestDTO;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.repository.RefreshTokenRepository;
 import com.antdevrealm.housechaosmain.auth.service.AuthService;
@@ -85,7 +85,7 @@ public class AuthServiceITest {
         user.getRoles().add(userRole);
         UserEntity savedUser = userRepository.save(user);
 
-        LoginIssuedTokenDTO result = authService.login(new LoginRequestDTO(email, password));
+        LoginResultDTO result = authService.login(new LoginRequestDTO(email, password));
 
         assertThat(result).isNotNull();
         assertThat(result.issuedToken().accessToken()).isNotBlank();
@@ -114,10 +114,10 @@ public class AuthServiceITest {
         user.getRoles().add(userRole);
         userRepository.save(user);
 
-        LoginIssuedTokenDTO loginResult = authService.login(new LoginRequestDTO(email, "password123"));
+        LoginResultDTO loginResult = authService.login(new LoginRequestDTO(email, "password123"));
         String rawRefreshToken = loginResult.issuedToken().rawRefreshToken();
 
-        IssuedTokenDTO refreshResult = authService.refresh(rawRefreshToken);
+        TokenIssuanceResultDTO refreshResult = authService.refresh(rawRefreshToken);
 
         assertThat(refreshResult.accessToken()).isNotBlank();
         assertThat(refreshResult.rawRefreshToken()).isNotBlank();
@@ -142,7 +142,7 @@ public class AuthServiceITest {
         user.getRoles().add(userRole);
         userRepository.save(user);
 
-        LoginIssuedTokenDTO loginResult = authService.login(new LoginRequestDTO(email, "password123"));
+        LoginResultDTO loginResult = authService.login(new LoginRequestDTO(email, "password123"));
         String rawRefreshToken = loginResult.issuedToken().rawRefreshToken();
 
         assertThat(refreshTokenRepository.count()).isEqualTo(1);
