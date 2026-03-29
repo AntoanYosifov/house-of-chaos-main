@@ -1,16 +1,14 @@
 package com.antdevrealm.housechaosmain.auth.service;
 
-import com.antdevrealm.housechaosmain.auth.dto.accesstoken.AccessTokenResponseDTO;
+import com.antdevrealm.housechaosmain.auth.dto.IssuedTokenDTO;
+import com.antdevrealm.housechaosmain.auth.dto.LoginIssuedTokenDTO;
 import com.antdevrealm.housechaosmain.auth.dto.login.LoginRequestDTO;
-import com.antdevrealm.housechaosmain.auth.dto.login.LoginResponseDTO;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
 
-    LoginResponseDTO login(LoginRequestDTO req, HttpServletResponse res);
+    LoginIssuedTokenDTO login(LoginRequestDTO req);
 
-    void logout(HttpServletRequest request, HttpServletResponse response);
+    IssuedTokenDTO refresh(String rawRefreshToken);
 
-    AccessTokenResponseDTO refreshToken(HttpServletRequest req, HttpServletResponse res);
+    void logout(String rawRefreshToken);
 }

@@ -1,5 +1,6 @@
 package com.antdevrealm.housechaosmain.auth.web;
 
+import com.antdevrealm.housechaosmain.auth.refreshtoken.exception.RefreshTokenInvalidException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,15 +35,17 @@ public class RefreshCookieHelper {
     }
 
     public String extract(HttpServletRequest req) {
-        if (req.getCookies() == null) {
-            return null;
-        }
-        for (Cookie cookie : req.getCookies()) {
-            if (REFRESH_COOKIE.equals(cookie.getName())) {
-                return cookie.getValue();
+        if (req.getCookies() != null) {
+            for (Cookie cookie : req.getCookies()) {
+                if (REFRESH_COOKIE.equals(cookie.getName())) {
+                    String value = cookie.getValue();
+                    if (value != null && !value.isBlank()) {
+                        return value;
+                    }
+                }
             }
         }
-        return null;
+        throw new RefreshTokenInvalidException("Refresh token is invalid");
     }
 
     public void clear(HttpServletResponse res) {
