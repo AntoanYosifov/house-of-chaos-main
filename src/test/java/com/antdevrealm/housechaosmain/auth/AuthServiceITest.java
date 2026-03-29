@@ -1,7 +1,7 @@
 package com.antdevrealm.housechaosmain.auth;
 
-import com.antdevrealm.housechaosmain.auth.dto.IssuedTokenDTO;
-import com.antdevrealm.housechaosmain.auth.dto.LoginIssuedTokenDTO;
+import com.antdevrealm.housechaosmain.auth.dto.token.IssuedTokenDTO;
+import com.antdevrealm.housechaosmain.auth.dto.token.LoginIssuedTokenDTO;
 import com.antdevrealm.housechaosmain.auth.dto.login.LoginRequestDTO;
 import com.antdevrealm.housechaosmain.auth.refreshtoken.repository.RefreshTokenRepository;
 import com.antdevrealm.housechaosmain.auth.service.AuthService;
