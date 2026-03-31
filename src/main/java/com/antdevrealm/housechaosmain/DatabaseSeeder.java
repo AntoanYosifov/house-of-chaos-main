@@ -14,6 +14,7 @@ import com.antdevrealm.housechaosmain.role.repository.RoleRepository;
 import com.antdevrealm.housechaosmain.user.model.UserEntity;
 import com.antdevrealm.housechaosmain.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
@@ -39,6 +40,12 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
 
     private final CloudinaryService cloudinaryService;
+
+    @Value("${admin.email}")
+    private String adminEmail;
+
+    @Value("${admin.password}")
+    private String adminPassword;
 
     private final List<String> categoryNames = List.of("chair", "table", "couch", "lamp");
 
@@ -73,8 +80,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         if (this.userRepository.count() == 0) {
             UserEntity defaultAdminEntity = UserEntity.builder()
-                    .email("admin@email.com")
-                    .password(this.passwordEncoder.encode("adminpassword"))
+                    .email(this.adminEmail)
+                    .password(this.passwordEncoder.encode(this.adminPassword))
                     .createdOn(Instant.now())
                     .updatedAt(Instant.now())
                     .build();
