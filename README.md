@@ -1,468 +1,256 @@
-# House of Chaos – Antiques E-commerce API
+# House of Chaos — Antiques E-commerce API
 
-REST API backend for an online antiques marketplace. Spring Boot 3.4, JWT auth with refresh token rotation, paginated catalog, and Feign-based review microservice integration.
+Production-deployed REST API backend for an online antiques marketplace. Spring Boot 3.4, stateless JWT auth with refresh token rotation, full e-commerce domain (cart, orders, inventory), and a Feign-based review microservice.
 
-## Overview
-
-Main backend for **House of Chaos**, an e-commerce platform for antique furniture (chairs, tables, lamps, couches). Stateless REST API consumed by an Angular SPA; product reviews are handled by a separate service (Feign client).
-
-### Key Features
-
-- 🔐 **OAuth2 Resource Server** – JWT access tokens, HttpOnly refresh cookies with rotation
-- 🛒 **E-commerce** – Browse (paginated), cart, orders (create, confirm, cancel)
-- 👤 **Users** – Registration, profile and address management
-- 👑 **Admin** – Products, categories, user roles (promote/demote)
-- ⭐ **Reviews** – Feign client to dedicated review service
-- ⏰ **Scheduled jobs** – New-arrival expiry, cancelled-order cleanup
-- 💾 **Caching** – Spring Cache (categories, product lists)
-- 🐳 **Dockerized local stack** – One-command startup with Docker Compose (API + MySQL)
-- ✅ **Tests** – Unit, integration, API; 81% line coverage. CI via GitHub Actions (tests on push/PR)
+**Live:** [houseofchaoss.com](https://houseofchaoss.com) · **API:** [api.houseofchaoss.com](https://api.houseofchaoss.com)
 
 ---
 
 ## Architecture
 
-The system consists of three main components:
+Three-component system, fully deployed on AWS:
 
-1. **Main API** (this repository) – User auth, products, orders, carts
-2. **Review Microservice** – Separate service for product reviews
-3. **Angular Frontend** – SPA client for the end users
+```
+Browser
+  │
+  ├─► houseofchaoss.com
+  │     Cloudflare DNS → CloudFront → S3 (Angular SPA)
+  │
+  └─► api.houseofchaoss.com
+        Cloudflare DNS + DDoS proxy → EC2 → nginx (SSL termination) → Spring Boot :8080 → RDS MySQL
+```
 
-### Technology Stack
-
-**Core:** Java 17, Spring Boot 3.4.x, Gradle
-
-**Backend:** Spring Web, Security (OAuth2 Resource Server, JWT), Data JPA, MySQL, OpenFeign (review service), Nimbus JOSE JWT, Spring Cache, Scheduling. Product images via Cloudinary.
-
-**DevOps/Runtime:** Docker, Docker Compose
-
-**Tests:** JUnit 5, Mockito, Spring Security Test, H2. 81% line coverage.
+| Component | Technology |
+|---|---|
+| Backend API | Spring Boot 3.4, Java 17, Gradle |
+| Database | MySQL 8 on AWS RDS |
+| Frontend host | AWS S3 + CloudFront |
+| API host | AWS EC2 + nginx |
+| Certificates | ACM (CloudFront), Let's Encrypt via Certbot (API) |
+| DNS / DDoS | Cloudflare |
+| Secrets | AWS SSM Parameter Store |
+| Container registry | GitHub Container Registry (GHCR) |
+| CI/CD | GitHub Actions — tests on push/PR, frontend deploy on merge to main |
 
 ---
 
-## Features in Detail
+## Infrastructure
+
+### Backend (EC2)
+- Spring Boot runs in Docker on EC2 (`t3.micro`, Amazon Linux)
+- nginx sits in front as a reverse proxy — handles SSL termination, forwards to `:8080`
+- Let's Encrypt certificate issued via Certbot DNS challenge (Cloudflare API), auto-renewing
+- Elastic IP ensures the server address is stable across restarts
+- Secrets (DB credentials, JWT secret, Cloudinary URL, admin credentials) fetched from SSM Parameter Store at container startup — nothing hardcoded, nothing in environment files
+
+### Frontend (S3 + CloudFront)
+- Angular build artifacts in S3, served via CloudFront CDN
+- Custom domain `houseofchaoss.com` with ACM-issued HTTPS certificate
+- CD pipeline automatically syncs S3 and invalidates CloudFront cache on every push to `main`
+
+### CI/CD (GitHub Actions)
+- **Tests:** run on every push and pull request
+- **Deploy:** keyless AWS authentication via IAM OIDC — GitHub exchanges a short-lived OIDC token for temporary AWS credentials scoped to this repo and branch; no long-lived access keys stored anywhere
+- Docker image built with multi-stage build, cross-compiled for `linux/amd64` from ARM (Apple Silicon), pushed to GHCR
+
+### Security posture
+- EC2 security group: SSH locked to a specific IP, HTTP/HTTPS open (nginx handles redirect)
+- Cloudflare orange cloud on API subdomain: hides EC2 IP, absorbs DDoS at the edge
+- IAM roles follow least-privilege — deploy role can only write to the frontend S3 bucket and invalidate the CloudFront distribution
+- SSM parameters encrypted at rest (SecureString for all secrets)
+
+---
+
+## Application Features
 
 ### Authentication & Security
+- **Stateless JWT** — HMAC-SHA256, 5-minute access tokens
+- **Refresh token rotation** — tokens stored hashed in DB, issued as `HttpOnly Secure SameSite=Lax` cookies scoped to `/api/v1/auth`; rotated on every use
+- **RBAC** — `ROLE_USER` and `ROLE_ADMIN`; admin routes at `/api/v1/admin/**`
+- **BCrypt** password hashing
+- **CORS** configured for Angular frontend
 
-- **Stateless Authentication**: JWT-based with short-lived access tokens (5 minutes)
-- **Refresh Token Flow**: Secure, HttpOnly cookies with automatic rotation
-- **Password Security**: BCrypt hashing with configurable strength
-- **Role-Based Access Control**: USER and ADMIN roles with endpoint restrictions
-- **CORS Configuration**: Configured for Angular frontend on port 4200
+### E-commerce Domain
+- **Products** — paginated catalog with category filter, new-arrivals, top-deals (cheapest); soft delete; Cloudinary image hosting
+- **Cart** — one cart per user (auto-created on registration); add/remove/quantity; stock validation
+- **Orders** — create from cart, confirm with shipping address (reduces inventory), cancel, history by status
+- **Categories** — admin-managed; delete blocked if products exist
+- **Addresses** — per-user shipping address management
 
-**Auth Endpoints:**
-- `POST /api/v1/users/register` – User registration
-- `POST /api/v1/auth/login` – Login (returns JWT + sets refresh cookie)
-- `POST /api/v1/auth/refresh` – Refresh access token
-- `POST /api/v1/auth/logout` – Logout (invalidates refresh token)
+### Reviews (Microservice)
+- Feign client to a dedicated review microservice on `:8081`
+- Create, read, delete reviews per product
+- Business rule: review author name must match the user's first name
+- Fails gracefully when the microservice is unavailable
 
-### Products & Categories
+### Admin
+- Full product and category CRUD
+- User management: list all users, promote/demote to admin
 
-- Full CRUD for products (admin only); soft delete
-- Category management (delete blocked if products exist)
-- Paginated endpoints: product list (optional category filter), new-arrivals, top-deals (cheapest; optional name search). Default page size 8, max 50.
-- Product images via Cloudinary (thumb + large URLs built from `imagePublicId`)
+### Scheduled Jobs
+- Daily: marks products as "not new" after 10 days
+- Daily at 3 AM: deletes cancelled orders older than 30 days
 
-### Shopping Cart
-
-- One cart per user (created automatically on registration)
-- Add/remove items with quantity management
-- Stock validation (can't add more than available)
-- Cart cleared automatically when order is created
-
-### Orders
-
-- Create orders from cart items
-- Order statuses: NEW, CONFIRMED, CANCELLED
-- Confirm order with shipping address (reduces product inventory)
-- Cancel orders (only NEW orders can be cancelled)
-- Order history by status
-
-### Review Integration
-
-- Feign client integration with review microservice (port 8081)
-- Create, read, and delete reviews for products
-- Business rule: review author name must match user's first name
-- Graceful error handling for microservice failures
-
-### Admin Features
-
-**Product Management:**
-- Add new products with validation
-- Update product details (price, description)
-- Soft delete products
-
-**Category Management:**
-- Create categories with unique names
-- Delete categories (blocked if products exist)
-
-**User Management:**
-- View all users (excluding self)
-- Promote users to admin
-- Demote users from admin
-
-### Automated Tasks
-
-**Product New Arrival Cleanup:**
-- Runs daily (every 24 hours)
-- Marks products as "not new" after 10 days
-
-**Order Cleanup:**
-- Runs daily at 3 AM
-- Deletes cancelled orders older than 30 days
-
-### Validation & Error Handling
-
-- Jakarta Validation on all request DTOs
-- Global exception handler with RFC 7807 Problem Detail responses
-- Field-level validation errors (e.g., "Email is required")
-- Custom exceptions: `ResourceNotFoundException`, `BusinessRuleException`, `EmailAlreadyUsedException`
-- Proper HTTP status codes (400, 404, 409, 500)
+### Observability
+- Spring Cache on categories and product lists
+- RFC 7807 Problem Detail error responses via `GlobalExceptionHandler`
+- Jakarta Validation on all request DTOs with field-level error messages
 
 ---
 
-## Getting Started
+## Tech Stack
+
+**Backend:** Java 17, Spring Boot 3.4, Spring Security (OAuth2 Resource Server), Spring Data JPA, MySQL, OpenFeign, Nimbus JOSE JWT, Spring Cache, Spring Scheduling, Cloudinary
+
+**Testing:** JUnit 5, Mockito, Spring Security Test, H2 — unit, integration, and API layers. 81% line coverage.
+
+**DevOps:** Docker, GitHub Actions, AWS (EC2, RDS, S3, CloudFront, ACM, IAM, SSM), nginx, Cloudflare, Certbot, GHCR
+
+---
+
+## Running Locally
 
 ### Prerequisites
+Java 17+, Docker (for the full stack), or a local MySQL 8 instance.
 
-Java 17+, MySQL 8.0+ (or use Docker below), Gradle (wrapper included).
+### Environment variables required
 
-### Database Setup
+| Variable | Description |
+|---|---|
+| `JWT_SECRET` | Base64-encoded 32-byte key — `openssl rand -base64 32` |
+| `CLOUDINARY_URL` | From your Cloudinary dashboard |
+| `DB_USERNAME` | MySQL username |
+| `DB_PASSWORD` | MySQL password |
 
-1. Start the database:
-   - MySQL only (for local `bootRun`): `cd docker && docker compose up -d mysql`
-   - Or use a local MySQL instance.
-   - For full Docker startup (API + MySQL), use the `Run with Docker Compose (API + MySQL)` section below.
-
-2. Create database (or let Spring create it):
-   ```sql
-   CREATE DATABASE house_of_chaos_main;
-   ```
-
-3. Update database credentials:
-   
-   **Option A:** Environment variables (recommended)
-   ```bash
-   export DB_USERNAME=your_mysql_username
-   export DB_PASSWORD=your_mysql_password
-   ```
-   
-   **Option B:** Edit `src/main/resources/application.properties`
-   ```properties
-   spring.datasource.username=your_mysql_username
-   spring.datasource.password=your_mysql_password
-   ```
-
-4. Set required application secrets (environment variables):
-   - `JWT_SECRET` (required on startup)
-   - `CLOUDINARY_URL` (required for image upload; used during product seeding on first run)
-
-   Generate a JWT secret (Base64, 32 bytes) for local use:
-   ```bash
-   openssl rand -base64 32
-   ```
-
-   Cloudinary setup:
-   - Create a Cloudinary account.
-   - Copy your `CLOUDINARY_URL` from the Cloudinary dashboard.
-   - Export both variables (or place them in `docker/.env` for Docker Compose).
-
-### Running the Application
+### Option A — Gradle (local MySQL)
 
 ```bash
-# Build the project
-./gradlew build
+export DB_USERNAME=root
+export DB_PASSWORD=yourpassword
+export JWT_SECRET=$(openssl rand -base64 32)
+export CLOUDINARY_URL=cloudinary://...
 
-# Run the application
 ./gradlew bootRun
 ```
 
-The API will start on **http://localhost:8080**
+### Option B — Docker Compose (API + MySQL)
 
-### Run with Docker Compose (API + MySQL)
+```bash
+cp docker/.env.example docker/.env
+# fill in docker/.env
 
-Use this mode to start both services with one command.
+cd docker
+docker compose --env-file .env up --build -d
 
-1. Ensure `src/main/resources/application-docker.properties` exists with:
-   ```properties
-   spring.datasource.url=jdbc:mysql://mysql:3306/house_of_chaos_main?createDatabaseIfNotExist=true
-   ```
+# verify
+docker compose ps
+curl -s http://localhost:8080/actuator/health
+```
 
-2. Ensure `docker/.env` contains:
-   - `MYSQL_ROOT_PASSWORD`
-   - `MYSQL_DATABASE`
-   - `MYSQL_USER`
-   - `MYSQL_PASSWORD`
-   - `DB_USERNAME`
-   - `DB_PASSWORD`
-   - `JWT_SECRET`
-   - `CLOUDINARY_URL`
+On first run the app seeds roles, a default admin (`admin@email.com` / `adminpassword`), 4 categories, and 10 products per category.
 
-   Notes:
-   - `JWT_SECRET` is required for Spring Security JWT startup.
-   - `CLOUDINARY_URL` is required for Cloudinary uploads and initial product image seeding.
-
-3. Start everything:
-   ```bash
-   cd docker
-   docker compose --env-file .env up --build -d
-   ```
-
-4. Verify:
-   ```bash
-   docker compose ps
-   curl -sS http://localhost:8080/actuator/health
-   ```
-
-5. Stop:
-   ```bash
-   docker compose --env-file .env down
-   ```
-
-### Initial Setup
-
-On first run, the application automatically seeds:
-- USER and ADMIN roles
-- Default admin user: `admin@email.com` / `adminpassword`
-- Sample categories: chair, table, couch, lamp
-- Sample products (10 per category)
-
-### Running Tests
+### Tests
 
 ```bash
 ./gradlew test
-# Coverage report: build/reports/jacoco/test/html/index.html
-# Open it (e.g. on macOS: open build/reports/jacoco/test/html/index.html)
-```
 
-Unit tests (services), integration tests (AdminService, OrderService, AuthService), API tests (AdminController, OrderController). 81% line coverage.
-
----
-
-## API Overview
-
-### Public Endpoints
-
-- `POST /api/v1/users/register` – Register new user
-- `POST /api/v1/auth/login` – Login
-- `GET /api/v1/products` – Browse products
-- `GET /api/v1/products/new-arrivals` – New arrivals
-- `GET /api/v1/products/top-deals` – Cheapest products
-- `GET /api/v1/categories` – All categories
-
-### Authenticated Endpoints (Requires JWT)
-
-**Cart:**
-- `GET /api/v1/cart` – View cart
-- `PUT /api/v1/cart/items/{productId}` – Add item to cart
-- `POST /api/v1/cart/items/{cartItemId}/decrease` – Decrease quantity
-- `DELETE /api/v1/cart/items/{cartItemId}` – Remove item
-
-**Orders:**
-- `POST /api/v1/orders` – Create order from cart
-- `GET /api/v1/orders/{id}` – Get order by ID
-- `GET /api/v1/orders/new` – Get NEW orders
-- `GET /api/v1/orders/confirmed` – Get CONFIRMED orders
-- `PATCH /api/v1/orders/confirm/{id}` – Confirm order with shipping address
-- `POST /api/v1/orders/cancel/{id}` – Cancel order
-- `DELETE /api/v1/orders/{id}` – Delete order
-
-**Profile:**
-- `GET /api/v1/users/profile` – View profile
-- `PUT /api/v1/users/profile` – Update profile and address
-
-**Reviews:**
-- `GET /api/v1/reviews/product/{productId}` – Get reviews for product
-- `POST /api/v1/reviews` – Create review
-- `DELETE /api/v1/reviews/{id}` – Delete review
-
-### Admin Endpoints (Requires ADMIN role)
-
-**Products:**
-- `POST /api/v1/admin/products` – Add product
-- `PATCH /api/v1/admin/products/{id}` – Update product
-- `DELETE /api/v1/admin/products/{id}` – Delete product
-
-**Categories:**
-- `POST /api/v1/admin/categories` – Add category
-- `DELETE /api/v1/admin/categories/{id}` – Delete category
-
-**Users:**
-- `GET /api/v1/admin/users` – List all users
-- `PATCH /api/v1/admin/users/promote/{id}` – Promote user to admin
-- `PATCH /api/v1/admin/users/demote/{id}` – Demote user from admin
-
----
-
-## Configuration
-
-### Application Properties
-
-Key configuration options in `application.properties`:
-
-```properties
-# Database
-spring.datasource.url=jdbc:mysql://localhost:3306/house_of_chaos_main?createDatabaseIfNotExist=true
-spring.datasource.username=${DB_USERNAME:username}
-spring.datasource.password=${DB_PASSWORD:password}
-
-# Security (use env vars or a secrets manager in production)
-spring.security.oauth2.resourceserver.jwt.secret-key=<base64-encoded-256-bit-key>
-security.jwt.ttl-seconds=300
-security.refresh.token.ttl-days=14
-security.refresh.cookie.secure=false  # true in production
-
-# Optional
-app.public-base-url=http://localhost:8080
-```
-
-### Review Microservice
-
-The review service must be running on **http://localhost:8081** for review features to work. If the review service is unavailable, review endpoints will return appropriate error responses.
-
----
-
-## Security Implementation
-
-### JWT Claims Structure
-
-```json
-{
-  "iss": "self",
-  "sub": "user@email.com",
-  "uid": "user-uuid",
-  "authorities": ["ROLE_USER", "ROLE_ADMIN"],
-  "iat": 1234567890,
-  "exp": 1234567990
-}
-```
-
-### Refresh Token Flow
-
-1. User logs in → receives JWT + HttpOnly refresh cookie
-2. Access token expires (5 min) → client calls `/auth/refresh` with cookie
-3. Refresh token is rotated (new token issued, old invalidated)
-4. New access token returned
-5. On logout → refresh token deleted from database, cookie cleared
-
-### Authorization Rules
-
-- `/api/v1/admin/**` – Requires ADMIN role
-- `/api/v1/users/register`, `/api/v1/auth/**`, `/api/v1/products/**`, `/api/v1/categories/**` – Public
-- All other endpoints – Requires authentication
-
----
-
-## Database Schema
-
-**Main Tables:**
-- `users` – User accounts with encrypted passwords
-- `roles` – USER, ADMIN roles
-- `user_roles` – Many-to-many relationship
-- `addresses` – Shipping addresses
-- `carts` – One cart per user
-- `cart_items` – Items in carts
-- `products` – Product catalog
-- `categories` – Product categories
-- `orders` – Customer orders
-- `order_items` – Order line items
-- `refresh_tokens` – Refresh token storage (hashed)
-
-**Key Relationships:**
-- User → Cart (one-to-one)
-- User → Orders (one-to-many)
-- Product → Category (many-to-one)
-- Order → OrderItems (one-to-many)
-
----
-
-## Testing
-
-Unit tests (services, mocked deps), integration tests (AdminService, OrderService, AuthService with H2), API tests (AdminController, OrderController). 81% line coverage.
-
-```bash
-./gradlew test
-# Coverage: build/reports/jacoco/test/html/index.html
+# coverage report
+open build/reports/jacoco/test/html/index.html
 ```
 
 ---
 
-## API Examples
+## API Reference
 
-### Register & Login
+### Public
 
-```bash
-# Register
-curl -X POST http://localhost:8080/api/v1/users/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123",
-    "confirmPassword": "password123"
-  }'
-
-# Login
-curl -X POST http://localhost:8080/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "password123"
-  }'
+```
+POST /api/v1/users/register
+POST /api/v1/auth/login
+POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
+GET  /api/v1/products
+GET  /api/v1/products/new-arrivals
+GET  /api/v1/products/top-deals
+GET  /api/v1/categories
 ```
 
-### Browse Products
+### Authenticated (Bearer token required)
 
-```bash
-# All products (paginated; optional categoryId)
-curl "http://localhost:8080/api/v1/products?page=0&size=8"
-curl "http://localhost:8080/api/v1/products?categoryId={categoryUuid}"
+```
+GET    /api/v1/cart
+PUT    /api/v1/cart/items/{productId}
+POST   /api/v1/cart/items/{cartItemId}/decrease
+DELETE /api/v1/cart/items/{cartItemId}
 
-# New arrivals / top deals (paginated)
-curl "http://localhost:8080/api/v1/products/new-arrivals"
-curl "http://localhost:8080/api/v1/products/top-deals"
+POST   /api/v1/orders
+GET    /api/v1/orders/{id}
+GET    /api/v1/orders/new
+GET    /api/v1/orders/confirmed
+PATCH  /api/v1/orders/confirm/{id}
+POST   /api/v1/orders/cancel/{id}
+DELETE /api/v1/orders/{id}
+
+GET    /api/v1/users/profile
+PUT    /api/v1/users/profile
+
+GET    /api/v1/reviews/product/{productId}
+POST   /api/v1/reviews
+DELETE /api/v1/reviews/{id}
 ```
 
-### Cart Operations
+### Admin (`ROLE_ADMIN` required)
 
-```bash
-# Get cart (requires JWT)
-curl http://localhost:8080/api/v1/cart \
-  -H "Authorization: Bearer <access_token>"
-
-# Add product to cart
-curl -X PUT http://localhost:8080/api/v1/cart/items/{productId} \
-  -H "Authorization: Bearer <access_token>"
 ```
+POST   /api/v1/admin/products
+PATCH  /api/v1/admin/products/{id}
+DELETE /api/v1/admin/products/{id}
 
-### Create Order
+POST   /api/v1/admin/categories
+DELETE /api/v1/admin/categories/{id}
 
-```bash
-curl -X POST http://localhost:8080/api/v1/orders \
-  -H "Authorization: Bearer <access_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "items": [
-      {"productId": "uuid", "quantity": 2}
-    ]
-  }'
+GET    /api/v1/admin/users
+PATCH  /api/v1/admin/users/promote/{id}
+PATCH  /api/v1/admin/users/demote/{id}
 ```
 
 ---
 
-## Development
+## Refresh Token Flow
 
-**Structure** – Feature-based packages (auth, user, product, category, cart, order, review, admin), each with web/service/repository layers. DTOs for API contracts; Jakarta Validation; global exception handler (RFC 7807 Problem Detail). UUID primary keys, soft deletes for products.
-
-**Security** – Stateless JWT, refresh token rotation (HttpOnly cookie), BCrypt. Feign client to review service with clear failure handling. Scheduled jobs for new-arrival expiry and order cleanup.
-
----
-
-## Related
-
-- [house-of-chaos-main](https://github.com/AntoanYosifov/house-of-chaos-main) (this repo)
-- [house-of-chaos-web](https://github.com/AntoanYosifov/house-of-chaos-web) – Angular frontend
-- [review-microservice](https://github.com/AntoanYosifov/review-microservice) – Review service
+```
+1. POST /auth/login        → access token in body + HttpOnly cookie set
+2. Access token expires    → POST /auth/refresh with cookie → new access token
+3. Refresh token rotated   → old token invalidated, new cookie set
+4. POST /auth/logout       → token deleted from DB, cookie cleared
+```
 
 ---
 
-Antoan Yosifov
+## Project Structure
+
+Feature-based package layout under `com.antdevrealm.housechaosmain`:
+
+```
+auth/        login, refresh, logout, JWT service, refresh token management
+user/        registration, profile
+product/     catalog, search, pagination
+category/    category management
+cart/        cart and cart items
+order/       order lifecycle
+review/      Feign client to review microservice
+admin/       admin controllers
+address/     shipping addresses
+cloudinary/  image upload
+security/    SecurityConfig, CORS, JWT decoder/encoder
+exception/   GlobalExceptionHandler, Problem Detail
+job/         scheduled cleanup tasks
+util/        TokenHasher, shared utilities
+```
+
+---
+
+## Related Repositories
+
+- [house-of-chaos-web](https://github.com/AntoanYosifov/house-of-chaos-web) — Angular frontend
+- [review-microservice](https://github.com/AntoanYosifov/review-microservice) — Review service
