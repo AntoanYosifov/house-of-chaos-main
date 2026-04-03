@@ -2,7 +2,7 @@
 
 Production-deployed REST API backend for an online antiques marketplace. Spring Boot 3.4, stateless JWT auth with refresh token rotation, full e-commerce domain (cart, orders, inventory), and a Feign-based review microservice.
 
-**Live:** [houseofchaoss.com](https://houseofchaoss.com) · **API:** [api.houseofchaoss.com](https://api.houseofchaoss.com)
+**Live:** [houseofchaoss.com](https://houseofchaoss.com)
 
 ---
 
