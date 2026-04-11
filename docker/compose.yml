@@ -18,11 +18,13 @@ services:
       timeout: 5s
       retries: 10
       start_period: 20s
+    networks:
+      - hoc_network
   api:
     build:
       context: ..
       dockerfile: Dockerfile
-    container_name: house_of_chaos_api
+    container_name: house-of-chaos-api
     restart: unless-stopped
     depends_on:
       mysql:
@@ -33,5 +35,10 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - hoc_network
 volumes:
   mysql_data:
+networks:
+  hoc_network:
+    name: hoc_network

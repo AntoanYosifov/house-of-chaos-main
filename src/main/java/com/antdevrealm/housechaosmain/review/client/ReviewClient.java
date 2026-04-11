@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@FeignClient(name = "review-svc", url = "http://localhost:8081/api/v1/reviews")
+@FeignClient(name = "review-svc", url = "${review.service.url}")
 public interface ReviewClient {
     @GetMapping("/{id}")
     ResponseEntity<ReviewResponseDTO> getById(@PathVariable("id") UUID reviewId);
