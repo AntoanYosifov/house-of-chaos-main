@@ -71,6 +71,7 @@
   docker run -d \
     --name hoc-api \
     --restart unless-stopped \
+    --network hoc_network \
     -p 8080:8080 \
     -e DB_HOST="$DB_HOST" \
     -e DB_USERNAME="$DB_USERNAME" \
