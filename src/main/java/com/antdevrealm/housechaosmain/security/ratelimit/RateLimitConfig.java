@@ -1,10 +1,8 @@
 package com.antdevrealm.housechaosmain.security.ratelimit;
 
 import io.github.bucket4j.distributed.proxy.ProxyManager;
-import io.github.bucket4j.redis.lettuce.cas.LettuceBasedProxyManager;
+import io.github.bucket4j.redis.lettuce.Bucket4jLettuce;
 import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
-import io.lettuce.core.codec.ByteArrayCodec;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +17,6 @@ public class RateLimitConfig {
     @Bean
     public ProxyManager<byte[]> rateLimitProxyManager(LettuceConnectionFactory factory) {
         RedisClient nativeClient = (RedisClient) factory.getRequiredNativeClient();
-        StatefulRedisConnection<byte[], byte[]> connection = nativeClient.connect(ByteArrayCodec.INSTANCE);
-        return LettuceBasedProxyManager.builderFor(connection).build();
+        return Bucket4jLettuce.casBasedBuilder(nativeClient).build();
     }
 }
