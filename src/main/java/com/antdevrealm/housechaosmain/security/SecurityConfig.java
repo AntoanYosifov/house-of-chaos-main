@@ -1,6 +1,7 @@
 package com.antdevrealm.housechaosmain.security;
 import com.antdevrealm.housechaosmain.auth.jwt.handler.RestAuthenticationEntryPoint;
 import com.antdevrealm.housechaosmain.auth.service.HOCUserDetailsService;
+import com.antdevrealm.housechaosmain.security.ratelimit.RateLimitFilter;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +13,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -30,6 +32,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 @Configuration
 public class SecurityConfig {
@@ -40,8 +43,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSec,
                                            RestAuthenticationEntryPoint restEntryPoint,
-                                           HOCUserDetailsService hocUserDetailsService) throws Exception {
-        return httpSec.csrf(AbstractHttpConfigurer::disable)
+                                           HOCUserDetailsService hocUserDetailsService,
+                                           Optional<RateLimitFilter> rateLimitFilter) throws Exception {
+        httpSec.csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -63,8 +67,12 @@ public class SecurityConfig {
                                 .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
-                .userDetailsService(hocUserDetailsService)
-                .build();
+                .userDetailsService(hocUserDetailsService);
+
+        rateLimitFilter.ifPresent(f ->
+                httpSec.addFilterBefore(f, UsernamePasswordAuthenticationFilter.class));
+
+        return httpSec.build();
     }
 
     @Bean
